@@ -96,7 +96,7 @@ public class DS_Granule extends LevelSet {
 	 *
 	 */
 	@Override
-	protected double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) {
+	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) {
 		
 		if (is3D) {
 			// calculate distance^2 from center of the domain
