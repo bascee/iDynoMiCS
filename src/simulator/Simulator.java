@@ -1065,7 +1065,9 @@ public class Simulator
 			
 			if (SimTimer.isDuringNextStep(parser.getParamTime("birthday"))) 
 			{
-				this.agentGrid.agentIter = agentGrid.agentList.listIterator();
+//Bas - 16-04-2015
+//FIXME: not sure this does anything useful, so have commented out				
+//				this.agentGrid.agentIter = agentGrid.agentList.listIterator();
 				speciesList.get(spIndex).createPop(parser);
 				creatingAgents = true;
 			}
@@ -1150,7 +1152,9 @@ public class Simulator
 		// Now create these agents
 		if(wholeAgentsThisTimeStep>0)
 		{
-			this.agentGrid.agentIter = agentGrid.agentList.listIterator();
+//Bas - 16-04-2015
+//FIXME: not sure this does anything useful, so have commented out
+//			this.agentGrid.agentIter = agentGrid.agentList.listIterator();
 			speciesList.get(spIndex).createBoundaryLayerPop(parser,wholeAgentsThisTimeStep);
 			creatingAgents = true;
 			

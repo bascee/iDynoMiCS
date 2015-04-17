@@ -26,6 +26,7 @@ import utils.XMLParser;
 import utils.LogFile;
 import utils.ExtraMath;
 
+
 /**
  * \brief Class to store all the agents, call them, and manage shoving/erosion of located agents
  * 
@@ -57,7 +58,8 @@ public class AgentContainer
 	/**
 	 * Iterator for all agents in this grid
 	 */
-	public ListIterator<SpecialisedAgent> agentIter;
+	//BAS - made private to make sure no other classes are messing with my iter
+	private ListIterator<SpecialisedAgent> agentIter;
 
 	/**
 	 * Temporary containers used to store agents who will be added or removed.  Visibility public so that it can be accessed from LocatedGroup in killAll()
@@ -312,7 +314,6 @@ public class AgentContainer
 		// for the local time step, choose the value according to which is best
 		double localdt = Math.min(AGENTTIMESTEP,globalTimeStep);
 
-		double nAgent0 = agentList.size();
 		// Apply a shorter time step when visiting all the agents
 
 		while (elapsedTime < globalTimeStep)
@@ -437,7 +438,7 @@ public class AgentContainer
 		}
 		
 		// OUTPUT THE COUNT STATISTICS
-		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent0 + "/"
+		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent + "/"
 				+ _agentToKill.size() + "/" + nBirth);
 
 		
