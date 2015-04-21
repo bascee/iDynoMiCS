@@ -27,6 +27,8 @@ import utils.ResultFile;
 import utils.XMLParser;
 import utils.LogFile;
 import utils.ExtraMath;
+import utils.RTree;
+import utils.helperMethods;
 
 /**
  * \brief Class to store all the agents, call them, and manage shoving/erosion
@@ -55,6 +57,11 @@ public class AgentContainer
 	 * Container for all agents (even the non located ones)
 	 */
 	private LinkedList<SpecialisedAgent> agentList;
+	
+	/**
+	 * Tree for all located agents.
+	 */
+	private RTree<SpecialisedAgent> agentTree = new RTree<SpecialisedAgent>(5,2,2);
 	
 	/**
 	 * Temporary containers used to store agents who will be added or removed.
@@ -156,17 +163,17 @@ public class AgentContainer
 	/**
 	 *  Tally of mass to be removed in removeOnBorder, or cells in chemostat dilution (see agentsFlushedAway)
 	 */
-	double tallyVariable = 0.0; 
+	private double tallyVariable = 0.0; 
 	
 	/**
 	 * Number of shoving iterations performed
 	 */
-	int shovIter;
+	private int shovIter;
 	
 	/**
 	 * Limit on number of cells that will be moved in shoving
 	 */
-	int shovLimit; 
+	private int shovLimit; 
 	
 	/**
 	 * Maximum number of shove iterations that can be performed in a step
@@ -294,6 +301,24 @@ public class AgentContainer
 	public void addAgent(SpecialisedAgent agentToAdd) {
 		agentList.add(agentToAdd);
 	}
+	
+	/** Bas: cleaning out other methods (from Species isAgentInContactWithAgentInBiofilm)
+	 * 
+	 * @return a single agent randomly picked from List
+	 * 
+	 */
+	public boolean hasNearNeighbors(ContinuousVector Point, Double distance) {
+		LocatedGroup agentsInGrid = returnGroupInVoxel(getIndexedPosition(Point));
+		Double dist = 0.0;
+		// Now iterate through each one. If we're close enough, move done.
+		// Shoving can then sort out distance between the two cells.
+		for (LocatedAgent aLoc : agentsInGrid.group)
+		dist = aLoc.getLocation().distance(Point); 
+		if ( dist <= distance )
+		return true;
+		// If not, we'll do another move.
+		return false;
+	}
 	/** Bas
 	 * 
 	 * @return a single agent randomly picked from List
@@ -338,6 +363,14 @@ public class AgentContainer
 		Collections.shuffle(shuffledList, ExtraMath.random);
 		return shuffledList;
 	}
+	
+	public List<SpecialisedAgent> boxSearch(ContinuousVector coords, double dimensions) {
+		if(is3D)
+			return agentTree.search(helperMethods.doubleToFloatArray(coords.get()), helperMethods.filledFloatArray((float) (dimensions),3));
+		return agentTree.search(helperMethods.doubleToFloatArray(coords.get2D()), helperMethods.filledFloatArray((float) (dimensions),2));
+	}
+	
+	
 
 	/* ___________________ STEPPERS ________________________________ */
 
@@ -428,8 +461,8 @@ public class AgentContainer
 			
 			// Apply moderate overlap relaxation, unless this is a chemostat.
 //Bas: shoving will be dealt with in the mechenical interactions part
-//			if( ! Simulator.isChemostat )
-//				shoveAllLocated(15);
+			if( ! Simulator.isChemostat )
+				shoveAllLocated(15);
 			
 		}
 		
@@ -584,12 +617,31 @@ public class AgentContainer
 	 */
 	public void shoveAllLocated(int maxShoveIter)
 	{
-		int nMoved;
+		int nMoved=0;
 		shovLimit = Math.max(1, (int) (getNumberOfAgents() * SHOVEFRACTION));
 		shovIter = 0;
-		do 
+		
+		//rebuilt tree
+		agentTree.clear();
+		for(SpecialisedAgent a: agentList) {
+			if (a instanceof LocatedAgent) {
+				agentTree.insert(((LocatedAgent) a).getBoundingBoxCoord(),
+							((LocatedAgent) a).getBoundingBoxDimensions(), a);
+			}
+		}
+			do 
 		{
-			nMoved = performMove();
+			// merged performMove() method
+				Double deltaMove;
+				/*
+				 * Compute movement, deltaMove is relative movement.
+				 */
+				for ( SpecialisedAgent agent : agentTree.all() )
+				{
+					deltaMove = agent.interact(MUTUAL);
+					nMoved += (deltaMove >= 0.1  ? 1 : 0);
+				}
+
 		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
 		LogFile.writeLog(nMoved + "/" + getNumberOfAgents() + " after " + 
 											shovIter + " shove iterations");
@@ -616,20 +668,20 @@ public class AgentContainer
 	 *
 	 * @param isSynchro
 	 */
-	protected int performMove()
-	{
-		int nMoved = 0;
-		Double deltaMove;
-		/*
-		 * Compute movement, deltaMove is relative movement.
-		 */
-		for ( SpecialisedAgent agent : getAll() )
-		{
-			deltaMove = agent.interact(MUTUAL);
-			nMoved += (deltaMove >= 0.1  ? 1 : 0);
-		}
-		return nMoved;
-	}
+//	protected int performMove()
+//	{
+//		int nMoved = 0;
+//		Double deltaMove;
+//		/*
+//		 * Compute movement, deltaMove is relative movement.
+//		 */
+//		for ( SpecialisedAgent agent : getAll() )
+//		{
+//			deltaMove = agent.interact(MUTUAL);
+//			nMoved += (deltaMove >= 0.1  ? 1 : 0);
+//		}
+//		return nMoved;
+//	}
 
 
 	/**

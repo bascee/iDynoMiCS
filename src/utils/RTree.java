@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import simulator.agent.SpecialisedAgent;
+
 
 /**
  * Implementation of an arbitrary-dimension RTree. Based on R-Trees: A Dynamic
@@ -524,6 +526,17 @@ public class RTree<T>
       adjustTree(l, null);
     }
   }
+  
+  public void insert(double[] boundingBoxCoord, double[] boundingBoxDimensions,
+			T entry) {
+		float[] coords = new float[boundingBoxCoord.length];
+		float[] dimensions = new float[boundingBoxDimensions.length];
+		for (int i=0; i<boundingBoxCoord.length; i++) {
+			coords[i] = (float) boundingBoxCoord[i];
+			dimensions[i] = (float) boundingBoxDimensions[i];
+		}
+		insert(coords, dimensions, entry);
+	}
 
   /**
    * Convenience method for inserting a point
@@ -934,6 +947,17 @@ public class RTree<T>
       this.leaf = leaf;
       children = new LinkedList<Node>();
     }
+    
+    private double distance(float[] point) {
+    	float[] d = new float[point.length];
+    	float distsquared = 0.0f;
+    	for(int i = 0; i<=point.length; i++) {
+    		d[i] = Math.max(Math.max(coords[i] - point[i], point[i] - 
+    								coords[i] + dimensions[i]), 0.0f);
+    		distsquared += d[i]*d[i];
+    	}
+    	return Math.sqrt(distsquared);
+    }
 
   }
 
@@ -994,4 +1018,6 @@ public class RTree<T>
     }
     pw.println( "</div>" );
   }
+
+
 }

@@ -148,6 +148,25 @@ public class ContinuousVector implements Cloneable
 	}
 	
 	/**
+	 * Bas: added get double[]
+	 * @return vector as array of doubles
+	 */
+	public double[] get()
+	{
+		return new double[]{this.x,this.y,this.z};
+	}
+	
+	/**
+	 * Bas: special getter, work around sinse idyno stores everything as 3D
+	 * anyway
+	 * @return vector as array of doubles
+	 */
+	public double[] get2D()
+	{
+		return new double[]{this.x,this.y};
+	}
+	
+	/**
 	 * \brief Set all points in the vector to zero.
 	 */
 	public void reset()

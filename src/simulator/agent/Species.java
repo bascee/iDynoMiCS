@@ -746,7 +746,7 @@ public class Species implements Serializable
 
 			// Now go through each agent and determine if this is within that
 			// distance from an agent.
-			if(isAgentInContactWithAgentInBiofilm(index, distanceSeekingAgent))
+			if(currentSimulator.agentGrid.hasNearNeighbors(swimmingAgentPosition, distanceSeekingAgent))
 			{
 				// can return 1 as there is contact with an agent on the
 				// biofilm surface Set the coordinates as this final position.
@@ -805,21 +805,26 @@ public class Species implements Serializable
 	 * @param distanceSeekingAgent	The distance within which two cells are deemed to be in contact
 	 * @return	Boolean noting whether the agent is in contact with an agent in the biofilm
 	 */
-	public Boolean isAgentInContactWithAgentInBiofilm(int gridIndex, double distanceSeekingAgent)
-	{
-		LocatedGroup agentsInGrid = currentSimulator.agentGrid.
-												returnGroupInVoxel(gridIndex);
-		
-		Double dist = 0.0;
-		// Now iterate through each one. If we're close enough, move done.
-		// Shoving can then sort out distance between the two cells.
-		for (LocatedAgent aLoc : agentsInGrid.group)
-			dist = aLoc.getLocation().distance(swimmingAgentPosition); 
-			if ( dist <= distanceSeekingAgent )
-				return true;
-		// If not, we'll do another move.
-		return false;
-	}
+//	//Bas: this methods actually only checks if agent a has neigbors
+//	// within a set distance, moved to agentContainer (hasNearNeighbors)
+//	// FIXME: it seems strange to me swimmingAgentPosition is a field of 
+//	// species, consider restructering this process.
+//	public Boolean isAgentInContactWithAgentInBiofilm(int gridIndex, double distanceSeekingAgent)
+//	{
+//		
+//		LocatedGroup agentsInGrid = currentSimulator.agentGrid.
+//												returnGroupInVoxel(gridIndex);
+//		
+//		Double dist = 0.0;
+//		// Now iterate through each one. If we're close enough, move done.
+//		// Shoving can then sort out distance between the two cells.
+//		for (LocatedAgent aLoc : agentsInGrid.group)
+//			dist = aLoc.getLocation().distance(swimmingAgentPosition); 
+//			if ( dist <= distanceSeekingAgent )
+//				return true;
+//		// If not, we'll do another move.
+//		return false;
+//	}
 
 	/**
 	 * \brief Increases the population of this species when one agent is added

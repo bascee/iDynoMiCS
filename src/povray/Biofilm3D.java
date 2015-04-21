@@ -209,12 +209,15 @@ public class Biofilm3D implements Serializable
 	 */
 	protected void addCell(Double x, Double y, Double z, Double rad, int r, int g, int b) 
 	{
+		if (!rad.isNaN()) {
+			//FIXME
 		Color color = new Color(r, g, b);
 		_cells[_next] = new ParticleWithCapsule();
 		_cells[_next].setCenter(new ContinuousVector(x, y, z));
 		_cells[_next].setCoreRadius(rad);
 		_cells[_next].setColorCore(color);
 		_next++;
+		}
 	}
 
 	/**

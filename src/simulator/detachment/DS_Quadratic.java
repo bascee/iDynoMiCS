@@ -25,7 +25,7 @@ import utils.ExtraMath;
  * speed and the timestep, with the detachment speed calculated via one of the
  * given forms. This class captures the Quadratic detachment method.
  * 
- * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Joï¿½o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  */
 public class DS_Quadratic extends LevelSet
@@ -43,7 +43,7 @@ public class DS_Quadratic extends LevelSet
 	@Override
 	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim)
 	{
-		if ( super.getLocalDetachmentSpeed(aGroup, aSim) == Double.MAX_VALUE )
+		if ( aGroup.cc.x > maxTh )
 			return Double.MAX_VALUE;
 		return kDet*ExtraMath.sq(aGroup.cc.x);
 	}

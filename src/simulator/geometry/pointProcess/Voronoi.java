@@ -1,17 +1,17 @@
 package simulator.geometry.pointProcess;
 
 import java.util.Collections;
-import java.util.Comparator;
+//import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-import simulator.agent.LocatedGroup;
+//import simulator.agent.LocatedGroup;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.shape.IsShape;
-import utils.LogFile;
-import utils.ResultFile;
+//import utils.LogFile;
+//import utils.ResultFile;
 
 public class Voronoi
 {

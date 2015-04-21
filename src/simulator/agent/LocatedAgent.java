@@ -15,6 +15,7 @@ import idyno.SimTimer;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.awt.Color;
 
 import utils.ExtraMath;
@@ -514,12 +515,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		/*
 		 * Rebuild your neighbourhood.
 		 */
-		getPotentialShovers(getInteractDistance());
+		getPotentialShovers(getInteractDistance(),_location,_radius);
 		for ( LocatedAgent neighbour : _myNeighbors )
 			addPushMovement(neighbour, MUTUAL);
 		_myNeighbors.clear();
 		return move();
 	}
+
 
 	/**
 	 * \brief Mutual shoving : The movement by shoving of an agent is calculated based on the cell overlap and added to the agents movement vector.
@@ -681,6 +683,17 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	public void getPotentialShovers(Double radius)
 	{
 		_agentGrid.getPotentialShovers(_agentGridIndex, radius, _myNeighbors);
+	}
+	
+
+	private void getPotentialShovers(Double interactDistance,
+			ContinuousVector location, Double radius) {
+		ContinuousVector coord = new ContinuousVector(location.x-radius-interactDistance,
+				location.y-radius-interactDistance,location.z-radius-interactDistance);
+		List<SpecialisedAgent> tempAgentList = _agentGrid.boxSearch(coord,radius+interactDistance);
+		for (SpecialisedAgent a: tempAgentList)
+			_myNeighbors.add((LocatedAgent) a);
+		
 	}
 
 	/**
@@ -1338,6 +1351,31 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	public Domain getDomain()
 	{
 		return _species.domain;
+	}
+	
+	//Bas: added methods to return bounding boxes
+	public double[] getBoundingBoxCoord() {
+		int dim = 2;
+		if (_agentGrid.is3D)
+			dim = 3;
+		double[] coord = new double[dim];
+		for (int i = 0; i < dim; i++) {
+			coord[i] = ((_location.get()[i] )-_radius);
+		}
+		return coord;
+		 
+	}
+	
+	// this method only holds for spherical bodies!
+	public double[] getBoundingBoxDimensions() {
+		int dim = 2;
+		if (_agentGrid.is3D)
+			dim = 3;
+		double[] dimensions = new double[dim];
+		for (int i = 0; i < dim; i++) {
+			dimensions[i] = (_radius*2);
+		}
+		return dimensions;
 	}
 
 }
