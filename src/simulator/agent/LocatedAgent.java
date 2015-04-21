@@ -825,6 +825,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	@Override
 	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex)
+	//FIXME: Bas: method is misleading this method does not fit a mass but a 
+	// 'concentration' on a grid (mass / grid volume)
 	{
 		if (isDead)
 			return;
@@ -844,6 +846,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	@Override
 	public void fitMassOnGrid(SpatialGrid aSpG) 
+	//FIXME: Bas: method is misleading this method does not fit a mass but a 
+	// 'concentration' on a grid (mass / grid volume)
 	{
 		if (isDead)
 			return;

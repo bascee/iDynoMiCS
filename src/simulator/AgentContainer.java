@@ -54,14 +54,14 @@ public class AgentContainer
 	/**
 	 * Container for all agents (even the non located ones)
 	 */
-	public LinkedList<SpecialisedAgent> agentList;
+	private LinkedList<SpecialisedAgent> agentList;
 	
 	/**
 	 * Temporary containers used to store agents who will be added or removed.
 	 * Visibility public so that it can be accessed from LocatedGroup in
 	 * killAll().
 	 */
-	public LinkedList<SpecialisedAgent> _agentToKill = 
+	private LinkedList<SpecialisedAgent> _agentToKill = 
 										new LinkedList<SpecialisedAgent>();
 
 	/**
@@ -194,7 +194,8 @@ public class AgentContainer
 	 * @param agentTimeStep	The agent time step as specified in the XML protocol file
 	 * @throws Exception	Exception thrown should this data not be present in the protocol file
 	 */
-	public AgentContainer(Simulator aSimulator, XMLParser root, double agentTimeStep) throws Exception 
+	public AgentContainer(Simulator aSimulator, XMLParser root, 
+										double agentTimeStep) throws Exception 
 	{
 		// Read FINAL fields
 		SHOVEFRACTION = root.getParamDbl("shovingFraction");
@@ -272,6 +273,71 @@ public class AgentContainer
 
 
 	}
+	
+	/* ___________________ Helper methods ________________________________ */
+	
+	/** Bas
+	 * 
+	 */
+	public int getNumberOfAgents() {
+		return agentList.size();
+	}
+	
+	public boolean isEmpty() {
+		return agentList.isEmpty();
+	}
+	
+	public void removeAgent(SpecialisedAgent agentToKill) {
+		agentList.remove(agentToKill);
+	}
+	
+	public void addAgent(SpecialisedAgent agentToAdd) {
+		agentList.add(agentToAdd);
+	}
+	/** Bas
+	 * 
+	 * @return a single agent randomly picked from List
+	 * 
+	 */
+	public SpecialisedAgent getRandomAgent() {
+		return agentList.get(ExtraMath.getUniRandInt(agentList.size()));
+	}
+	
+	/** Bas
+	 * 
+	 * @return a list of agents randomly picked from List, without duplicates
+	 * 
+	 */
+	public List<SpecialisedAgent> getRandomAgentList(int i) {
+		LinkedList<SpecialisedAgent> randomAgentList = new LinkedList<SpecialisedAgent>();
+		Integer[] j = ExtraMath.getUniRandIntegers(agentList.size(),i,false);
+		for(int k = 0; k<i; k++)
+			randomAgentList.add(agentList.get(j[k]));
+		return randomAgentList;
+	}
+	
+	/** Bas
+	 * FIXME: method made as preparation for RTree implementation.
+	 * this is a temporary fix, we will work to a final solution later.
+	 * @return a List of all agents.
+	 * 
+	 */
+	public List<SpecialisedAgent> getAll() {
+		List<SpecialisedAgent> allAgents = agentList;
+		return allAgents;
+	}
+	
+	/** Bas - STOP don't shuffle agents unless you are absolutely sure you must
+	 * FIXME: method made as preparation for RTree implementation.
+	 * this is a temporary fix, we will work to a final solution later.
+	 * @return a List of all agents in random order.
+	 * 
+	 */
+	public List<SpecialisedAgent> getAllShuffled() {
+		List<SpecialisedAgent> shuffledList = agentList;
+		Collections.shuffle(shuffledList, ExtraMath.random);
+		return shuffledList;
+	}
 
 	/* ___________________ STEPPERS ________________________________ */
 
@@ -284,21 +350,20 @@ public class AgentContainer
 	 */
 	public void step(Simulator aSim)
 	{
-		SpecialisedAgent anAgent;
 		/* STEP AGENTS ________________________________________________ */
 		LogFile.chronoMessageIn();
-		Collections.shuffle(agentList, ExtraMath.random);
+		List<SpecialisedAgent> shuffledAgentList;
+		_agentToKill.clear();
 		
 		// Record values at the beginning
 		int nBirth = 0;
-		int nAgent = agentList.size();
+		int nAgent = getNumberOfAgents();
 		double dt = 0.0;
 		double elapsedTime = 0.0;
 		double globalTimeStep = SimTimer.getCurrentTimeStep();
 		// for the local time step, choose the value according to which is best
 		double localdt = Math.min(AGENTTIMESTEP,globalTimeStep);
 
-		double nAgent0 = agentList.size();
 		// Apply a shorter time step when visiting all the agents
 
 		while (elapsedTime < globalTimeStep)
@@ -316,12 +381,14 @@ public class AgentContainer
 			/* Step all the agents */
 			SimTimer.setCurrentTimeStep(dt);
 
-			// Bypass agent movement in a chemostat.
-			if ( ! Simulator.isChemostat )
-				followPressure();
+//			// Bypass agent movement in a chemostat.
+//			if ( ! Simulator.isChemostat )
+//				followPressure();
 			
-			for ( int i = 0; i < agentList.size(); i++ )
-				agentList.get(i).step();
+			shuffledAgentList = getAllShuffled();
+			
+			for ( int i = 0; i < getNumberOfAgents(); i++ )
+				shuffledAgentList.get(i).step();
 			/*
 			 * TODO Rob 16Apr2015: Java is complaining about
 			 * "java.util.ConcurrentModificationException"
@@ -329,44 +396,45 @@ public class AgentContainer
 			for ( SpecialisedAgent agent : agentList )
 				agent.step();
 			*/
-			
-			Collections.shuffle(agentList, ExtraMath.random);
 
 			if ( Simulator.isChemostat )
 				agentFlushedAway(dt);
 
-
-			// Add and remove agents
-			nBirth += agentList.size() - nAgent;
-
+			//Bas: reverted back to using the build in method, agent to kill
+			// list is now kept until next step for proper reporting
+			removeAllDead();
+			
 			//sonia 26.04.2010
 			//commented out removeAllDead
 			// this call is now made at the end of the step in Simulator
 			//nDead += removeAllDead();
-			nAgent = agentList.size();
 
 			// NOW DEAL WITH DEATH IN THIS AGENT TIMESTEP
 			// REMOVE THESE FROM THE GRID IF DEAD
 			// MUST BE DONE SO THAT THESE DO NOT AFFECT SHOVING
-			for(SpecialisedAgent aDeathAgent: _agentToKill)
-			{
-				if (aDeathAgent.isDead) 
-				{
-					//nDead++;
-					// KA - removed the count here, as the count of dead cells was wrong - we were recounting these with every
-					// agent timestep. We should only be counting them at the simulation timestep
-					// However they need to remain in the _agentToKill list until this is emptied at the correct output period
-					agentList.remove(aDeathAgent);
-					removeLocated(aDeathAgent);
-				}
-			}
+			
+//			for(SpecialisedAgent aDeathAgent: _agentToKill)
+//			{
+//				if (aDeathAgent.isDead) 
+//				{
+//					//nDead++;
+//					// KA - removed the count here, as the count of dead cells was wrong - we were recounting these with every
+//					// agent timestep. We should only be counting them at the simulation timestep
+//					// However they need to remain in the _agentToKill list until this is emptied at the correct output period
+//					removeAgent(aDeathAgent);
+//					removeLocated(aDeathAgent);
+//				}
+//			}
 			
 			// Apply moderate overlap relaxation, unless this is a chemostat.
-			if( ! Simulator.isChemostat )
-				shoveAllLocated(15);
+//Bas: shoving will be dealt with in the mechenical interactions part
+//			if( ! Simulator.isChemostat )
+//				shoveAllLocated(15);
 			
 		}
-
+		
+		nBirth += getNumberOfAgents() - nAgent;
+		
 		SimTimer.setCurrentTimeStep(globalTimeStep);
 		
 		
@@ -406,7 +474,7 @@ public class AgentContainer
 			else
 				// KA - Check added after self-attachment, as it is possible that if the timestep is much less than the input rate, 
 				// the grid may contain no cells for the first few steps
-				if ( ! this.agentList.isEmpty() )
+				if ( ! isEmpty() )
 				{
 					try
 					{
@@ -429,13 +497,13 @@ public class AgentContainer
 			
 				
 		}
-		
+
 		// OUTPUT THE COUNT STATISTICS
-		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent0 + "/"
+		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent + "/"
 				+ _agentToKill.size() + "/" + nBirth);
 
-		
-		nAgent = agentList.size();
+		//FIXME Bas: is this really needed?
+		nAgent = getNumberOfAgents();
 		if (maxPopLimit > 0 && nAgent >= maxPopLimit)
 			aSim.continueRunning = false;
 	}
@@ -445,66 +513,66 @@ public class AgentContainer
 	 * \brief Compute pressure field and apply resulting advection movement to
 	 * affected agents.
 	 */
-	public void followPressure() 
-	{
-		DiffusionSolver solver = mySim.getSolver("pressure");
-		
-		// Find a solver for pressure field and use it
-		// don't use the pressure if it's not active
-		if ( solver == null || ! solver.isActive() )
-			return;
-		
-		LogFile.writeLog("Doing pressure calculations.");
-		
-		// get local timestep (which was set in the step() routine calling this one)
-		Double dt = SimTimer.getCurrentTimeStep();
-		
-		// Solve for pressure field
-		solver.initAndSolve();
-		_pressure = ((Solver_pressure) solver).getPressureGrid();
-		
-		// copy calculated pressure field to the solute list
-		// (allows easy output of pressure field)
-		mySim.getSolute("pressure").setGrid(_pressure.getGrid());
-
-		// Determine local advection speed
-		Double maxSpeed = 0.0;
-		for (LocatedGroup aGroup : _grid)
-		{
-			maxSpeed = Math.max(maxSpeed,
-								aGroup.computeMove(_pressure, AGENTTIMESTEP));
-		}
-		
-		// bvm 04.03.09: new method to address any high velocities:
-		// use smaller local timesteps to keep the movement under control
-		Double dtlocal = dt;
-		int itlocal = 1;
-		
-		while ( maxSpeed > this._res/dtlocal )
-		{
-			// if the move takes an agent farther than one grid element,
-			// apply scaling factor until move is within limit
-			dtlocal /= 10.0;
-			itlocal *= 10;
-		}
-		
-		if (itlocal > 1)
-		{
-			LogFile.writeLog("PRESSURE MOVEMENT HAS LOCAL TIMESTEP "
-					+dtlocal+" ("+itlocal+" iterations)");
-		}
-		
-		// scale movement vectors based on new, smaller timestep and apply
-		// the movement to each agent in each group
-		Double alpha = dtlocal/dt;
-		for (LocatedGroup aGroup : _grid)
-			aGroup.addMoveToAgents(alpha);
-		
-		// now apply the scaled agent movements to each agent
-		for (int i = 0; i < itlocal; ++i)
-			for ( SpecialisedAgent anAgent : agentList )
-				anAgent.move();
-	}	
+//	public void followPressure() 
+//	{
+//		DiffusionSolver solver = mySim.getSolver("pressure");
+//		
+//		// Find a solver for pressure field and use it
+//		// don't use the pressure if it's not active
+//		if ( solver == null || ! solver.isActive() )
+//			return;
+//		
+//		LogFile.writeLog("Doing pressure calculations.");
+//		
+//		// get local timestep (which was set in the step() routine calling this one)
+//		Double dt = SimTimer.getCurrentTimeStep();
+//		
+//		// Solve for pressure field
+//		solver.initAndSolve();
+//		_pressure = ((Solver_pressure) solver).getPressureGrid();
+//		
+//		// copy calculated pressure field to the solute list
+//		// (allows easy output of pressure field)
+//		mySim.getSolute("pressure").setGrid(_pressure.getGrid());
+//
+//		// Determine local advection speed
+//		Double maxSpeed = 0.0;
+//		for (LocatedGroup aGroup : _grid)
+//		{
+//			maxSpeed = Math.max(maxSpeed,
+//								aGroup.computeMove(_pressure, AGENTTIMESTEP));
+//		}
+//		
+//		// bvm 04.03.09: new method to address any high velocities:
+//		// use smaller local timesteps to keep the movement under control
+//		Double dtlocal = dt;
+//		int itlocal = 1;
+//		
+//		while ( maxSpeed > this._res/dtlocal )
+//		{
+//			// if the move takes an agent farther than one grid element,
+//			// apply scaling factor until move is within limit
+//			dtlocal /= 10.0;
+//			itlocal *= 10;
+//		}
+//		
+//		if (itlocal > 1)
+//		{
+//			LogFile.writeLog("PRESSURE MOVEMENT HAS LOCAL TIMESTEP "
+//					+dtlocal+" ("+itlocal+" iterations)");
+//		}
+//		
+//		// scale movement vectors based on new, smaller timestep and apply
+//		// the movement to each agent in each group
+//		Double alpha = dtlocal/dt;
+//		for (LocatedGroup aGroup : _grid)
+//			aGroup.addMoveToAgents(alpha);
+//		
+//		// now apply the scaled agent movements to each agent
+//		for (int i = 0; i < itlocal; ++i)
+//			for ( SpecialisedAgent anAgent : getAll() )
+//				anAgent.move();
+//	}	
 
 
 	/**
@@ -517,14 +585,14 @@ public class AgentContainer
 	public void shoveAllLocated(int maxShoveIter)
 	{
 		int nMoved;
-		shovLimit = Math.max(1, (int) (agentList.size() * SHOVEFRACTION));
+		shovLimit = Math.max(1, (int) (getNumberOfAgents() * SHOVEFRACTION));
 		shovIter = 0;
 		do 
 		{
 			nMoved = performMove();
 		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
-		LogFile.writeLog(nMoved + "/" + agentList.size() + " after " + shovIter
-				+ " shove iterations");
+		LogFile.writeLog(nMoved + "/" + getNumberOfAgents() + " after " + 
+											shovIter + " shove iterations");
 	}
 
 	/**
@@ -536,7 +604,8 @@ public class AgentContainer
 	{
 		if( ! Simulator.isChemostat )
 		{
-			Collections.shuffle(agentList, ExtraMath.random);
+
+			//FIXME Bas check for shuffle required
 			shoveAllLocated(5 * MAXITER);
 		}
 	}
@@ -554,7 +623,7 @@ public class AgentContainer
 		/*
 		 * Compute movement, deltaMove is relative movement.
 		 */
-		for ( SpecialisedAgent agent : agentList )
+		for ( SpecialisedAgent agent : getAll() )
 		{
 			deltaMove = agent.interact(MUTUAL);
 			nMoved += (deltaMove >= 0.1  ? 1 : 0);
@@ -575,6 +644,7 @@ public class AgentContainer
 	 */
 	protected void refreshGroupStatus()
 	{
+		//refresh group 'status' and biomass concentration
 		for ( LocatedGroup aLG : _grid )
 			aLG.refreshElement();
 	}
@@ -632,7 +702,7 @@ public class AgentContainer
 	public void registerBirth(SpecialisedAgent anAgent) 
 	{
 		// Add the agent to agentList
-		agentList.add(anAgent);
+		addAgent(anAgent);
 
 		// Add the agent on the grid
 		if (anAgent instanceof LocatedAgent)
@@ -688,7 +758,7 @@ public class AgentContainer
 			{
 				nDead++;
 				iter.remove();
-				agentList.remove(anAgent);
+				removeAgent(anAgent);
 				removeLocated(anAgent);
 			}
 		}
@@ -708,7 +778,8 @@ public class AgentContainer
 		agentList.removeAll(_agentToKill);
 		*/
 		
-		_agentToKill.clear();
+		//Bas: moved to start of step for proper report writing
+		//
 		return nDead;
 	}
 
@@ -727,8 +798,9 @@ public class AgentContainer
 	public void agentFlushedAway(Double agentTimeStep)
 	{
 		/*
-		 * After having shuffled the list (during the step()) with all the
-		 * agents we are now ready to kill agents according to the dilution
+		 * FIXME: clean up this method Note: this method now no longer needs shuffling.
+		 * 
+		 * kill agents according to the dilution
 		 * value read from the Bulk class.
 		 */
 		Dfactor = domain.getChemostat()._D;
@@ -736,7 +808,7 @@ public class AgentContainer
 		int agentsToDilute = 0;
 		if (EROSIONMETHOD)
 		{
-			Double temp = Dfactor*agentTimeStep*agentList.size() + tallyVariable;
+			Double temp = Dfactor*agentTimeStep*getNumberOfAgents() + tallyVariable;
 			agentsToDilute = temp.intValue();
 			tallyVariable = temp % 1;
 		}
@@ -749,20 +821,27 @@ public class AgentContainer
 			 * 
 			 * TODO Rob 16Mar2015: Make more robust.
 			 */
-			agentsToDilute = Math.max(agentList.size() - 1000, 0);
+			agentsToDilute = Math.max(getNumberOfAgents() - 1000, 0);
 		}
-		
-		for (SpecialisedAgent anAgent : agentList.subList(0, agentsToDilute))
+
+
+// Bas: cleaned: for (SpecialisedAgent anAgent : getAll().subList(0, agentsToDilute))
+		for (SpecialisedAgent anAgent : getRandomAgentList(agentsToDilute))
 		{
 			anAgent.isDead = true;
 			anAgent.death = "dilution";
 			anAgent.die(false);
+			registerDeath(anAgent);
 		}
 		
+		// FIXME Bas: now doing this the proper way: registerDeath(anAgent);
+		// NOTE this method was bypassing all agents from kill registry and 
+		// simply removing them.
 		// TODO Rob 13Mar2015: Simplify? agentList.removeAll(_agentToKill);
-		for ( SpecialisedAgent anAgent : agentList )
-			if ( anAgent.isDead )
-				agentList.remove(anAgent);
+//		for ( SpecialisedAgent anAgent : getAll() )
+//			if ( anAgent.isDead )
+//				removeAgent(anAgent);
+		
 	}
 	
 	/**
@@ -829,9 +908,11 @@ public class AgentContainer
 	 */
 	public void fitAgentMassOnGrid(SpatialGrid biomassGrid) 
 	{
-		for ( LocatedGroup aSquare : _grid )
-			for ( LocatedAgent aLoc : aSquare.group )
-				aLoc.fitMassOnGrid(biomassGrid);
+//		for ( LocatedGroup aSquare : _grid )
+//			for ( LocatedAgent aLoc : aSquare.group )
+		for ( SpecialisedAgent agent : getAll() )
+			if ( agent instanceof LocatedAgent ) 
+				agent.fitMassOnGrid(biomassGrid);
 	}
 
 	/**
@@ -845,9 +926,11 @@ public class AgentContainer
 	public void fitAgentVolumeRateOnGrid(SpatialGrid biomassGrid)
 	{
 		biomassGrid.resetToZero();
-		for (LocatedGroup aSquare : _grid)
-			for (LocatedAgent aLoc : aSquare.group)
-				aLoc.fitVolRateOnGrid(biomassGrid);
+//		for (LocatedGroup aSquare : _grid)
+//			for (LocatedAgent aLoc : aSquare.group)
+		for ( SpecialisedAgent agent : getAll() )
+			if ( agent instanceof LocatedAgent ) 
+				agent.fitVolRateOnGrid(biomassGrid);
 	}
 
 
@@ -884,7 +967,7 @@ public class AgentContainer
 			aSpeciesGrid.resetToZero();
 		
 		// Sum biomass concentrations
-		for (SpecialisedAgent anA : agentList)
+		for (SpecialisedAgent anA : getAll())
 			if (anA instanceof LocatedAgent)
 			{
 				aLoc = (LocatedAgent) anA;
@@ -922,6 +1005,7 @@ public class AgentContainer
 		 * Get the number of species in this simulation.
 		 */
 		int nSpecies = aSim.speciesList.size();
+
 		/*
 		 * Set up a buffer to hold information for each agent of these
 		 * species.
@@ -984,7 +1068,7 @@ public class AgentContainer
   		LocatedAgent aLoc;
   		MultiEpiBac anEpiBac;
  		int spIndex;
- 		for (SpecialisedAgent anAgent : agentList)
+ 		for (SpecialisedAgent anAgent : getAll())
  		{
  			spIndex = anAgent.getSpecies().speciesIndex;
  			spPop[spIndex]++;
@@ -1435,9 +1519,10 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Find the border points which go through a process of erosion (erosion and sloughing have changed the configuration)
-	 * 
-	 * Find the border points which go through a process of erosion (erosion and sloughing have changed the configuration)
+	 * \brief reduces the size of agents on the border with ratio*
+	 * Find the border points which go through a process of erosion 
+	 * (erosion and sloughing have changed the configuration)
+	 * FIXME: this method needs to leave
 	 * 
 	 */
 	public void shrinkOnBorder() 
@@ -1568,7 +1653,8 @@ public class AgentContainer
 			nDetach++;
 			detGroup.remove(aLoc);
 		}
-		System.out.println("******************************REMOVE ON BORDER**************************************");
+		System.out.println("******************************REMOVE ON BORDER*****"
+										+ "*********************************");
 		LogFile.writeLog("Eroding " + nDetach + " ("
 				+ ExtraMath.toString(mass, true) + "/"
 				+ ExtraMath.toString(tallyVariable, true) + " fg) from "

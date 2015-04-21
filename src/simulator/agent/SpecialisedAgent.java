@@ -11,8 +11,10 @@ package simulator.agent;
 
 import java.io.FileWriter;
 import java.io.IOException;
+
 import simulator.AgentContainer;
 import simulator.Simulator;
+import simulator.SpatialGrid;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -246,4 +248,14 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 		fr.write((_species.color.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 	}
+	
+	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex) { 
+	}
+	
+	public void fitMassOnGrid(SpatialGrid aSpG) { 
+	}
+	
+	public void fitVolRateOnGrid(SpatialGrid aSpG) {
+	}
+
 }

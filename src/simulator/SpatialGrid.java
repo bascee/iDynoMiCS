@@ -115,6 +115,22 @@ public class SpatialGrid implements Serializable
 	}
 	
 	/**
+	 * \brief Constructor for SpatialGrid that assumes only one voxel.
+	 * 
+	 * For use in chemostat simulations.
+	 * 
+	 * @param resolution
+	 */
+	public SpatialGrid(Double resolution)
+	{
+
+		_nI = _nJ = _nK = 1;
+		_reso = resolution;
+		// Create a padded grid.
+		initGrids();
+	}
+	
+	/**
 	 * \brief Default constructor for an empty 2D spatial grid
 	 * 
 	 * Sets the grid resolution and dimensions as provided in the simulation

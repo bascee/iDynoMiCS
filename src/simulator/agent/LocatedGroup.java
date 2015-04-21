@@ -294,8 +294,8 @@ public class LocatedGroup
 		for ( LocatedAgent aLoc : group )
 		{
 			aLoc.death = reason;
-			agentGrid._agentToKill.add(aLoc);
-			agentGrid.agentList.remove(aLoc);
+			agentGrid.registerDeath(aLoc);
+			agentGrid.removeAgent(aLoc);
 		}
 		group.clear();
 		if ( ! Simulator.isChemostat )

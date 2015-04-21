@@ -437,8 +437,7 @@ public class MultiEpiBac extends BactEPS
 	{
 		if ( Simulator.isChemostat )
 		{
-			int i = ExtraMath.getUniRandInt(_agentGrid.agentList.size());
-			SpecialisedAgent anAgent = _agentGrid.agentList.get(i);			
+			SpecialisedAgent anAgent = _agentGrid.getRandomAgent();			
 			if ( anAgent != this && anAgent instanceof MultiEpiBac)
 			{
 				_partner = (MultiEpiBac) anAgent;
