@@ -631,17 +631,7 @@ public class AgentContainer
 		}
 			do 
 		{
-			// merged performMove() method
-				Double deltaMove;
-				/*
-				 * Compute movement, deltaMove is relative movement.
-				 */
-				for ( SpecialisedAgent agent : agentTree.all() )
-				{
-					deltaMove = agent.interact(MUTUAL);
-					nMoved += (deltaMove >= 0.1  ? 1 : 0);
-				}
-
+			nMoved = performMove();
 		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
 		LogFile.writeLog(nMoved + "/" + getNumberOfAgents() + " after " + 
 											shovIter + " shove iterations");
@@ -668,20 +658,20 @@ public class AgentContainer
 	 *
 	 * @param isSynchro
 	 */
-//	protected int performMove()
-//	{
-//		int nMoved = 0;
-//		Double deltaMove;
-//		/*
-//		 * Compute movement, deltaMove is relative movement.
-//		 */
-//		for ( SpecialisedAgent agent : getAll() )
-//		{
-//			deltaMove = agent.interact(MUTUAL);
-//			nMoved += (deltaMove >= 0.1  ? 1 : 0);
-//		}
-//		return nMoved;
-//	}
+	protected int performMove()
+	{
+		int nMoved = 0;
+		Double deltaMove;
+		/*
+		 * Compute movement, deltaMove is relative movement.
+		 */
+		for ( SpecialisedAgent agent : getAll() )
+		{
+			deltaMove = agent.interact(MUTUAL);
+			nMoved += (deltaMove >= 0.1  ? 1 : 0);
+		}
+		return nMoved;
+	}
 
 
 	/**
