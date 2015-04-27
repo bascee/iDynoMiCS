@@ -14,6 +14,7 @@ import java.util.Arrays;
 import org.jdom.Element;
 
 import utils.ExtraMath;
+import utils.LogFile;
 import simulator.Simulator;
 import utils.XMLParser;
 
@@ -22,7 +23,7 @@ import utils.XMLParser;
  * 
  * Extends SpeciesParam, adding parameters used to simulate an agents involvement in a reaction
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dï¿½tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  *
@@ -108,6 +109,10 @@ public class ActiveParam extends SpeciesParam
 			}
 			particleDensity[particleIndex] = density;
 		}
+		for(double d: particleDensity)
+			if (! Double.isFinite(d) )
+				LogFile.writeLog("warning: invalid non Finite particleDensity");
+
 	}
 
 }

@@ -386,6 +386,7 @@ public class AgentContainer
 		/* STEP AGENTS ________________________________________________ */
 		LogFile.chronoMessageIn();
 		List<SpecialisedAgent> shuffledAgentList;
+		shuffledAgentList = getAllShuffled();
 		_agentToKill.clear();
 		
 		// Record values at the beginning
@@ -418,7 +419,7 @@ public class AgentContainer
 //			if ( ! Simulator.isChemostat )
 //				followPressure();
 			
-			shuffledAgentList = getAllShuffled();
+
 			
 			for ( int i = 0; i < getNumberOfAgents(); i++ )
 				shuffledAgentList.get(i).step();
@@ -461,8 +462,8 @@ public class AgentContainer
 			
 			// Apply moderate overlap relaxation, unless this is a chemostat.
 //Bas: shoving will be dealt with in the mechenical interactions part
-			if( ! Simulator.isChemostat )
-				shoveAllLocated(15);
+//			if( ! Simulator.isChemostat )
+//				shoveAllLocated(15);
 			
 		}
 		
@@ -507,7 +508,7 @@ public class AgentContainer
 			else
 				// KA - Check added after self-attachment, as it is possible that if the timestep is much less than the input rate, 
 				// the grid may contain no cells for the first few steps
-				if ( ! isEmpty() )
+				if ( ! this.getAll().isEmpty() )
 				{
 					try
 					{
@@ -534,6 +535,10 @@ public class AgentContainer
 		// OUTPUT THE COUNT STATISTICS
 		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent + "/"
 				+ _agentToKill.size() + "/" + nBirth);
+		
+		//FIXME: remove dead as a quick fix for agents that get pushed overboard
+		// before agents were kept in artificially because of grid for neighbor search i think... bugfixing
+		removeAllDead();
 
 		//FIXME Bas: is this really needed?
 		nAgent = getNumberOfAgents();
@@ -617,7 +622,7 @@ public class AgentContainer
 	 */
 	public void shoveAllLocated(int maxShoveIter)
 	{
-		int nMoved=0;
+		int nMoved;
 		shovLimit = Math.max(1, (int) (getNumberOfAgents() * SHOVEFRACTION));
 		shovIter = 0;
 		
@@ -820,8 +825,7 @@ public class AgentContainer
 		agentList.removeAll(_agentToKill);
 		*/
 		
-		//Bas: moved to start of step for proper report writing
-		//
+		_agentToKill.clear();
 		return nDead;
 	}
 
@@ -935,8 +939,10 @@ public class AgentContainer
 		{
 			LogFile.writeLogDebug("Agent location "+
 				anAgent.getLocation().toString()+" is not valid -> Killed");
-			//anAgent.death = "overBoard";
+			anAgent.death = "overBoard";
 			anAgent.die(false);
+			registerDeath(anAgent);
+			LogFile.writeLog("warning: agent overBoard");
 		}
 	}
 	

@@ -266,7 +266,7 @@ public abstract class LevelSet
 	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup,
 															Simulator aSim)
 	{
-		//FIXME: Bas planar biofilms really should not be hard coded, please 
+		//FIXME: Bas planar biofilms should not be hard coded, please 
 		// revert back to previous version.
 		if ( aGroup.cc.x > maxTh )
 		{

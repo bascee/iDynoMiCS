@@ -690,7 +690,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			ContinuousVector location, Double radius) {
 		ContinuousVector coord = new ContinuousVector(location.x-radius-interactDistance,
 				location.y-radius-interactDistance,location.z-radius-interactDistance);
-		List<SpecialisedAgent> tempAgentList = _agentGrid.boxSearch(coord,radius+interactDistance);
+		List<SpecialisedAgent> tempAgentList = _agentGrid.boxSearch(coord,(radius+interactDistance)*2);
 		for (SpecialisedAgent a: tempAgentList)
 			_myNeighbors.add((LocatedAgent) a);
 		

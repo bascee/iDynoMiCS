@@ -11,8 +11,10 @@ package povray;
 
 import java.awt.Color;
 import java.io.Serializable;
+
 import simulator.geometry.ContinuousVector;
 import simulator.agent.LocatedAgent;
+import utils.LogFile;
 
 /**
  * \brief Used by Povray3DScene to create a capsule object in a format that can be displayed graphically in POV-Ray output
@@ -211,6 +213,8 @@ public class ParticleWithCapsule implements Serializable
 
 		// bvm 27.1.2009: modified this output to use color definitions and
 		// textures rather than pigments
+		if (! Double.isFinite(_radiusCore) )
+		{ LogFile.writeLog("warning: invalid _radiusCore"); }
 		String core = "sphere {\n"
 			+ "\t "	+ center + "\n"
 			+ "\t "	+ _radiusCore + "\n"
@@ -218,6 +222,8 @@ public class ParticleWithCapsule implements Serializable
 			+ "}\n";
 
 		if (_hasCapsule) {
+			if (! Double.isFinite(_radiusCapsule) )
+			{ LogFile.writeLog("warning: invalid _radiusCapsule"); }
 			String capsule = "sphere {\n"
 				+ "\t " + center + "\n"
 				+ "\t " + _radiusCapsule + "\n"
