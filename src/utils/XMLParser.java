@@ -502,7 +502,7 @@ public class XMLParser implements Serializable
 	public Integer getChildAttrInt(String childName, String attrName) 
 	{
 		return stringToInteger(getChildAttrStr(childName, attrName));
-		}
+	}
 	
 	/**
 	 * \brief Return the Integer value of an attribute of the current localRoot
@@ -572,7 +572,7 @@ public class XMLParser implements Serializable
 	public Boolean getParamSuchBool(String paramName, String detailName)
 	{
 		return stringToBoolean(getParamSuch(paramName, detailName));
-		}
+	}
 	
 	/*************************************************************************
 	 * Reading Double values: if not present, return Double.NaN
@@ -629,7 +629,7 @@ public class XMLParser implements Serializable
 	public Double getChildAttrDbl(String childName, String attrName) 
 	{
 		return stringToDouble(getChildAttrStr(childName, attrName));
-		}
+	}
 	
 	/**
 	 * \brief Returns the double value assigned to an XML tag in the protocol
@@ -671,7 +671,7 @@ public class XMLParser implements Serializable
 	public Double getParamSuchDbl(String paramName, String detailName)
 	{
 		return stringToDouble(getParamSuch(paramName, detailName));
-		}
+	}
 	
 	/**
 	 * \brief Searches through the attributes of the XML tags of a given
@@ -710,7 +710,7 @@ public class XMLParser implements Serializable
 						String attrName, String attrValue, String attr2Name)
 	{
 		return stringToDouble(getChildSuchAttribute(childName, 
-						attrName, attrValue).getAttributeValue(attr2Name));
+				attrName, attrValue).getAttributeValue(attr2Name));
 	}
 	
 	/*************************************************************************

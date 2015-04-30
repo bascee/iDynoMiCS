@@ -405,7 +405,7 @@ public class Simulator
 			{
 				writeReport();
 				
-				//FIXME: Bas, handle dead agents by saving them in a seperate list.
+				//FIXME: Bas, update how dead agents are handled
 				//sonia 26.04.2010
 				//only remove the agents from the system after recording all the information about active
 				//and death/removed biomass
