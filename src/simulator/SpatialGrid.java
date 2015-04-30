@@ -570,6 +570,18 @@ public class SpatialGrid implements Serializable
 		if ( Simulator.isChemostat )
 			return grid[0][0][0];
 		if ( isValid(dc) ) 
+			//return grid[dc.i+1][dc.j+1][dc.k+1];
+			return grid[dc.i][dc.j][dc.k];
+		return Double.NaN;
+	}
+	
+	//FIXME Bas temp fix for boundary layer
+	public Double getValueAtBoundary(DiscreteVector dc)
+	{
+		if ( Simulator.isChemostat )
+			return grid[0][0][0];
+		if ( isValid(dc) ) 
+			//return grid[dc.i+1][dc.j+1][dc.k+1];
 			return grid[dc.i+1][dc.j+1][dc.k+1];
 		return Double.NaN;
 	}
@@ -583,7 +595,7 @@ public class SpatialGrid implements Serializable
 	 */
 	public Double getValueAt(ContinuousVector cC)
 	{
-		return getValueAt(getDiscreteCoordinates(cC));
+		return getValueAtBoundary(getDiscreteCoordinates(cC));
 	}
 	
 	/**

@@ -199,7 +199,7 @@ public class Solver_chemostat extends DiffusionSolver
 				allSolute[i] = mySim.soluteList[i];
 				allSolute[i].setAllValueAt(aBulk._bulkValue[i]);
 				// TODO Could we use myDomain as the last argument here?
-				allReac[i] = new SoluteGrid (1,1,1, myDomain._resolution,
+				allReac[i] = new SoluteGrid (myDomain._resolution,
 						mySim.soluteList[i].gridName, mySim.soluteList[i].getDomain());
 				allReac[i].resetToZero();
 			}

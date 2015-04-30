@@ -245,7 +245,7 @@ public class EpiBac extends BactEPS
 	public void buildNbh(Double nbhRadius)
 	{
 		// Manhattan perimeter
-		getPotentialShovers(nbhRadius);
+		getPotentialShovers(nbhRadius,_location,_radius);
 		// Now remove too far agents (apply circular perimeter)
 		LocatedAgent aLocAgent;
 		for (int iter = 0; iter < _myNeighbors.size(); iter++)

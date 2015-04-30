@@ -405,10 +405,11 @@ public class Simulator
 			{
 				writeReport();
 				
+				//FIXME: Bas, handle dead agents by saving them in a seperate list.
 				//sonia 26.04.2010
 				//only remove the agents from the system after recording all the information about active
 				//and death/removed biomass
-				//agentGrid.removeAllDead();
+				agentGrid.removeAllDead();
 			}	
 			/*
 			 * If this is an invComp simulation (default is false), stop if
@@ -1303,6 +1304,7 @@ public class Simulator
 			{
 				aDomain.refreshBioFilmGrids();
 				aDomain.getBiomass().writeReport(result[0], result[1]);
+				aDomain.getBoundaryLayer().writeReport(result[0], result[1]);
 			}
 
 			// KA AUGUST 2013

@@ -415,11 +415,9 @@ public class AgentContainer
 			/* Step all the agents */
 			SimTimer.setCurrentTimeStep(dt);
 
-//			// Bypass agent movement in a chemostat.
-//			if ( ! Simulator.isChemostat )
-//				followPressure();
-			
-
+			// Bypass agent movement in a chemostat.
+			if ( ! Simulator.isChemostat )
+				followPressure();
 			
 			for ( int i = 0; i < getNumberOfAgents(); i++ )
 				shuffledAgentList.get(i).step();
@@ -436,7 +434,7 @@ public class AgentContainer
 
 			//Bas: reverted back to using the build in method, agent to kill
 			// list is now kept until next step for proper reporting
-			removeAllDead();
+			//removeAllDead();
 			
 			//sonia 26.04.2010
 			//commented out removeAllDead
@@ -447,23 +445,24 @@ public class AgentContainer
 			// REMOVE THESE FROM THE GRID IF DEAD
 			// MUST BE DONE SO THAT THESE DO NOT AFFECT SHOVING
 			
-//			for(SpecialisedAgent aDeathAgent: _agentToKill)
-//			{
-//				if (aDeathAgent.isDead) 
-//				{
-//					//nDead++;
-//					// KA - removed the count here, as the count of dead cells was wrong - we were recounting these with every
-//					// agent timestep. We should only be counting them at the simulation timestep
-//					// However they need to remain in the _agentToKill list until this is emptied at the correct output period
-//					removeAgent(aDeathAgent);
-//					removeLocated(aDeathAgent);
-//				}
-//			}
+			for(SpecialisedAgent aDeathAgent: _agentToKill)
+			{
+				if (aDeathAgent.isDead) 
+				{
+					//nDead++;
+					// KA - removed the count here, as the count of dead cells was wrong - we were recounting these with every
+					// agent timestep. We should only be counting them at the simulation timestep
+					// However they need to remain in the _agentToKill list until this is emptied at the correct output period
+					removeAgent(aDeathAgent);
+					removeLocated(aDeathAgent);
+				}
+			}
 			
 			// Apply moderate overlap relaxation, unless this is a chemostat.
-//Bas: shoving will be dealt with in the mechenical interactions part
-//			if( ! Simulator.isChemostat )
-//				shoveAllLocated(15);
+			// Bas: shoving will be dealt with in the mechenical interactions part
+			// and should we shove a bit here and than shove some more later?
+			//			if( ! Simulator.isChemostat )
+			//				shoveAllLocated(15);
 			
 		}
 		
@@ -508,7 +507,7 @@ public class AgentContainer
 			else
 				// KA - Check added after self-attachment, as it is possible that if the timestep is much less than the input rate, 
 				// the grid may contain no cells for the first few steps
-				if ( ! this.getAll().isEmpty() )
+				if ( ! this.agentList.isEmpty() )
 				{
 					try
 					{
@@ -538,7 +537,7 @@ public class AgentContainer
 		
 		//FIXME: remove dead as a quick fix for agents that get pushed overboard
 		// before agents were kept in artificially because of grid for neighbor search i think... bugfixing
-		removeAllDead();
+		//removeAllDead();
 
 		//FIXME Bas: is this really needed?
 		nAgent = getNumberOfAgents();
@@ -551,66 +550,66 @@ public class AgentContainer
 	 * \brief Compute pressure field and apply resulting advection movement to
 	 * affected agents.
 	 */
-//	public void followPressure() 
-//	{
-//		DiffusionSolver solver = mySim.getSolver("pressure");
-//		
-//		// Find a solver for pressure field and use it
-//		// don't use the pressure if it's not active
-//		if ( solver == null || ! solver.isActive() )
-//			return;
-//		
-//		LogFile.writeLog("Doing pressure calculations.");
-//		
-//		// get local timestep (which was set in the step() routine calling this one)
-//		Double dt = SimTimer.getCurrentTimeStep();
-//		
-//		// Solve for pressure field
-//		solver.initAndSolve();
-//		_pressure = ((Solver_pressure) solver).getPressureGrid();
-//		
-//		// copy calculated pressure field to the solute list
-//		// (allows easy output of pressure field)
-//		mySim.getSolute("pressure").setGrid(_pressure.getGrid());
-//
-//		// Determine local advection speed
-//		Double maxSpeed = 0.0;
-//		for (LocatedGroup aGroup : _grid)
-//		{
-//			maxSpeed = Math.max(maxSpeed,
-//								aGroup.computeMove(_pressure, AGENTTIMESTEP));
-//		}
-//		
-//		// bvm 04.03.09: new method to address any high velocities:
-//		// use smaller local timesteps to keep the movement under control
-//		Double dtlocal = dt;
-//		int itlocal = 1;
-//		
-//		while ( maxSpeed > this._res/dtlocal )
-//		{
-//			// if the move takes an agent farther than one grid element,
-//			// apply scaling factor until move is within limit
-//			dtlocal /= 10.0;
-//			itlocal *= 10;
-//		}
-//		
-//		if (itlocal > 1)
-//		{
-//			LogFile.writeLog("PRESSURE MOVEMENT HAS LOCAL TIMESTEP "
-//					+dtlocal+" ("+itlocal+" iterations)");
-//		}
-//		
-//		// scale movement vectors based on new, smaller timestep and apply
-//		// the movement to each agent in each group
-//		Double alpha = dtlocal/dt;
-//		for (LocatedGroup aGroup : _grid)
-//			aGroup.addMoveToAgents(alpha);
-//		
-//		// now apply the scaled agent movements to each agent
-//		for (int i = 0; i < itlocal; ++i)
-//			for ( SpecialisedAgent anAgent : getAll() )
-//				anAgent.move();
-//	}	
+	public void followPressure() 
+	{
+		DiffusionSolver solver = mySim.getSolver("pressure");
+		
+		// Find a solver for pressure field and use it
+		// don't use the pressure if it's not active
+		if ( solver == null || ! solver.isActive() )
+			return;
+		
+		LogFile.writeLog("Doing pressure calculations.");
+		
+		// get local timestep (which was set in the step() routine calling this one)
+		Double dt = SimTimer.getCurrentTimeStep();
+		
+		// Solve for pressure field
+		solver.initAndSolve();
+		_pressure = ((Solver_pressure) solver).getPressureGrid();
+		
+		// copy calculated pressure field to the solute list
+		// (allows easy output of pressure field)
+		mySim.getSolute("pressure").setGrid(_pressure.getGrid());
+
+		// Determine local advection speed
+		Double maxSpeed = 0.0;
+		for (LocatedGroup aGroup : _grid)
+		{
+			maxSpeed = Math.max(maxSpeed,
+								aGroup.computeMove(_pressure, AGENTTIMESTEP));
+		}
+		
+		// bvm 04.03.09: new method to address any high velocities:
+		// use smaller local timesteps to keep the movement under control
+		Double dtlocal = dt;
+		int itlocal = 1;
+		
+		while ( maxSpeed > this._res/dtlocal )
+		{
+			// if the move takes an agent farther than one grid element,
+			// apply scaling factor until move is within limit
+			dtlocal /= 10.0;
+			itlocal *= 10;
+		}
+		
+		if (itlocal > 1)
+		{
+			LogFile.writeLog("PRESSURE MOVEMENT HAS LOCAL TIMESTEP "
+					+dtlocal+" ("+itlocal+" iterations)");
+		}
+		
+		// scale movement vectors based on new, smaller timestep and apply
+		// the movement to each agent in each group
+		Double alpha = dtlocal/dt;
+		for (LocatedGroup aGroup : _grid)
+			aGroup.addMoveToAgents(alpha);
+		
+		// now apply the scaled agent movements to each agent
+		for (int i = 0; i < itlocal; ++i)
+			for ( SpecialisedAgent anAgent : agentList )
+				anAgent.move();
+	}	
 
 
 	/**
@@ -626,6 +625,16 @@ public class AgentContainer
 		shovLimit = Math.max(1, (int) (getNumberOfAgents() * SHOVEFRACTION));
 		shovIter = 0;
 		
+			do 
+		{
+			refreshTree();
+			nMoved = performMove();
+		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
+		LogFile.writeLog(nMoved + "/" + getNumberOfAgents() + " after " + 
+											shovIter + " shove iterations");
+	}
+	
+	public void refreshTree() {
 		//rebuilt tree
 		agentTree.clear();
 		for(SpecialisedAgent a: agentList) {
@@ -634,12 +643,6 @@ public class AgentContainer
 							((LocatedAgent) a).getBoundingBoxDimensions(), a);
 			}
 		}
-			do 
-		{
-			nMoved = performMove();
-		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
-		LogFile.writeLog(nMoved + "/" + getNumberOfAgents() + " after " + 
-											shovIter + " shove iterations");
 	}
 
 	/**
@@ -652,7 +655,7 @@ public class AgentContainer
 		if( ! Simulator.isChemostat )
 		{
 
-			//FIXME Bas check for shuffle required
+			Collections.shuffle(agentList, ExtraMath.random);
 			shoveAllLocated(5 * MAXITER);
 		}
 	}

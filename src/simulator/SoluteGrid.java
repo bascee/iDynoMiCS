@@ -24,7 +24,7 @@ import simulator.geometry.boundaryConditions.AllBC;
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dï¿½tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  */
@@ -106,6 +106,17 @@ public class SoluteGrid extends SpatialGrid
 			value = aSim.world.getMaxBulkValue(soluteIndex);
 		setAllValueAt(value);
 	}
+	
+	/**
+	 * \brief Constructor used chemostat simulations (1 gridcell).
+	 * @param res	The width of each grid element (in micrometres)
+	 */	
+	public SoluteGrid(double res, String aName, Domain aDomain)
+	{
+		super(res);
+		gridName = aName;
+		_domain = aDomain;
+	}
 
 
 	/**
@@ -121,6 +132,7 @@ public class SoluteGrid extends SpatialGrid
 	public SoluteGrid(int nI, int nJ, int nK, double res) 
 	{
 		super(nI, nJ, nK, res);
+		
 	}
 
 	/**

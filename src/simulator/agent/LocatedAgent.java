@@ -686,8 +686,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	}
 	
 
-	private void getPotentialShovers(Double interactDistance,
+	public void getPotentialShovers(Double interactDistance,
 			ContinuousVector location, Double radius) {
+
 		ContinuousVector coord = new ContinuousVector(location.x-radius-interactDistance,
 				location.y-radius-interactDistance,location.z-radius-interactDistance);
 		List<SpecialisedAgent> tempAgentList = _agentGrid.boxSearch(coord,(radius+interactDistance)*2);
@@ -722,7 +723,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		/*
 		 * Find and count neighbours.
 		 */
-		getPotentialShovers(getInteractDistance());
+		getPotentialShovers(getInteractDistance(),_location,_radius);
 		int nNb = _myNeighbors.size();
 		/*
 		 * Loop through them, only re-appending them to the neighbour list

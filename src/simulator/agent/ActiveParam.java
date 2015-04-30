@@ -14,7 +14,6 @@ import java.util.Arrays;
 import org.jdom.Element;
 
 import utils.ExtraMath;
-import utils.LogFile;
 import simulator.Simulator;
 import utils.XMLParser;
 
@@ -109,10 +108,6 @@ public class ActiveParam extends SpeciesParam
 			}
 			particleDensity[particleIndex] = density;
 		}
-		for(double d: particleDensity)
-			if (! Double.isFinite(d) )
-				LogFile.writeLog("warning: invalid non Finite particleDensity");
-
 	}
 
 }

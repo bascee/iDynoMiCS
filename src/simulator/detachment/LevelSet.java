@@ -266,8 +266,8 @@ public abstract class LevelSet
 	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup,
 															Simulator aSim)
 	{
-		//FIXME: Bas planar biofilms should not be hard coded, please 
-		// revert back to previous version.
+		//FIXME: Bas I think it is preferable not to assume planar biofilms
+		// this may result in mistakes
 		if ( aGroup.cc.x > maxTh )
 		{
 			if ( _endSimWhenMaxThCrossed )
@@ -318,6 +318,9 @@ public abstract class LevelSet
 		 */
 		if ( tX.isInfinite() && tY.isInfinite() && tZ.isInfinite() )
 			return Double.POSITIVE_INFINITY;
+		Double dSpeed = getLocalDetachmentSpeed(aGroup, aSim);
+		if ( dSpeed == 0.0 )
+			return Double.POSITIVE_INFINITY;
 		/*
 		 * Compute the solution for all possible combinations and choose the
 		 * maximum value among the valid solutions.
@@ -331,8 +334,7 @@ public abstract class LevelSet
 				for (Double fk : Arrays.asList(tZ, Double.POSITIVE_INFINITY) )
 				{
 					// Get the root of this quadratic.
-					tmp = computeRoot(fi, fj, fk,
-									getLocalDetachmentSpeed(aGroup, aSim));
+					tmp = computeRoot(fi, fj, fk, dSpeed);
 					/*
 					 * If tmp is a number, compute maximum for approximate
 					 * solution, else keep approximate solution.
