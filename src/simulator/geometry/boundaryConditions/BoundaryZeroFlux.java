@@ -74,7 +74,7 @@ public class BoundaryZeroFlux  extends ExternalBoundary
 		 * outside the domain.
 		 */
 		while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid)) 
-			aSoluteGrid.setValueAt(aSoluteGrid.getValueAtBoundary(dcIn), dcOut);
+			aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
 	}
 	
 	/**

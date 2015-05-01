@@ -21,7 +21,6 @@ import simulator.detachment.*;
 import simulator.diffusionSolver.DiffusionSolver;
 import simulator.diffusionSolver.Solver_pressure;
 import simulator.geometry.*;
-import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.SpatialGrid;
 import utils.ResultFile;
 import utils.XMLParser;
@@ -364,7 +363,7 @@ public class AgentContainer
 		return shuffledList;
 	}
 	
-	public List<SpecialisedAgent> boxSearch(ContinuousVector coords, double dimensions) {
+	public List<SpecialisedAgent> neighborhoodSearch(ContinuousVector coords, double dimensions) {
 		if(is3D)
 			return agentTree.search(helperMethods.doubleToFloatArray(coords.get()), helperMethods.filledFloatArray((float) (dimensions),3));
 		return agentTree.search(helperMethods.doubleToFloatArray(coords.get2D()), helperMethods.filledFloatArray((float) (dimensions),2));

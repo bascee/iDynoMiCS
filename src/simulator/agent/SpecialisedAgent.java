@@ -26,7 +26,7 @@ import utils.XMLParser;
  * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  */
-public abstract class SpecialisedAgent extends Agent implements HasSpecies, Cloneable 
+public abstract class SpecialisedAgent extends Agent implements Cloneable 
 {
 	/**
 	 * Type of species that this agent is representing
@@ -116,7 +116,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * \brief Create a new agent with mutated parameters based on species
 	 * default values.
 	 */
-	@Override
+
 	public abstract void createNewAgent();
 
 	/**
@@ -125,7 +125,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * Implemented by classes that extend this class.
 	 */
-	@Override
+
 	public abstract SpecialisedAgent sendNewAgent() throws 
 												CloneNotSupportedException;
 	
@@ -178,7 +178,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * Returns the object containing a set of parameters associated with a particular agent (species)
 	 */
-	@Override
+
 	public SpeciesParam getSpeciesParam() 
 	{
 		return _speciesParam;
@@ -199,7 +199,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @param aSpecies	A species object to use as the progenitor.
 	 */
-	@Override
+
 	public void setSpecies(Species aSpecies) 
 	{
 		_species = aSpecies;

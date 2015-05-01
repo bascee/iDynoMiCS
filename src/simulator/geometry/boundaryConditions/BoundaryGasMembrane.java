@@ -162,7 +162,7 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 		{
 			// The membrane has the same behaviour than a zero-flux boundary
 			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
-				aSoluteGrid.setValueAt(aSoluteGrid.getValueAtBoundary(dcIn), dcOut);
+				aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
 		}
 	}
 	

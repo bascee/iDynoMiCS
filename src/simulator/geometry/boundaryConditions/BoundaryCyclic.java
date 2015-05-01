@@ -222,7 +222,7 @@ public class BoundaryCyclic extends ExternalBoundary
 			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
 			{
 				dcIn.add(translator);
-				aSoluteGrid.setValueAt(aSoluteGrid.getValueAtBoundary(dcIn), dcOut);
+				aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
 			}
 		}
 		else
@@ -237,9 +237,9 @@ public class BoundaryCyclic extends ExternalBoundary
 			 */
 			while ( _myShape.followBoundary(dcIn, dcOut, aSoluteGrid) )
 			{
-				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
+				aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
 				dcOut.add(translator);
-				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
+				aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
 			}
 		}
 	}

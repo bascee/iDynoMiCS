@@ -29,7 +29,7 @@ import utils.XMLParser;
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  *
  */
-public abstract class ActiveAgent extends SpecialisedAgent implements HasReaction {
+public abstract class ActiveAgent extends SpecialisedAgent {
 
 	// Parameters common to all agents of this class
 
@@ -458,7 +458,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param aReaction	The reaction to add to the list
 	 * @param useDefaultParam	Whether to use default reaction parameters or bespoke parameters have been specified in the protocol file
 	 */
-	@Override
 	public void addReaction(Reaction aReaction, Boolean useDefaultParam)
 	{
 		// Add the reaction to the list of known reaction
@@ -491,7 +490,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param useDefaultParam	Whether to use default reaction parameters or bespoke parameters have been specified in the protocol file
 	 * 
 	 */
-	@Override
 	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam)
 	{
 		addReaction(aReaction, useDefaultParam);
@@ -505,7 +503,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @param aPathway	The reaction to remove from the list
 	 */
-	@Override
 	public void removeReaction(Reaction aPathway) {
 		switchOffreaction(aPathway);
 		reactionKnown.remove(aPathway);
@@ -519,7 +516,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @param aPathway	The reaction to switch off
 	 */ 
-	@Override
 	public void switchOffreaction(Reaction aPathway) {
 		if (reactionActive.contains(aPathway.reactionIndex)) {
 			// need to remove using indexOf because the remove(object) version thinks
@@ -537,7 +533,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @param aReaction	The reaction to switch on
 	 */ 
-	@Override
 	public void switchOnReaction(Reaction aReaction) {
 		//		System.out.println("Turn it on? "+aReaction.reactionName);
 		if (!reactionActive.contains(aReaction.reactionIndex)) {

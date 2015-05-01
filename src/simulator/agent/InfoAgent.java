@@ -14,7 +14,7 @@ package simulator.agent;
 /**
  * \brief Abstract class used for declaring Episome and MultiEpisome objects.
  */
-public abstract class InfoAgent extends SpecialisedAgent implements HasSpecies
+public abstract class InfoAgent extends SpecialisedAgent
 {
 	/**
 	 * \brief Called at each time step of the simulation to compute agent

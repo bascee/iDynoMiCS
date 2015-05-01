@@ -501,9 +501,9 @@ public class SpatialGrid implements Serializable
 	{
 		// TODO 
 		if (extReso<=_reso)
-			return getValueAt(cC);
+			return getPaddedValueAt(cC);
 		else
-			return getValueAt(cC);
+			return getPaddedValueAt(cC);
 	}
 	
 	/**
@@ -565,29 +565,29 @@ public class SpatialGrid implements Serializable
 	 * whose value should be returned.
 	 * @return The double value at that location.
 	 */
-	public Double getValueAt(DiscreteVector dc)
+	public Double getPaddedValueAt(DiscreteVector dc)
 	{
 		if ( Simulator.isChemostat )
 			return grid[0][0][0];
 		if ( isValid(dc) ) 
-			//return grid[dc.i+1][dc.j+1][dc.k+1];
-			return grid[dc.i][dc.j][dc.k];
-		return Double.NaN;
-	}
-	
-	//FIXME Bas temp fix for boundary layer
-	public Double getValueAtBoundary(DiscreteVector dc)
-	{
-		if ( Simulator.isChemostat )
-			return grid[0][0][0];
-		if ( isValid(dc) ) 
-			//return grid[dc.i+1][dc.j+1][dc.k+1];
 			return grid[dc.i+1][dc.j+1][dc.k+1];
 		return Double.NaN;
 	}
 	
 	/**
-	 * \brief Return the value stored at the location given by the stated
+	 * \brief Return the value stored on the padded grid at the location given by the stated
+	 * continuous vector.
+	 * 
+	 * @param cC	ContinuousVector containing the grid location to return.
+	 * @return	Double value stored at that grid location.
+	 */
+	public Double getPaddedValueAt(ContinuousVector cC)
+	{
+		return getPaddedValueAt(getDiscreteCoordinates(cC));
+	}
+	
+	/**
+	 * \brief Return the value stored on grid at the location given by the stated
 	 * continuous vector.
 	 * 
 	 * @param cC	ContinuousVector containing the grid location to return.
@@ -595,7 +595,13 @@ public class SpatialGrid implements Serializable
 	 */
 	public Double getValueAt(ContinuousVector cC)
 	{
-		return getValueAtBoundary(getDiscreteCoordinates(cC));
+		DiscreteVector dc = getDiscreteCoordinates(cC);
+		return getValueAt(dc.i,dc.j,dc.k);
+	}
+	
+	public Double getValueAt(DiscreteVector dc)
+	{
+		return getValueAt(dc.i,dc.j,dc.k);
 	}
 	
 	/**
