@@ -523,7 +523,7 @@ public abstract class Reaction implements Serializable
 	 * @param concGrid	Solute concentration grid.
 	 * @return all the concentration seen by an agent on the default solute grid.
 	 */
-	public Double[] readConcentrationSeen(ActiveAgent anAgent, SoluteGrid[] concGrid)
+	public Double[] readConcentrationSeen(Agent anAgent, SoluteGrid[] concGrid)
 	{
 
 		Double[] out = ExtraMath.newDoubleArray(concGrid.length);
@@ -538,7 +538,7 @@ public abstract class Reaction implements Serializable
 		}
 		else
 		{
-			if (anAgent instanceof LocatedAgent) 
+			if (anAgent instanceof Agent) 
 			{
 				// The agent is a located agent, use the local concentration
 				for (int iGrid = 0; iGrid<_soluteList.length; iGrid++)

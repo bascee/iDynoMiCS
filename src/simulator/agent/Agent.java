@@ -15,6 +15,7 @@ import java.math.BigInteger;
 
 import idyno.SimTimer;
 import simulator.Simulator;
+import simulator.SpatialGrid;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -68,6 +69,12 @@ public abstract class Agent implements Cloneable
 	 * Time at which this agent was created.
 	 */
 	protected Double _birthday;
+
+	public boolean isDead;
+
+	public String death;
+
+
 	
 	/**
 	 * \brief Initialise an agent object, setting its time of creation and
@@ -123,7 +130,7 @@ public abstract class Agent implements Cloneable
 	public void makeKid() throws CloneNotSupportedException 
 	{
 
-		Agent anAgent = (Agent) this.clone();
+		this.clone();
 		// Now register the agent in the appropriate container
 		registerBirth();
 	}
@@ -258,5 +265,41 @@ public abstract class Agent implements Cloneable
 	public Double getBirthday()
 	{
 		return this._birthday;
+	}
+
+	public Double move() {
+		return null;
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double interact(boolean mUTUAL) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void die(boolean b) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void fitMassOnGrid(SpatialGrid biomassGrid) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void fitVolRateOnGrid(SpatialGrid biomassGrid) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Object getSpecies() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public int getSpeciesIndex() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

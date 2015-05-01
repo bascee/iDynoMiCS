@@ -240,7 +240,7 @@ public class Species implements Serializable
 		ContinuousVector cc = new ContinuousVector();
 
 		for (int i = 0; i < howMany; i++) 
-			if ( _progenitor instanceof LocatedAgent ) 
+			if ( _progenitor instanceof Agent ) 
 			{
 				// Set coordinates within the birth area - randomly
 				if( ! Simulator.isChemostat )					
@@ -289,7 +289,7 @@ public class Species implements Serializable
 		{
 			totalNumberOfInjectedAgents++;
 			
-			if (_progenitor instanceof LocatedAgent) 
+			if (_progenitor instanceof Agent) 
 			{
 				swimmingAgentPosition.reset();
 				
@@ -854,7 +854,7 @@ public class Species implements Serializable
 	 * @return a clone of the progenitor
 	 * @throws CloneNotSupportedException
 	 */
-	public SpecialisedAgent sendNewAgent() throws CloneNotSupportedException
+	public Agent sendNewAgent() throws CloneNotSupportedException
 	{
 		return _progenitor.sendNewAgent();
 	}

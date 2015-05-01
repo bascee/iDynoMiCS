@@ -126,7 +126,7 @@ public abstract class SpecialisedAgent extends Agent implements Cloneable
 	 * Implemented by classes that extend this class.
 	 */
 
-	public abstract SpecialisedAgent sendNewAgent() throws 
+	public abstract Agent sendNewAgent() throws 
 												CloneNotSupportedException;
 	
 	/**
@@ -192,6 +192,16 @@ public abstract class SpecialisedAgent extends Agent implements Cloneable
 	public Species getSpecies()
 	{
 		return _species;
+	}
+	
+	/**
+	 * \brief Returns the species object that is represented by this agent.
+	 * 
+	 * @return	Object of the Species class that this agent is representing.
+	 */
+	public int getSpeciesIndex()
+	{
+		return _species.speciesIndex;
 	}
 
 	/**

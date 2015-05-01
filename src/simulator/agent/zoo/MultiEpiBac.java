@@ -50,7 +50,7 @@ public class MultiEpiBac extends BactEPS
 	public Vector <String>  plasmidVector = new Vector <String>();
 	public static MultiEpiBac       _partner;
 
-	protected LocatedAgent localAgent;
+	protected Agent localAgent;
 
 	//sonia: counting conjugation events
 	//sonia: conjResult: only the donor cell will contain the information about the conjugation event: who was
@@ -437,7 +437,7 @@ public class MultiEpiBac extends BactEPS
 	{
 		if ( Simulator.isChemostat )
 		{
-			SpecialisedAgent anAgent = _agentGrid.getRandomAgent();			
+			Agent anAgent = _agentGrid.getRandomAgent();			
 			if ( anAgent != this && anAgent instanceof MultiEpiBac)
 			{
 				_partner = (MultiEpiBac) anAgent;

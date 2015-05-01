@@ -268,7 +268,7 @@ public abstract class ActiveAgent extends SpecialisedAgent {
 	{
 		try
 		{
-			ActiveAgent baby = (ActiveAgent) sendNewAgent();
+			Agent baby = (Agent) sendNewAgent();
 			// Register the baby in the pathway guilds.
 			baby.registerBirth();
 		}

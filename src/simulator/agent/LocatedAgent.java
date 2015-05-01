@@ -687,15 +687,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	
 
 	public void getPotentialShovers(Double interactDistance, ContinuousVector location, Double radius) {
-		List<SpecialisedAgent> tempAgentList = _agentGrid.neighborhoodSearch(
-			new ContinuousVector(location.x-radius-interactDistance,
-			location.y-radius-interactDistance,location.z-radius-interactDistance),
-			(radius+interactDistance)*2);
+		List<Agent> tempAgentList = _agentGrid.neighborhoodSearch(getSearchCoord(radius+interactDistance),(radius+interactDistance)*2);
+			
 		
-		for (SpecialisedAgent a: tempAgentList)
+		for (Agent a: tempAgentList)
 			_myNeighbors.add((LocatedAgent) a);
 		
 	}
+
 
 	/**
 	 * \brief Pick a random neighbour from the _myNeigbors collection.
@@ -703,7 +702,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @return	A randomly picked neighbour (LocatedAgent object) from the
 	 * list of neighbours.
 	 */
-	public LocatedAgent pickNeighbor()
+	public Agent pickNeighbor()
 	{
 		if (_myNeighbors.isEmpty())
 			return null;
@@ -1362,6 +1361,18 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		double[] coord = new double[dim];
 		for (int i = 0; i < dim; i++) {
 			coord[i] = ((_location.get()[i] )-_radius);
+		}
+		return coord;
+		 
+	}
+	
+	public double[] getSearchCoord(Double range) {
+		int dim = 2;
+		if (_agentGrid.is3D)
+			dim = 3;
+		double[] coord = new double[dim];
+		for (int i = 0; i < dim; i++) {
+			coord[i] = ((_location.get()[i] )-range);
 		}
 		return coord;
 		 

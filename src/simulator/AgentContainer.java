@@ -55,20 +55,20 @@ public class AgentContainer
 	/**
 	 * Container for all agents (even the non located ones)
 	 */
-	private LinkedList<SpecialisedAgent> agentList;
+	private LinkedList<Agent> agentList;
 	
 	/**
 	 * Tree for all located agents.
 	 */
-	private RTree<SpecialisedAgent> agentTree = new RTree<SpecialisedAgent>(5,2,2);
+	private RTree<Agent> agentTree = new RTree<Agent>(5,2,2);
 	
 	/**
 	 * Temporary containers used to store agents who will be added or removed.
 	 * Visibility public so that it can be accessed from LocatedGroup in
 	 * killAll().
 	 */
-	private LinkedList<SpecialisedAgent> _agentToKill = 
-										new LinkedList<SpecialisedAgent>();
+	private LinkedList<Agent> _agentToKill = 
+										new LinkedList<Agent>();
 
 	/**
 	 * Array of SpatialGrids - one for each species in the simulation
@@ -250,7 +250,7 @@ public class AgentContainer
 		domain = (Domain) aSimulator.world.getDomain(root.getParam("computationDomain"));
 		mySim = aSimulator;
 		
-		agentList = new LinkedList<SpecialisedAgent>();
+		agentList = new LinkedList<Agent>();
 		// Optimised the resolution of the grid used to sort located agents
 		checkGridSize(aSimulator, root);
 
@@ -293,11 +293,11 @@ public class AgentContainer
 		return agentList.isEmpty();
 	}
 	
-	public void removeAgent(SpecialisedAgent agentToKill) {
-		agentList.remove(agentToKill);
+	public void removeAgent(Agent aDeathAgent) {
+		agentList.remove(aDeathAgent);
 	}
 	
-	public void addAgent(SpecialisedAgent agentToAdd) {
+	public void addAgent(Agent agentToAdd) {
 		agentList.add(agentToAdd);
 	}
 	
@@ -323,7 +323,7 @@ public class AgentContainer
 	 * @return a single agent randomly picked from List
 	 * 
 	 */
-	public SpecialisedAgent getRandomAgent() {
+	public Agent getRandomAgent() {
 		return agentList.get(ExtraMath.getUniRandInt(agentList.size()));
 	}
 	
@@ -332,8 +332,8 @@ public class AgentContainer
 	 * @return a list of agents randomly picked from List, without duplicates
 	 * 
 	 */
-	public List<SpecialisedAgent> getRandomAgentList(int i) {
-		LinkedList<SpecialisedAgent> randomAgentList = new LinkedList<SpecialisedAgent>();
+	public List<Agent> getRandomAgentList(int i) {
+		LinkedList<Agent> randomAgentList = new LinkedList<Agent>();
 		Integer[] j = ExtraMath.getUniRandIntegers(agentList.size(),i,false);
 		for(int k = 0; k<i; k++)
 			randomAgentList.add(agentList.get(j[k]));
@@ -346,8 +346,8 @@ public class AgentContainer
 	 * @return a List of all agents.
 	 * 
 	 */
-	public List<SpecialisedAgent> getAll() {
-		List<SpecialisedAgent> allAgents = agentList;
+	public List<Agent> getAll() {
+		List<Agent> allAgents = agentList;
 		return allAgents;
 	}
 	
@@ -357,16 +357,17 @@ public class AgentContainer
 	 * @return a List of all agents in random order.
 	 * 
 	 */
-	public List<SpecialisedAgent> getAllShuffled() {
-		List<SpecialisedAgent> shuffledList = agentList;
+	public List<Agent> getAllShuffled() {
+		List<Agent> shuffledList = agentList;
 		Collections.shuffle(shuffledList, ExtraMath.random);
 		return shuffledList;
 	}
 	
-	public List<SpecialisedAgent> neighborhoodSearch(ContinuousVector coords, double dimensions) {
+	public List<Agent> neighborhoodSearch(double[] coords, double dimensions) {
+		
 		if(is3D)
-			return agentTree.search(helperMethods.doubleToFloatArray(coords.get()), helperMethods.filledFloatArray((float) (dimensions),3));
-		return agentTree.search(helperMethods.doubleToFloatArray(coords.get2D()), helperMethods.filledFloatArray((float) (dimensions),2));
+			return agentTree.search(helperMethods.doubleToFloatArray(coords), helperMethods.filledFloatArray((float) (dimensions),3));
+		return agentTree.search(helperMethods.doubleToFloatArray(coords), helperMethods.filledFloatArray((float) (dimensions),2));
 	}
 	
 	
@@ -384,7 +385,7 @@ public class AgentContainer
 	{
 		/* STEP AGENTS ________________________________________________ */
 		LogFile.chronoMessageIn();
-		List<SpecialisedAgent> shuffledAgentList;
+		List<Agent> shuffledAgentList;
 		shuffledAgentList = getAllShuffled();
 		_agentToKill.clear();
 		
@@ -444,7 +445,7 @@ public class AgentContainer
 			// REMOVE THESE FROM THE GRID IF DEAD
 			// MUST BE DONE SO THAT THESE DO NOT AFFECT SHOVING
 			
-			for(SpecialisedAgent aDeathAgent: _agentToKill)
+			for(Agent aDeathAgent: _agentToKill)
 			{
 				if (aDeathAgent.isDead) 
 				{
@@ -606,7 +607,7 @@ public class AgentContainer
 		
 		// now apply the scaled agent movements to each agent
 		for (int i = 0; i < itlocal; ++i)
-			for ( SpecialisedAgent anAgent : agentList )
+			for ( Agent anAgent : agentList )
 				anAgent.move();
 	}	
 
@@ -636,8 +637,8 @@ public class AgentContainer
 	public void refreshTree() {
 		//rebuilt tree
 		agentTree.clear();
-		for(SpecialisedAgent a: agentList) {
-			if (a instanceof LocatedAgent) {
+		for(Agent a: agentList) {
+			if (a instanceof Agent) {
 				agentTree.insert(((LocatedAgent) a).getBoundingBoxCoord(),
 							((LocatedAgent) a).getBoundingBoxDimensions(), a);
 			}
@@ -672,7 +673,7 @@ public class AgentContainer
 		/*
 		 * Compute movement, deltaMove is relative movement.
 		 */
-		for ( SpecialisedAgent agent : getAll() )
+		for ( Agent agent : getAll() )
 		{
 			deltaMove = agent.interact(MUTUAL);
 			nMoved += (deltaMove >= 0.1  ? 1 : 0);
@@ -748,13 +749,13 @@ public class AgentContainer
 	 * 
 	 * @param anAgent	New agent to add to the agent grid.
 	 */
-	public void registerBirth(SpecialisedAgent anAgent) 
+	public void registerBirth(Agent anAgent) 
 	{
 		// Add the agent to agentList
 		addAgent(anAgent);
 
 		// Add the agent on the grid
-		if (anAgent instanceof LocatedAgent)
+		if (anAgent instanceof Agent)
 		{
 			LocatedAgent aLoc = (LocatedAgent) anAgent;
 			try
@@ -779,7 +780,7 @@ public class AgentContainer
 	 * @param anAgent	SpecialisedAgent object that will be removed from the
 	 * simulation.
 	 */
-	public void registerDeath(SpecialisedAgent anAgent) 
+	public void registerDeath(Agent anAgent) 
 	{
 		if ( ! _agentToKill.contains(anAgent) )
 			_agentToKill.add(anAgent);
@@ -797,8 +798,8 @@ public class AgentContainer
 	public int removeAllDead()
 	{
 		int nDead = 0;
-		ListIterator<SpecialisedAgent> iter = _agentToKill.listIterator();
-		SpecialisedAgent anAgent;
+		ListIterator<Agent> iter = _agentToKill.listIterator();
+		Agent anAgent;
 
 		while (iter.hasNext())
 		{
@@ -874,7 +875,7 @@ public class AgentContainer
 
 
 // Bas: cleaned: for (SpecialisedAgent anAgent : getAll().subList(0, agentsToDilute))
-		for (SpecialisedAgent anAgent : getRandomAgentList(agentsToDilute))
+		for (Agent anAgent : getRandomAgentList(agentsToDilute))
 		{
 			anAgent.isDead = true;
 			anAgent.death = "dilution";
@@ -897,9 +898,9 @@ public class AgentContainer
 	 * 
 	 * @param anAgent	Agent to be removed from the grid.
 	 */
-	public void removeLocated(SpecialisedAgent anAgent)
+	public void removeLocated(Agent anAgent)
 	{
-		if (anAgent instanceof LocatedAgent)
+		if (anAgent instanceof Agent)
 		{
 			LocatedAgent aLoc = (LocatedAgent) anAgent;
 			int index = getIndexedPosition(aLoc.getLocation());
@@ -960,8 +961,8 @@ public class AgentContainer
 	{
 //		for ( LocatedGroup aSquare : _grid )
 //			for ( LocatedAgent aLoc : aSquare.group )
-		for ( SpecialisedAgent agent : getAll() )
-			if ( agent instanceof LocatedAgent ) 
+		for ( Agent agent : getAll() )
+			if ( agent instanceof Agent ) 
 				agent.fitMassOnGrid(biomassGrid);
 	}
 
@@ -978,8 +979,8 @@ public class AgentContainer
 		biomassGrid.resetToZero();
 //		for (LocatedGroup aSquare : _grid)
 //			for (LocatedAgent aLoc : aSquare.group)
-		for ( SpecialisedAgent agent : getAll() )
-			if ( agent instanceof LocatedAgent ) 
+		for ( Agent agent : getAll() )
+			if ( agent instanceof Agent ) 
 				agent.fitVolRateOnGrid(biomassGrid);
 	}
 
@@ -1017,8 +1018,8 @@ public class AgentContainer
 			aSpeciesGrid.resetToZero();
 		
 		// Sum biomass concentrations
-		for (SpecialisedAgent anA : getAll())
-			if (anA instanceof LocatedAgent)
+		for (Agent anA : getAll())
+			if (anA instanceof Agent)
 			{
 				aLoc = (LocatedAgent) anA;
 				aLoc.fitMassOnGrid(_speciesGrid[aLoc.speciesIndex]);
@@ -1118,9 +1119,9 @@ public class AgentContainer
   		LocatedAgent aLoc;
   		MultiEpiBac anEpiBac;
  		int spIndex;
- 		for (SpecialisedAgent anAgent : getAll())
+ 		for (Agent anAgent : getAll())
  		{
- 			spIndex = anAgent.getSpecies().speciesIndex;
+ 			spIndex = anAgent.getSpeciesIndex();
  			spPop[spIndex]++;
  			// Skip to the next agent if this one is dead
  			// TODO RC - do we really want to include dead agents in the
@@ -1130,7 +1131,7 @@ public class AgentContainer
  			
  			// TODO RC - why aren't we including the mass and growth rates
  			// of all ActiveAgents, only LocatedAgents?
- 			if (anAgent instanceof LocatedAgent)
+ 			if (anAgent instanceof Agent)
  			{
  				aLoc = (LocatedAgent) anAgent;	
  				spMass[spIndex] += aLoc.getTotalMass();
@@ -1308,14 +1309,14 @@ public class AgentContainer
 		LocatedAgent aLoc;
   		MultiEpiBac anEpiBac;
   		int spIndex;
-  		for (SpecialisedAgent anAgent : _agentToKill)
+  		for (Agent anAgent : _agentToKill)
   		{
-  		  	spIndex = anAgent.getSpecies().speciesIndex;
+  		  	spIndex = anAgent.getSpeciesIndex();
   		  	spPop[spIndex]++;
   		  	
   		  	// TODO RC - why aren't we including the mass and growth rates
   			// of all ActiveAgents, only LocatedAgents?
-  			if (anAgent instanceof LocatedAgent)
+  			if (anAgent instanceof Agent)
   			{
   				aLoc = (LocatedAgent) anAgent;
   				spMass[spIndex] += aLoc.getTotalMass();

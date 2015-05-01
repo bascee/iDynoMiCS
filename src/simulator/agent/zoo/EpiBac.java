@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+
 import org.jdom.Element;
 
 import idyno.SimTimer;
@@ -218,7 +219,7 @@ public class EpiBac extends BactEPS
 	 */
 	public boolean searchConjugation(Episome aPlasmid)
 	{
-		LocatedAgent aLoc;
+		Agent aLoc;
 		Boolean hasTransfered = false;
 		// Build a neighborhood including only Bacteria
 		buildNbh(aPlasmid.getPilusRange());

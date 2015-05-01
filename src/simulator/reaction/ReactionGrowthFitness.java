@@ -17,6 +17,7 @@ import org.jdom.Element;
 import Jama.Matrix;
 import simulator.Simulator;
 import simulator.agent.ActiveAgent;
+import simulator.agent.Agent;
 import simulator.agent.zoo.MultiEpiBac;
 import simulator.agent.zoo.MultiEpisomeParam;
 import simulator.reaction.kinetic.IsKineticFactor;
@@ -545,7 +546,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param anAgent
 	 */
 
-	public ArrayList<Double> setYield(ActiveAgent anAgent)
+	public ArrayList<Double> setYield(Agent anAgent)
 	{
 		Double initialCost, rateDec, basalCost, plCost, timeSpentInHost;
 		int plCopyNum;
