@@ -21,10 +21,9 @@ import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
 import simulator.agent.*;
-import simulator.reaction.Reaction;
 import simulator.Simulator;
 
-public class Episome extends InfoAgent
+public class Episome extends Agent
 {
 	protected EpiBac _host;
 	
@@ -39,9 +38,7 @@ public class Episome extends InfoAgent
 	protected Boolean _isRepressed = false;
 	public Boolean isHot = false;
 
-	public Reaction[] allReactions;
-	protected ArrayList<Integer> reactionActive;
-	protected ArrayList<Integer> reactionKnown;
+	
 
 	/* ____________________ CONSTRUCTOR _______________________________ */
 
@@ -92,8 +89,8 @@ public class Episome extends InfoAgent
 		// Initilaisation of the Located agent
 		// super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		// init();
-		_nCopy = getSpeciesParam().nCopy;
-		_pilusLength = getSpeciesParam().pilusLength;
+		_nCopy = getActiveParam().nCopy;
+		_pilusLength = getActiveParam().pilusLength;
 		int reacIndex;
 
 		allReactions = aSim.reactionList;
@@ -194,7 +191,7 @@ public class Episome extends InfoAgent
 	 */
 	public boolean isReadyToConjugate()
 	{
-		EpisomeParam param = getSpeciesParam();
+		EpisomeParam param = getActiveParam();
 		isHot = false;
 		
 		// not enough copys
@@ -243,7 +240,7 @@ public class Episome extends InfoAgent
 	 */
 	public void segregation(Episome aPlasmid)
 	{
-		if (ExtraMath.getUniRandDbl() > getSpeciesParam().lossProbability)
+		if (ExtraMath.getUniRandDbl() > getActiveParam().lossProbability)
 		{
 			_nCopy = 1;
 			aPlasmid._nCopy = 1;
@@ -256,7 +253,7 @@ public class Episome extends InfoAgent
 	}
 	
 	@Override
-	public EpisomeParam getSpeciesParam()
+	public EpisomeParam getActiveParam()
 	{
 		return (EpisomeParam) _speciesParam;
 	}
@@ -268,13 +265,13 @@ public class Episome extends InfoAgent
 
 	public void setDefaultCopyNumber()
 	{
-		_nCopy = getSpeciesParam().nCopy;
+		_nCopy = getActiveParam().nCopy;
 	}
 
 	public Boolean testProficiency()
 	{
 		Double alea = ExtraMath.getUniRandDbl();
-		return (alea <= getSpeciesParam().transferProficiency);
+		return (alea <= getActiveParam().transferProficiency);
 		
 		// previous (LAL) growth-dependence mechanism
 		//double prof = getSpeciesParam().transferProficiency;
@@ -285,8 +282,8 @@ public class Episome extends InfoAgent
 
 	public Boolean isCompatible(Episome aPlasmid)
 	{
-		return aPlasmid.getSpeciesParam().compatibilityMarker != this
-				.getSpeciesParam().compatibilityMarker;
+		return aPlasmid.getActiveParam().compatibilityMarker != this
+				.getActiveParam().compatibilityMarker;
 	}
 	
 	public int giveStatus()

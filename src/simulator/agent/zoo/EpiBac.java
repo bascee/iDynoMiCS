@@ -372,7 +372,7 @@ public class EpiBac extends BactEPS
 
 	
 	@Override
-	public EpiBacParam getSpeciesParam()
+	public EpiBacParam getActiveParam()
 	{
 		return (EpiBacParam) _speciesParam;
 	}
@@ -440,7 +440,7 @@ public class EpiBac extends BactEPS
 	@Override
 	public Color getColor()
 	{
-		EpiBacParam param = getSpeciesParam();
+		EpiBacParam param = getActiveParam();
 
 		// recipients have no plasmid
 		if (_plasmidHosted.size() == 0)
@@ -554,7 +554,7 @@ public class EpiBac extends BactEPS
 	@Override
 	public void writePOVColorDefinition(FileWriter fr) throws IOException
 	{
-		EpiBacParam param = getSpeciesParam();
+		EpiBacParam param = getActiveParam();
 
 		fr.write("#declare "+_species.speciesName+"_d = color rgb < ");
 		fr.write((param.dColor.getRed()) / 255.0 + " , ");

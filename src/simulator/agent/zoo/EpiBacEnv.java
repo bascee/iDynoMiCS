@@ -60,7 +60,7 @@ public void internalStep() {
 	
 	
 	@Override
-	public EpiBacEnvParam getSpeciesParam() {
+	public EpiBacEnvParam getActiveParam() {
 		return (EpiBacEnvParam) _speciesParam;
 	}
 	
@@ -78,7 +78,7 @@ public void internalStep() {
 		double rand = num.nextDouble();
 
 		
-		ArrayList<String> envSens = this.getSpeciesParam().envSensitivity;
+		ArrayList<String> envSens = this.getActiveParam().envSensitivity;
 		
 		//current environment set by the Deterministic version of FluctEnv
 		String currentEnv = FluctEnv.envStatus;
@@ -94,7 +94,7 @@ public void internalStep() {
 		}
 	
 		//retrieving variable values to kill the agent with a given probability
-		HashMap <String, Double> probDieMap = this.getSpeciesParam().envProbDie;
+		HashMap <String, Double> probDieMap = this.getActiveParam().envProbDie;
 		double probDie=0;
 		
 		if(isSensible){

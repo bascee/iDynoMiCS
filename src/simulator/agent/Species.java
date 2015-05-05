@@ -180,14 +180,14 @@ public class Species implements Serializable
 		_progenitor = (Agent) aSpRoot.instanceCreator("simulator.agent.zoo");
 		// Get parameters for this progenitor object from the protocol file if present
 
-		_progenitor.getSpeciesParam().init(aSimulator, aSpRoot, speciesDefaults);
+		_progenitor.getActiveParam().init(aSimulator, aSpRoot, speciesDefaults);
 		
 		_progenitor.setSpecies(this);
 
 		// Set the computational domain this species is associated with
 		// KA Aug 13 - changed as this may be a default
 		domain = aSimulator.world.getDomain(
-				_progenitor.getSpeciesParam().getSpeciesParameterString("computationDomain", aSpRoot, speciesDefaults));
+				_progenitor.getActiveParam().getSpeciesParameterString("computationDomain", aSpRoot, speciesDefaults));
 	}
 
 	/**
@@ -892,7 +892,7 @@ public class Species implements Serializable
 	 */
 	public SpeciesParam getSpeciesParam() 
 	{
-		return _progenitor.getSpeciesParam();
+		return _progenitor.getActiveParam();
 	}
 
 	/**
@@ -916,7 +916,7 @@ public class Species implements Serializable
 	 */
 	public LocatedParam getLocatedParam()
 	{
-		return ((LocatedAgent) _progenitor).getSpeciesParam();
+		return ((LocatedAgent) _progenitor).getActiveParam();
 	}
 	
 	/**

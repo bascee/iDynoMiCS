@@ -19,10 +19,9 @@ import utils.XMLParser;
 import utils.ExtraMath;
 import idyno.SimTimer;
 import simulator.agent.*;
-import simulator.reaction.Reaction;
 import simulator.Simulator;
 
-public class MultiEpisome extends InfoAgent
+public class MultiEpisome extends Agent
 {
 	//sonia:I've changed it to public
 	public MultiEpiBac              _host;
@@ -42,10 +41,6 @@ public class MultiEpisome extends InfoAgent
 	private boolean             _conjugationIsOff = false;
 	public boolean              isHot             = false;
 
-	public Reaction[]            allReactions;
-	protected ArrayList<Integer> reactionActive;
-	protected ArrayList<Integer> reactionKnown;
-	
 	//sonia 11.10.2010 array containing list of potential nbh to be screened during the hgt time step
 	protected LinkedList<LocatedAgent> nbhList = new LinkedList<LocatedAgent>();
 
@@ -103,8 +98,8 @@ public class MultiEpisome extends InfoAgent
 		// super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		// init();
 		
-		_nCopy = getSpeciesParam().nCopy;
-		_pilusLength = getSpeciesParam().pilusLength;
+		_nCopy = getActiveParam().nCopy;
+		_pilusLength = getActiveParam().pilusLength;
 		int reacIndex;
 		
 		allReactions = aSim.reactionList;
@@ -229,7 +224,7 @@ public class MultiEpisome extends InfoAgent
 	 */
 	public void segregation(MultiEpisome aPlasmid)
 	{
-		if ( ExtraMath.getUniRandDbl() > getSpeciesParam().lossProbability )
+		if ( ExtraMath.getUniRandDbl() > getActiveParam().lossProbability )
 			_nCopy = 1;
 		else
 			_nCopy = 0;
@@ -240,7 +235,7 @@ public class MultiEpisome extends InfoAgent
 	 * 
 	 */
 	@Override
-	public MultiEpisomeParam getSpeciesParam()
+	public MultiEpisomeParam getActiveParam()
 	{
 		return (MultiEpisomeParam) _speciesParam;
 	}

@@ -60,7 +60,7 @@ public abstract class Reaction implements Serializable
 	/**
 	 * Agents hosting this process
 	 */
-	protected LinkedList<ActiveAgent> _guild = new LinkedList<ActiveAgent>();
+	protected LinkedList<Agent> _guild = new LinkedList<Agent>();
 
 	/**
 	 * Local copy of the solute grids used in this simulation. Used for efficiency purposes 
@@ -217,7 +217,7 @@ public abstract class Reaction implements Serializable
 	 * @param xmlRoot	The XML object containing the definition of one reaction in the protocol file
 	 * @see Simulator.createReaction()
 	 */
-	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser xmlRoot)
+	public void initFromAgent(Agent anAgent, Simulator aSim, XMLParser xmlRoot)
 	{
 		Double yield;
 		// Populate yield for solutes __________________________________
@@ -373,10 +373,10 @@ public abstract class Reaction implements Serializable
 	 *
 	 * Register an agent among the guild of this pathway
 	 * 
-	 * @param anAgent	ActiveAgent to register
+	 * @param agent	ActiveAgent to register
 	 */
-	public void addAgent(ActiveAgent anAgent) {
-		_guild.add(anAgent);
+	public void addAgent(Agent agent) {
+		_guild.add(agent);
 	}
 
 	/**
@@ -384,10 +384,10 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * Remove an agent among the guild of this pathway
 	 * 
-	 * @param anAgent	ActiveAgent to remove
+	 * @param agent	ActiveAgent to remove
 	 */
-	public void removeAgent(ActiveAgent anAgent) {
-		_guild.remove(anAgent);
+	public void removeAgent(Agent agent) {
+		_guild.remove(agent);
 	}
 
 	/**
@@ -398,7 +398,7 @@ public abstract class Reaction implements Serializable
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The marginal growth rate
 	 */
-	public abstract Double computeMassGrowthRate(ActiveAgent anAgent);
+	public abstract Double computeMassGrowthRate(Agent anAgent);
 	
 	/**
 	 * \brief Compute the specific growth rate
@@ -408,7 +408,7 @@ public abstract class Reaction implements Serializable
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The specific growth rate
 	 */
-	public abstract Double computeSpecGrowthRate(ActiveAgent anAgent);
+	public abstract Double computeSpecGrowthRate(Agent anAgent);
 
 	/**
 	 * \brief Return the specific reaction rate for a given agent
@@ -419,7 +419,7 @@ public abstract class Reaction implements Serializable
 	 * @see ActiveAgent.grow()
 	 * @see Episome.computeRate(EpiBac)
 	 */
-	public abstract void computeSpecificGrowthRate(ActiveAgent anAgent);
+	public abstract void computeSpecificGrowthRate(Agent anAgent);
 
 	/**
 	 * \brief Compute specific growth rate in function to concentrations sent
@@ -429,7 +429,7 @@ public abstract class Reaction implements Serializable
 	 * @param s	Array of solute concentration
 	 * @param anAgent	Parameters used are those defined for THIS agent
 	 */
-	public abstract void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent);
+	public abstract void computeSpecificGrowthRate(Double[] s, Agent anAgent);
 
 	/**
 	 * \brief Compute specific growth rate in function of concentrations sent Parameters used are those defined for the reaction.
@@ -508,7 +508,7 @@ public abstract class Reaction implements Serializable
 	 */
 	public void fitAgentMassOnGrid(SpatialGrid aSpG)
 	{
-		for (ActiveAgent anActiveAgent : _guild)
+		for (Agent anActiveAgent : _guild)
 		{
 			if ( anActiveAgent.isDead )
 				continue;
@@ -598,7 +598,7 @@ public abstract class Reaction implements Serializable
 	public void fitGuildOnGrid()
 	{
 		_reacGrid.resetToZero();
-		for (ActiveAgent anAgent : _guild)
+		for (Agent anAgent : _guild)
 		{
 			if ( anAgent.isDead )
 				continue;
@@ -680,7 +680,7 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * @return	LinkedList containing all agents in the guild
 	 */
-	public LinkedList<ActiveAgent> getGuild()
+	public LinkedList<Agent> getGuild()
 	{
 		return _guild;
 	}

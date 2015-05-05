@@ -44,7 +44,7 @@ import simulator.geometry.boundaryConditions.BoundaryCyclic;
  * @author Rob Clegg (rjc096@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  */
-public abstract class LocatedAgent extends ActiveAgent implements Cloneable 
+public abstract class LocatedAgent extends Agent implements Cloneable 
 {
 	/**
 	 * Temporary store of the new location this cell will move to.
@@ -972,7 +972,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	{
 		_volume = 0.0;
 		for (int i = 0; i<particleMass.length; i++) {
-			_volume += particleMass[i]/getSpeciesParam().particleDensity[i];
+			_volume += particleMass[i]/getActiveParam().particleDensity[i];
 		}
 		_totalVolume = _volume;
 	}
@@ -1032,7 +1032,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @return LocatedParam object of parameters associated with this agent.
 	 */
 	@Override
-	public LocatedParam getSpeciesParam()
+	public LocatedParam getActiveParam()
 	{
 		return (LocatedParam) _speciesParam;
 	}
@@ -1149,8 +1149,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public Double getBabyMassFrac()
 	{
-		return ExtraMath.deviateFromCV(getSpeciesParam().babyMassFrac,
-											getSpeciesParam().babyMassFracCV);
+		return ExtraMath.deviateFromCV(getActiveParam().babyMassFrac,
+											getActiveParam().babyMassFracCV);
 	}
 	
 	/**
@@ -1161,8 +1161,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public Double getDivRadius()
 	{
-		return ExtraMath.deviateFromCV(getSpeciesParam().divRadius,
-											getSpeciesParam().divRadiusCV);
+		return ExtraMath.deviateFromCV(getActiveParam().divRadius,
+											getActiveParam().divRadiusCV);
 	}
 	
 	/**
@@ -1172,8 +1172,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public Double getDeathRadius()
 	{
-		return ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
-											getSpeciesParam().deathRadiusCV);
+		return ExtraMath.deviateFromCV(getActiveParam().deathRadius,
+											getActiveParam().deathRadiusCV);
 	}
 	
 	/**

@@ -200,17 +200,17 @@ public class BactAdaptable extends BactEPS
 	public void respondToConditions()
 	{
 		Double localValue = 0.0;
-		int sc = getSpeciesParam().switchControlIndex;
-		Double switchValue = getSpeciesParam().switchValue;
+		int sc = getActiveParam().switchControlIndex;
+		Double switchValue = getActiveParam().switchValue;
 		Boolean switchLessThan = 
-						getSpeciesParam().switchCondition.equals("lessThan");
+						getActiveParam().switchCondition.equals("lessThan");
 		/*
 		 * If the switch type is solute, find the local concentration.
 		 * Otherwise, find the relevant biomass.
 		 */
-		if ( getSpeciesParam().switchType.equals("solute"))
+		if ( getActiveParam().switchType.equals("solute"))
 		{
-			SoluteGrid sg = getSpeciesParam()._soluteList[sc];
+			SoluteGrid sg = getActiveParam()._soluteList[sc];
 			if ( Simulator.isChemostat)
 			{
 				localValue = _agentGrid.domain.getChemostat().
@@ -341,12 +341,12 @@ public class BactAdaptable extends BactEPS
 		/*
 		 * Turn off the reactions that were previously on.
 		 */
-		for ( int aReac : getSpeciesParam().offStateReactions )
+		for ( int aReac : getActiveParam().offStateReactions )
 			switchOffreaction(allReactions[aReac]);
 		/*
 		 * Turn on the reactions that should now be on.
 		 */
-		for ( int aReac : getSpeciesParam().onStateReactions )
+		for ( int aReac : getActiveParam().onStateReactions )
 			switchOnReaction(allReactions[aReac]);
 		/*
 		 * 
@@ -363,12 +363,12 @@ public class BactAdaptable extends BactEPS
 		/*
 		 * Turn off the reactions that were previously on.
 		 */
-		for ( int aReac : getSpeciesParam().onStateReactions )
+		for ( int aReac : getActiveParam().onStateReactions )
 			switchOffreaction(allReactions[aReac]);
 		/*
 		 * Turn on the reactions that should now be on.
 		 */
-		for ( int aReac : getSpeciesParam().offStateReactions )
+		for ( int aReac : getActiveParam().offStateReactions )
 			switchOnReaction(allReactions[aReac]);
 		/*
 		 * 
@@ -422,7 +422,7 @@ public class BactAdaptable extends BactEPS
 			 * If it's on already, need to consider off-state lag.
 			 */
 			stateTime -= timeOfRequestToSwitchOff;
-			lagTime = getSpeciesParam().lagSwitchOff;
+			lagTime = getActiveParam().lagSwitchOff;
 		}
 		else
 		{
@@ -430,7 +430,7 @@ public class BactAdaptable extends BactEPS
 			 * If it's on already, need to consider on-state lag.
 			 */
 			stateTime -= timeOfRequestToSwitchOn;
-			lagTime = getSpeciesParam().lagSwitchOn;
+			lagTime = getActiveParam().lagSwitchOn;
 		}
 		return stateTime >= lagTime;
 	}
@@ -443,7 +443,7 @@ public class BactAdaptable extends BactEPS
 	 * associated with this species.
 	 */
 	@Override
-	public BactAdaptableParam getSpeciesParam() 
+	public BactAdaptableParam getActiveParam() 
 	{
 		return (BactAdaptableParam) _speciesParam;
 	}
@@ -517,7 +517,7 @@ public class BactAdaptable extends BactEPS
 	@Override
 	public Color getColor()
 	{
-		return getSpeciesParam().getCellColor(switchState);
+		return getActiveParam().getCellColor(switchState);
 	}
 
 	/**
@@ -534,7 +534,7 @@ public class BactAdaptable extends BactEPS
 	@Override
 	public void writePOVColorDefinition(FileWriter fr) throws IOException 
 	{
-		BactAdaptableParam param = getSpeciesParam();
+		BactAdaptableParam param = getActiveParam();
 		/*
 		 * Cells with switch on.
 		 */
