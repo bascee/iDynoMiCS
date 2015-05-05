@@ -29,7 +29,7 @@ import utils.XMLParser;
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  *
  */
-public abstract class ActiveAgent extends SpecialisedAgent {
+public abstract class ActiveAgent extends Agent {
 
 	// Parameters common to all agents of this class
 

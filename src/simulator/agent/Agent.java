@@ -11,9 +11,12 @@
  */
 package simulator.agent;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigInteger;
 
 import idyno.SimTimer;
+import simulator.AgentContainer;
 import simulator.Simulator;
 import simulator.SpatialGrid;
 import utils.LogFile;
@@ -74,6 +77,26 @@ public abstract class Agent implements Cloneable
 
 	public String death;
 
+	/**
+	 * Type of species that this agent is representing
+	 */
+	protected Species _species;
+
+	/**
+	 * Integer index to that species within the simulation dictionary
+	 */
+	public int speciesIndex;
+
+	/**
+	 * Set of parameters associated with this specialised agent
+	 */
+	protected SpeciesParam _speciesParam;
+
+	/**
+	 * Grid in which this agent is contained
+	 */
+	protected AgentContainer _agentGrid;
+
 
 	
 	/**
@@ -96,11 +119,11 @@ public abstract class Agent implements Cloneable
 	 * @param aSpeciesRoot	A Species mark-up within the specified protocol
 	 * file.
 	 */
-	public void initFromProtocolFile(Simulator aSimulator,
-													XMLParser aSpeciesRoot)
-	{
-		
-	}
+//	public void initFromProtocolFile(Simulator aSimulator,
+//													XMLParser aSpeciesRoot)
+//	{
+//		
+//	}
 	
 	/**
 	 * \brief Create an agent using information in a previous state or
@@ -144,7 +167,12 @@ public abstract class Agent implements Cloneable
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
-		return super.clone();
+		Agent out = (Agent) super.clone();
+
+		// Copy the references (superficial copy)
+		out._species = this._species;
+		out._speciesParam = this._speciesParam;
+		return (Object) out;
 	}
 
 	/**
@@ -153,7 +181,7 @@ public abstract class Agent implements Cloneable
 	 * Each agent must be referenced by one such container. Implemented by
 	 * classes that extend Agent.
 	 */
-	public abstract void registerBirth();
+//	public abstract void registerBirth();
 	
 	/**
 	 * \brief Perform the next timestep of the simulation for this agent.
@@ -293,13 +321,131 @@ public abstract class Agent implements Cloneable
 		
 	}
 
-	public Object getSpecies() {
-		// TODO Auto-generated method stub
-		return null;
+
+	/**
+	 * \brief Returns the object containing a set of parameters associated with a particular agent (species)
+	 * 
+	 * Returns the object containing a set of parameters associated with a particular agent (species)
+	 */
+	public SpeciesParam getSpeciesParam() {
+		return _speciesParam;
 	}
 
+	/**
+	 * \brief Returns the species object that is represented by this agent.
+	 * 
+	 * @return	Object of the Species class that this agent is representing.
+	 */
+	public Species getSpecies() {
+		return _species;
+	}
+
+	/**
+	 * \brief Returns the species object that is represented by this agent.
+	 * 
+	 * @return	Object of the Species class that this agent is representing.
+	 */
 	public int getSpeciesIndex() {
+		return _species.speciesIndex;
+	}
+
+	/**
+	 * \brief Set the progenitor Specialised agent to a specified species.
+	 * 
+	 * @param aSpecies	A species object to use as the progenitor.
+	 */
+	public void setSpecies(Species aSpecies) {
+		_species = aSpecies;
+		speciesIndex = aSpecies.speciesIndex;
+	}
+
+	/**
+	 * \brief Return the name of the species represented by this agent.
+	 * 
+	 * @return	Name of the species represented.
+	 */
+	public String getName() {
+		return _species.speciesName;
+	}
+
+	/**
+	 * \brief Creates an agent of the specified species and notes the grid in which this is assigned
+	 *
+	 * Creates an agent of the specified species and notes the grid in which this is assigned
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
+	 */
+
+	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) {
+		try 
+		{
+			// Create the agent object
+			_agentGrid = aSim.agentGrid;
+		} 
+		catch (Exception e) 
+		{
+			LogFile.writeLog("Creating "+this.getSpecies().speciesName);
+			System.exit(-1);
+		}
+	}
+
+	/**
+	 * \brief Registers a created agent into a respective container.
+	 *  
+	 * Each agent must be referenced by one such container. In this case, the 
+	 * species is registered into the agent grid.
+	 */
+	public void registerBirth() {
+		_agentGrid = _species.currentSimulator.agentGrid;
+		_agentGrid.registerBirth(this);
+		_species.notifyBirth();
+	}
+
+	/**
+	 * \brief Notifies the simulation that this agent has become too small and
+	 * is then counted as dead.
+	 * 
+	 * @param isStarving	Boolean noting whether the agent currently has
+	 * access to any resources.
+	 */
+	public void die(Boolean isStarving) {
+		/*
+		 * If you are too small, you must die!
+		 * Decrease the population of your species
+		 */
+		_species.notifyDeath();
+		isDead = true;
+		_agentGrid.registerDeath(this);
+	}
+
+	/**
+	 * \brief Used in POV-Ray output to display this species - writes a colour definition to the passed-in file
+	 * 
+	 * Used in POV-Ray output to display this species. This writes a color definition to the passed-in file. Meant for later use in 
+	 * macros. Note that this routine is put here and not in Species to allow derived agents to use different colors for different 
+	 * states; EpiBac is one example, with different colors for donor, recipient, and transconjugant states
+	 * 
+	 * @param fr	POV-Ray output file where the colour definition should be applied
+	 */
+	public void writePOVColorDefinition(FileWriter fr) throws IOException {
+		fr.write("#declare "+_species.speciesName+" = color rgb < ");
+		fr.write((_species.color.getRed()) / 255.0 + " , ");
+		fr.write((_species.color.getGreen()) / 255.0 + " , ");
+		fr.write((_species.color.getBlue()) / 255.0 + " >");
+		fr.write(";\n");
+	}
+
+	/**
+	 * \brief Obtain another instance of the same species (totally
+	 * independent).
+	 * 
+	 * Implemented by classes that extend this class.
+	 */
+	public abstract Agent sendNewAgent() throws CloneNotSupportedException;
+
+	public void createNewAgent() {
 		// TODO Auto-generated method stub
-		return 0;
+		
 	}
 }

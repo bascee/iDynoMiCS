@@ -133,7 +133,7 @@ public class Species implements Serializable
 	/**
 	 * Specialised agent from which objects of this species are created
 	 */
-	protected SpecialisedAgent _progenitor;
+	protected Agent _progenitor;
 	
 	/**
 	 * Count of the population of this particular species in the simulation
@@ -177,7 +177,7 @@ public class Species implements Serializable
 		injectionOffAttachmentFrequency = aSpRoot.getParamDbl("injectionOffAttachmentFrequency");
 		
 		// Create the progenitor and tune its speciesParam object
-		_progenitor = (SpecialisedAgent) aSpRoot.instanceCreator("simulator.agent.zoo");
+		_progenitor = (Agent) aSpRoot.instanceCreator("simulator.agent.zoo");
 		// Get parameters for this progenitor object from the protocol file if present
 
 		_progenitor.getSpeciesParam().init(aSimulator, aSpRoot, speciesDefaults);
@@ -197,7 +197,7 @@ public class Species implements Serializable
 	 * 
 	 * @param aProgenitor	Progenitor from which the species is being created
 	 */
-	public Species(SpecialisedAgent aProgenitor) 
+	public Species(Agent aProgenitor) 
 	{
 		_progenitor = aProgenitor;
 		aProgenitor.setSpecies(this);
@@ -878,7 +878,7 @@ public class Species implements Serializable
 	 * 
 	 * @return	The progenitor of this species object
 	 */
-	public SpecialisedAgent getProgenitor() 
+	public Agent getProgenitor() 
 	{
 		return _progenitor;
 	}

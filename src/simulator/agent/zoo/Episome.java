@@ -310,4 +310,13 @@ public class Episome extends InfoAgent
 		StringBuffer tempString = super.writeOutput();
 		return tempString;
 	}
+
+	/**
+	 * \brief Called at each time step of the simulation to compute agent
+	 * characteristics.
+	 */
+	@Override
+	public void internalStep() {
+		
+	}
 }

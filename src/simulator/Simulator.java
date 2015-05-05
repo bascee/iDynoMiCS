@@ -15,11 +15,12 @@ package simulator;
 import java.io.File;
 import java.io.ObjectInputStream;
 import java.util.*;
+
 import org.jdom.Element;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import de.schlichtherle.io.FileInputStream;
 
+import de.schlichtherle.io.FileInputStream;
 import idyno.Idynomics;
 import idyno.SimTimer;
 import povray.PovRayWriter;
@@ -1019,7 +1020,7 @@ public class Simulator
 	public void recreateSpecies() throws Exception 
 	{
 		int spIndex;
-		SpecialisedAgent progenitor;
+		Agent progenitor;
 		
 		// Initialise a parser of the XML agent file
 		XMLParser simulationRoot = agentFile.getChildParser("simulation");

@@ -281,5 +281,7 @@ public class MultiEpisome extends InfoAgent
 	{
 		//tempString.append("copyNumber,transconjugant;");
 		return new StringBuffer(_species.speciesName);
-	}	
+	}
+
+
 }
