@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import simulator.agent.SpecialisedAgent;
 
 
 /**

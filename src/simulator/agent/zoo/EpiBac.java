@@ -48,7 +48,7 @@ public class EpiBac extends BactEPS
 	public EpiBac()
 	{
 		super();
-		_speciesParam = new EpiBacParam();
+		_activeParam = new EpiBacParam();
 	}
 
 	@Override
@@ -374,7 +374,7 @@ public class EpiBac extends BactEPS
 	@Override
 	public EpiBacParam getActiveParam()
 	{
-		return (EpiBacParam) _speciesParam;
+		return (EpiBacParam) _activeParam;
 	}
 
 	public Double getMaxTest()
@@ -391,14 +391,14 @@ public class EpiBac extends BactEPS
 		// (for no growth dependence, set highTonus = -Double.MAX_VALUE)
 		// (for step dependence, set high & low tonus the same)
 
-		Double lowTonus = ((EpiBacParam) _speciesParam).lowTonusCutoff;
-		Double highTonus = ((EpiBacParam) _speciesParam).highTonusCutoff;
+		Double lowTonus = ((EpiBacParam) _activeParam).lowTonusCutoff;
+		Double highTonus = ((EpiBacParam) _activeParam).highTonusCutoff;
 		Double theTonus = sendTonus();
 
 		if (theTonus >= highTonus) {
 			//			System.out.println("high case: "+theTonus);
 			// high tonus, so return maximum (same effect as no growth dependence)
-			return ((EpiBacParam) _speciesParam).scanSpeed*
+			return ((EpiBacParam) _activeParam).scanSpeed*
 			SimTimer.getCurrentTimeStep();
 		}
 		else if (theTonus < lowTonus)
@@ -411,7 +411,7 @@ public class EpiBac extends BactEPS
 		{
 			//			System.out.println("middle case: "+theTonus);
 			// middle case, so do linear interpolation
-			Double vs = ((EpiBacParam) _speciesParam).scanSpeed;
+			Double vs = ((EpiBacParam) _activeParam).scanSpeed;
 			vs = vs*(theTonus-lowTonus)/(highTonus-lowTonus);
 			return vs*SimTimer.getCurrentTimeStep();
 		}

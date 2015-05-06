@@ -24,7 +24,7 @@ public class EpiBacEnv extends MultiEpiBac{
 	 */
 	public EpiBacEnv() {
 		super();
-		_speciesParam = new EpiBacEnvParam();
+		_activeParam = new EpiBacEnvParam();
 	}
 	
 	
@@ -61,7 +61,7 @@ public void internalStep() {
 	
 	@Override
 	public EpiBacEnvParam getActiveParam() {
-		return (EpiBacEnvParam) _speciesParam;
+		return (EpiBacEnvParam) _activeParam;
 	}
 	
 	/**

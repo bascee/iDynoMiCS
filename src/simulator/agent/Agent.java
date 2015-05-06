@@ -93,9 +93,9 @@ public abstract class Agent implements Cloneable
 	public int speciesIndex;
 
 	/**
-	 * Set of parameters associated with this specialised agent
+	 * Set of parameters associated with this active agent
 	 */
-	protected SpeciesParam _speciesParam;
+	protected ActiveParam _activeParam;
 
 	/**
 	 * Grid in which this agent is contained
@@ -175,21 +175,110 @@ public abstract class Agent implements Cloneable
 	}
 	
 	/**
-	 * \brief Initialise the agent from the protocol file.
+	 * \brief Creates an agent of the specified species and notes the grid in which this is assigned
+	 *
+	 * Creates an agent of the specified species and notes the grid in which this is assigned
 	 * 
-	 * Implemented by classes that extend this class.
-	 * 
-	 * @param aSimulator	The simulation object used to simulate the
-	 * conditions specified in the protocol file.
-	 * @param aSpeciesRoot	A Species mark-up within the specified protocol
-	 * file.
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
 	 */
-//	public void initFromProtocolFile(Simulator aSimulator,
-//													XMLParser aSpeciesRoot)
-//	{
-//		
-//	}
-	
+	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) {
+		try 
+		{
+			// Create the agent object
+			_agentGrid = aSim.agentGrid;
+		} 
+		catch (Exception e) 
+		{
+			LogFile.writeLog("Creating "+this.getSpecies().speciesName);
+			System.exit(-1);
+		}
+		
+		/* Create internal compounds_______________________________________ */
+		// Initialise tables for the compartments description.
+		int nParticle = aSim.particleDic.size();
+		int nReaction = aSim.reactionList.length;
+		int nSolute = aSim.soluteList.length;
+		int reacIndex;
+		
+		/*
+		 * Build the list of particles. Set the average mass of each particle
+		 * within the initial population. 
+		 */
+		particleMass = ExtraMath.newDoubleArray(nParticle);
+		int particleIndex;
+		for ( XMLParser aParser : aSpeciesRoot.getChildrenParsers("particle") )
+		{
+			particleIndex = aSim.getParticleIndex(aParser.getName());
+			particleMass[particleIndex] = aParser.getParamMass("mass");
+		}
+		
+		deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
+		
+		updateMass();
+		
+		/* Create description of reactions ________________________________ */
+		// Initialise the arrays.
+		allReactions = aSim.reactionList;
+		reactionKnown = new ArrayList<Integer>();
+		reactionActive = new ArrayList<Integer>();
+		growthRate = ExtraMath.newDoubleArray(nReaction);
+		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);
+		/* 
+		 * Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
+		 * as the number of j-elements in each i-array varies. Each i-array is
+		 * cloned from the reaction mark up, so no need to fill with zeros now.
+		 */
+		reactionKinetic = new Double[nReaction][];
+		
+		particleYield = ExtraMath.newDoubleArray(nReaction, nParticle);
+		
+		Reaction aReaction;
+		/*
+		 * Read the XML file. Note that this is not a parser (yet) and so we
+		 * should not use XMLParser.getName(), etc.
+		 */
+		for (Element aReacElem : aSpeciesRoot.getChildrenElements("reaction"))
+		{
+			reacIndex = aSim.getReactionIndex(
+										aReacElem.getAttributeValue("name"));
+			aReaction = allReactions[reacIndex];
+			/*
+			 * Add the reaction to the list of known (and active) reactions.
+			 */
+			reactionKnown.add(reacIndex);
+			if (aReacElem.getAttributeValue("status").equals("active"))
+				reactionActive.add(reacIndex);
+			/* 
+			 * If reaction parameters have been redefined, load them; 
+			 * else load the parameters defined for the reaction.
+			 */
+			if ( aReacElem.getContentSize() == 0 )
+			{
+				soluteYield[reacIndex] = aReaction.getSoluteYield();
+				particleYield[reacIndex] = aReaction.getParticulateYield();
+				reactionKinetic[reacIndex] = aReaction.getKinetic();
+			}
+			else
+			{
+				/*
+				 * TODO Rob 15Apr2014: This seems a dangerous way of doing
+				 * things... having kinetics here that differ from those in
+				 * the simulator may play havoc with the diffusion-reaction
+				 * solver(s).
+				 */
+				aReaction.initFromAgent(this, aSim, new XMLParser(aReacElem));
+			}
+		}
+		/*
+		 * Now copy these value in the speciesParam structure.
+		 */
+		getActiveParam().soluteYield = soluteYield.clone();
+		getActiveParam().particleYield = particleYield.clone();
+		getActiveParam().reactionKinetic = reactionKinetic.clone();
+
+	}
+
 	/**
 	 * \brief Create an agent using information in a previous state or
 	 * initialisation file.
@@ -201,8 +290,6 @@ public abstract class Agent implements Cloneable
 	 */
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
 	{
-
-		
 		int nValsRead = 2 + particleMass.length;
 		int iDataStart = singleAgentData.length - nValsRead;
 		
@@ -224,7 +311,6 @@ public abstract class Agent implements Cloneable
 		String[] remainingSingleAgentData = new String[iDataStart];
 		for ( int i = 0; i < iDataStart; i++ )
 			remainingSingleAgentData[i] = singleAgentData[i];
-
 
 		// read in info from the result file IN THE SAME ORDER AS IT WAS OUTPUT
 		_family     = Integer.parseInt(singleAgentData[0]);
@@ -258,6 +344,7 @@ public abstract class Agent implements Cloneable
 	 * @throws CloneNotSupportedException	Exception should the class not
 	 * implement Cloneable.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
@@ -265,7 +352,7 @@ public abstract class Agent implements Cloneable
 
 		// Copy the references (superficial copy)
 		out._species = this._species;
-		out._speciesParam = this._speciesParam;
+		out._activeParam = this._activeParam;
 
 		//from active
 		out.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
@@ -298,14 +385,6 @@ public abstract class Agent implements Cloneable
 	}
 
 	/**
-	 * \brief Registers a created agent into a respective container.
-	 * 
-	 * Each agent must be referenced by one such container. Implemented by
-	 * classes that extend Agent.
-	 */
-//	public abstract void registerBirth();
-	
-	/**
 	 * \brief Perform the next timestep of the simulation for this agent.
 	 * 
 	 * _lastStep is implemented to note that the agent has been stepped.
@@ -316,15 +395,7 @@ public abstract class Agent implements Cloneable
 		_lastStep = SimTimer.getCurrentIter();
 		internalStep();
 	}
-	
-	/**
-	 * \brief Called at each time step (under the control of the method Step
-	 * of the class Agent to avoid multiple calls).
-	 * 
-	 * Implemented by classes that extend Agent.
-	 */
-//	protected abstract void internalStep();
-	
+
 	/**
 	 * \brief Specifies the header of the columns of output information for
 	 * this agent.
@@ -432,7 +503,6 @@ public abstract class Agent implements Cloneable
 	public Double move() {
 		return null;
 		// TODO Auto-generated method stub
-		
 	}
 
 	public Double interact(boolean mUTUAL) {
@@ -440,19 +510,9 @@ public abstract class Agent implements Cloneable
 		return null;
 	}
 
-	public void die(boolean b) {
-
-		// Unregister from the metabolic guilds.
-		unregisterFromAllActiveReactions();
-		
-	}
-
-
 	public void fitVolRateOnGrid(SpatialGrid biomassGrid) {
 		// TODO Auto-generated method stub
-		
 	}
-
 
 	/**
 	 * \brief Returns the object containing a set of parameters associated with a particular agent (species)
@@ -460,7 +520,7 @@ public abstract class Agent implements Cloneable
 	 * Returns the object containing a set of parameters associated with a particular agent (species)
 	 */
 	public SpeciesParam getSpeciesParam() {
-		return _speciesParam;
+		return _activeParam;
 	}
 
 	/**
@@ -498,112 +558,6 @@ public abstract class Agent implements Cloneable
 	 */
 	public String getName() {
 		return _species.speciesName;
-	}
-
-	/**
-	 * \brief Creates an agent of the specified species and notes the grid in which this is assigned
-	 *
-	 * Creates an agent of the specified species and notes the grid in which this is assigned
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
-	 */
-
-	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) {
-		try 
-		{
-			// Create the agent object
-			_agentGrid = aSim.agentGrid;
-		} 
-		catch (Exception e) 
-		{
-			LogFile.writeLog("Creating "+this.getSpecies().speciesName);
-			System.exit(-1);
-		}
-		
-		/* Create internal compounds_______________________________________ */
-		// Initialise tables for the compartments description.
-		int nParticle = aSim.particleDic.size();
-		int nReaction = aSim.reactionList.length;
-		int nSolute = aSim.soluteList.length;
-		int reacIndex;
-		
-		/*
-		 * Build the list of particles. Set the average mass of each particle
-		 * within the initial population. 
-		 */
-		particleMass = ExtraMath.newDoubleArray(nParticle);
-		int particleIndex;
-		for ( XMLParser aParser : aSpeciesRoot.getChildrenParsers("particle") )
-		{
-			particleIndex = aSim.getParticleIndex(aParser.getName());
-			particleMass[particleIndex] = aParser.getParamMass("mass");
-		}
-		
-		deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
-		
-		updateMass();
-		
-		/* Create description of reactions ________________________________ */
-		// Initialise the arrays.
-		allReactions = aSim.reactionList;
-		reactionKnown = new ArrayList<Integer>();
-		reactionActive = new ArrayList<Integer>();
-		growthRate = ExtraMath.newDoubleArray(nReaction);
-		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);
-		/* 
-		 * Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
-		 * as the number of j-elements in each i-array varies. Each i-array is
-		 * cloned from the reaction mark up, so no need to fill with zeros now.
-		 */
-		reactionKinetic = new Double[nReaction][];
-		
-		particleYield = ExtraMath.newDoubleArray(nReaction, nParticle);
-		
-		Reaction aReaction;
-		/*
-		 * Read the XML file. Note that this is not a parser (yet) and so we
-		 * should not use XMLParser.getName(), etc.
-		 */
-		for (Element aReacElem : aSpeciesRoot.getChildrenElements("reaction"))
-		{
-			reacIndex = aSim.getReactionIndex(
-										aReacElem.getAttributeValue("name"));
-			aReaction = allReactions[reacIndex];
-			/*
-			 * Add the reaction to the list of known (and active) reactions.
-			 */
-			reactionKnown.add(reacIndex);
-			if (aReacElem.getAttributeValue("status").equals("active"))
-				reactionActive.add(reacIndex);
-			/* 
-			 * If reaction parameters have been redefined, load them; 
-			 * else load the parameters defined for the reaction.
-			 */
-			if ( aReacElem.getContentSize() == 0 )
-			{
-				soluteYield[reacIndex] = aReaction.getSoluteYield();
-				particleYield[reacIndex] = aReaction.getParticulateYield();
-				reactionKinetic[reacIndex] = aReaction.getKinetic();
-			}
-			else
-			{
-				/*
-				 * TODO Rob 15Apr2014: This seems a dangerous way of doing
-				 * things... having kinetics here that differ from those in
-				 * the simulator may play havoc with the diffusion-reaction
-				 * solver(s).
-				 */
-				aReaction.initFromAgent(this, aSim, new XMLParser(aReacElem));
-			}
-		}
-		/*
-		 * Now copy these value in the speciesParam structure.
-		 */
-		getActiveParam().soluteYield = soluteYield.clone();
-		getActiveParam().particleYield = particleYield.clone();
-		getActiveParam().reactionKinetic = reactionKinetic.clone();
-
 	}
 
 	/**
@@ -677,22 +631,6 @@ public abstract class Agent implements Cloneable
 		}
 	}
 
-//	/**
-//	 * \brief Notifies the simulation that this agent has become too small and
-//	 * is then counted as dead.
-//	 * 
-//	 * Decreases the population of this species.
-//	 * 
-//	 * @param isStarving	Boolean noting whether the agent currently has
-//	 * access to any resources.
-//	 */
-//	@Override
-//	public void die(Boolean isStarving) {
-//		super.die(isStarving);
-//		// Unregister from the metabolic guilds.
-//		unregisterFromAllActiveReactions();
-//	}
-
 	/**
 	 * \brief Called at each time step of the simulation to compute cell
 	 * growth, update size, and monitor cell death and division.
@@ -701,8 +639,6 @@ public abstract class Agent implements Cloneable
 	 * divide.
 	 */
 	protected void internalStep() {
-	//		grow();
-	//		updateSize();
 		}
 
 	/**
@@ -763,7 +699,6 @@ public abstract class Agent implements Cloneable
 				_netVolumeRate += deltaMass/getActiveParam().particleDensity[i];
 			}
 		}
-		
 	}
 
 	/**
@@ -1016,6 +951,6 @@ public abstract class Agent implements Cloneable
 	 * @return ActiveParam object containing the species associated with this agent
 	 */
 	public ActiveParam getActiveParam() {
-		return (ActiveParam) _speciesParam;
+		return (ActiveParam) _activeParam;
 	}
 }

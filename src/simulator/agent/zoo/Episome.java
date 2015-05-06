@@ -44,7 +44,7 @@ public class Episome extends Agent
 
 	public Episome() {
 		super();
-		_speciesParam = new EpisomeParam();
+		_activeParam = new EpisomeParam();
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class Episome extends Agent
 	{
 		Episome o = (Episome) super.clone();
 		o._host = this._host;
-		o._speciesParam = _speciesParam;
+		o._activeParam = _activeParam;
 
 		o.allReactions = this.allReactions.clone();
 		o.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
@@ -255,7 +255,7 @@ public class Episome extends Agent
 	@Override
 	public EpisomeParam getActiveParam()
 	{
-		return (EpisomeParam) _speciesParam;
+		return (EpisomeParam) _activeParam;
 	}
 
 	public int getCopyNumber()

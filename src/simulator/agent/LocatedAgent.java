@@ -140,7 +140,7 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	public LocatedAgent()
 	{
 		super();
-		_speciesParam = new LocatedParam();
+		_activeParam = new LocatedParam();
 	}
 	
 	/**
@@ -1034,7 +1034,7 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	@Override
 	public LocatedParam getActiveParam()
 	{
-		return (LocatedParam) _speciesParam;
+		return (LocatedParam) _activeParam;
 	}
 	
 	/**
@@ -1091,7 +1091,7 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	 */
 	public Double getShoveFactor()
 	{
-		return ((LocatedParam) _speciesParam).shoveFactor;
+		return ((LocatedParam) _activeParam).shoveFactor;
 	}
 
 	/**
@@ -1113,7 +1113,7 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	 */
 	public Double getShoveLimit()
 	{
-		return ((LocatedParam) _speciesParam).shoveLimit;
+		return ((LocatedParam) _activeParam).shoveLimit;
 	}
 	
 	/**

@@ -44,7 +44,7 @@ public class ParticulateEPS extends LocatedAgent
 	public ParticulateEPS()
 	{
 		super();
-		_speciesParam = new ParticulateEPSParam();
+		_activeParam = new ParticulateEPSParam();
 	}
 	
 	/**
@@ -381,7 +381,7 @@ public class ParticulateEPS extends LocatedAgent
 	@Override
 	public ParticulateEPSParam getActiveParam()
 	{
-		return (ParticulateEPSParam) _speciesParam;
+		return (ParticulateEPSParam) _activeParam;
 	}
 
 	

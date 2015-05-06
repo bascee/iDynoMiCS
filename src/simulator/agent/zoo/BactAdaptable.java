@@ -75,7 +75,7 @@ public class BactAdaptable extends BactEPS
 	public BactAdaptable()
 	{
 		super();
-		_speciesParam = new BactAdaptableParam();
+		_activeParam = new BactAdaptableParam();
 	}
 	
 	/**
@@ -445,7 +445,7 @@ public class BactAdaptable extends BactEPS
 	@Override
 	public BactAdaptableParam getActiveParam() 
 	{
-		return (BactAdaptableParam) _speciesParam;
+		return (BactAdaptableParam) _activeParam;
 	}
 	
 	/* ---------------------- For agent_state output ---------------------- */

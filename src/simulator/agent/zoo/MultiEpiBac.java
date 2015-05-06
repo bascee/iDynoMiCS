@@ -68,7 +68,7 @@ public class MultiEpiBac extends BactEPS
 	 */
 	public MultiEpiBac() {
 		super();
-		_speciesParam = new MultiEpiBacParam();
+		_activeParam = new MultiEpiBacParam();
 	}
 
 	@Override
@@ -590,7 +590,7 @@ public class MultiEpiBac extends BactEPS
 	@Override
 	public MultiEpiBacParam getActiveParam()
 	{
-		return (MultiEpiBacParam) _speciesParam;
+		return (MultiEpiBacParam) _activeParam;
 	}
 
 	/**

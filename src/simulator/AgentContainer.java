@@ -67,8 +67,7 @@ public class AgentContainer
 	 * Visibility public so that it can be accessed from LocatedGroup in
 	 * killAll().
 	 */
-	private LinkedList<Agent> _agentToKill = 
-										new LinkedList<Agent>();
+	private LinkedList<Agent> _agentToKill = new LinkedList<Agent>();
 
 	/**
 	 * Array of SpatialGrids - one for each species in the simulation
@@ -364,10 +363,16 @@ public class AgentContainer
 	}
 	
 	public List<Agent> neighborhoodSearch(double[] coords, double dimensions) {
-		
 		if(is3D)
-			return agentTree.search(helperMethods.doubleToFloatArray(coords), helperMethods.filledFloatArray((float) (dimensions),3));
-		return agentTree.search(helperMethods.doubleToFloatArray(coords), helperMethods.filledFloatArray((float) (dimensions),2));
+		{
+			return agentTree.search(helperMethods.doubleToFloatArray(coords), 
+					helperMethods.filledFloatArray((float) (dimensions),3));
+		}
+		else
+		{
+			return agentTree.search(helperMethods.doubleToFloatArray(coords), 
+					helperMethods.filledFloatArray((float) (dimensions),2));
+		}
 	}
 	
 	

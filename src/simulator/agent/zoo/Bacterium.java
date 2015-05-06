@@ -80,7 +80,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	public Bacterium() 
 	{
 		super();
-		_speciesParam = new BacteriumParam();
+		_activeParam = new BacteriumParam();
 	}
 
 	/**
@@ -416,7 +416,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	@Override
 	public BacteriumParam getActiveParam()
 	{
-		return (BacteriumParam) _speciesParam;
+		return (BacteriumParam) _activeParam;
 	}
 
 	/**

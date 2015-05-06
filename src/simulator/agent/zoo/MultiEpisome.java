@@ -51,7 +51,7 @@ public class MultiEpisome extends Agent
 
 	public MultiEpisome() {
 		super();
-		_speciesParam = new MultiEpisomeParam();
+		_activeParam = new MultiEpisomeParam();
 	}
 
 	//sonia 12.10.09
@@ -60,7 +60,7 @@ public class MultiEpisome extends Agent
 	public Object clone() throws CloneNotSupportedException {
 		MultiEpisome o = (MultiEpisome) super.clone();
 		o._host = this._host;
-		o._speciesParam = _speciesParam;
+		o._activeParam = _activeParam;
 		o.allReactions = this.allReactions.clone();
 		o.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
 		o.reactionKnown = (ArrayList<Integer>) this.reactionKnown.clone();
@@ -237,7 +237,7 @@ public class MultiEpisome extends Agent
 	@Override
 	public MultiEpisomeParam getActiveParam()
 	{
-		return (MultiEpisomeParam) _speciesParam;
+		return (MultiEpisomeParam) _activeParam;
 	}
 	
 	/**

@@ -35,7 +35,7 @@ public class BactEPS extends Bacterium
 	 */
 	public BactEPS() {
 		super();
-		_speciesParam = new BactEPSParam();
+		_activeParam = new BactEPSParam();
 	}
 	
 	/**
@@ -105,6 +105,6 @@ public class BactEPS extends Bacterium
 	 */
 	@Override
 	public BactEPSParam getActiveParam() {
-		return (BactEPSParam) _speciesParam;
+		return (BactEPSParam) _activeParam;
 	}
 }
