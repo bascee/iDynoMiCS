@@ -44,7 +44,7 @@ import simulator.geometry.boundaryConditions.BoundaryCyclic;
  * @author Rob Clegg (rjc096@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  */
-public abstract class LocatedAgent extends Agent implements Cloneable 
+public abstract class LocatedAgent extends ActiveAgent implements Cloneable 
 {
 	/**
 	 * Temporary store of the new location this cell will move to.
@@ -140,7 +140,7 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	public LocatedAgent()
 	{
 		super();
-		_activeParam = new LocatedParam();
+		_speciesParam = new LocatedParam();
 	}
 	
 	/**
@@ -972,7 +972,7 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	{
 		_volume = 0.0;
 		for (int i = 0; i<particleMass.length; i++) {
-			_volume += particleMass[i]/getActiveParam().particleDensity[i];
+			_volume += particleMass[i]/getSpeciesParam().particleDensity[i];
 		}
 		_totalVolume = _volume;
 	}
@@ -1032,9 +1032,9 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	 * @return LocatedParam object of parameters associated with this agent.
 	 */
 	@Override
-	public LocatedParam getActiveParam()
+	public LocatedParam getSpeciesParam()
 	{
-		return (LocatedParam) _activeParam;
+		return (LocatedParam) _speciesParam;
 	}
 	
 	/**
@@ -1091,7 +1091,7 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	 */
 	public Double getShoveFactor()
 	{
-		return ((LocatedParam) _activeParam).shoveFactor;
+		return ((LocatedParam) _speciesParam).shoveFactor;
 	}
 
 	/**
@@ -1113,7 +1113,7 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	 */
 	public Double getShoveLimit()
 	{
-		return ((LocatedParam) _activeParam).shoveLimit;
+		return ((LocatedParam) _speciesParam).shoveLimit;
 	}
 	
 	/**
@@ -1149,8 +1149,8 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	 */
 	public Double getBabyMassFrac()
 	{
-		return ExtraMath.deviateFromCV(getActiveParam().babyMassFrac,
-											getActiveParam().babyMassFracCV);
+		return ExtraMath.deviateFromCV(getSpeciesParam().babyMassFrac,
+											getSpeciesParam().babyMassFracCV);
 	}
 	
 	/**
@@ -1161,8 +1161,8 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	 */
 	public Double getDivRadius()
 	{
-		return ExtraMath.deviateFromCV(getActiveParam().divRadius,
-											getActiveParam().divRadiusCV);
+		return ExtraMath.deviateFromCV(getSpeciesParam().divRadius,
+											getSpeciesParam().divRadiusCV);
 	}
 	
 	/**
@@ -1172,8 +1172,8 @@ public abstract class LocatedAgent extends Agent implements Cloneable
 	 */
 	public Double getDeathRadius()
 	{
-		return ExtraMath.deviateFromCV(getActiveParam().deathRadius,
-											getActiveParam().deathRadiusCV);
+		return ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
+											getSpeciesParam().deathRadiusCV);
 	}
 	
 	/**

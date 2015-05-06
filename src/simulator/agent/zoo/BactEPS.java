@@ -35,7 +35,7 @@ public class BactEPS extends Bacterium
 	 */
 	public BactEPS() {
 		super();
-		_activeParam = new BactEPSParam();
+		_speciesParam = new BactEPSParam();
 	}
 	
 	/**
@@ -62,7 +62,7 @@ public class BactEPS extends Bacterium
 		/* At this line it is sure you have some EPS to hydrolyse __________*/
 		
 		//Part of the capsule to hydrolyse
-		deltaM = 1-Math.exp(-getActiveParam().kHyd*SimTimer.getCurrentTimeStep());		
+		deltaM = 1-Math.exp(-getSpeciesParam().kHyd*SimTimer.getCurrentTimeStep());		
 		
 		//List all close EPS particles of your EPS species		
 		findCloseSiblings(_epsSpecies.speciesIndex);		
@@ -90,7 +90,7 @@ public class BactEPS extends Bacterium
 		}
 		
 		/* Guard against too big bound EPS _______________________________ */
-		if (_volume/_totalVolume<(1-getActiveParam().epsMax)) {
+		if (_volume/_totalVolume<(1-getSpeciesParam().epsMax)) {
 			double ratio = ExtraMath.getUniRand(.6, .9);
 			excreteEPS(ratio);			
 		}
@@ -104,7 +104,7 @@ public class BactEPS extends Bacterium
 	 * @return Object of BactEPSParam that stores the parameters associated with this species
 	 */
 	@Override
-	public BactEPSParam getActiveParam() {
-		return (BactEPSParam) _activeParam;
+	public BactEPSParam getSpeciesParam() {
+		return (BactEPSParam) _speciesParam;
 	}
 }

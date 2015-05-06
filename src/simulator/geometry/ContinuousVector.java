@@ -11,6 +11,8 @@
  */
 package simulator.geometry;
 
+import java.util.function.DoubleFunction;
+
 import utils.ExtraMath;
 import utils.XMLParser;
 
@@ -94,6 +96,18 @@ public class ContinuousVector implements Cloneable
 	 * 
 	 * @param cc Continuous vector of points to set this vector to.
 	 */
+	
+	/**
+	 * \brief apply's method to all
+	 */
+	public void applyToAll(DoubleFunction<Double> f)
+	{
+		double[] vector = new double[]{x,y,z};
+		for (double d: vector)
+			d = f.apply(d);
+	}
+	
+	
 	public void set(ContinuousVector cc)
 	{
 		set(cc.x, cc.y, cc.z);

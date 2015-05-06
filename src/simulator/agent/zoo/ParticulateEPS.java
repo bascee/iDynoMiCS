@@ -44,7 +44,7 @@ public class ParticulateEPS extends LocatedAgent
 	public ParticulateEPS()
 	{
 		super();
-		_activeParam = new ParticulateEPSParam();
+		_speciesParam = new ParticulateEPSParam();
 	}
 	
 	/**
@@ -259,7 +259,7 @@ public class ParticulateEPS extends LocatedAgent
 	@Override
 	public boolean willDivide() 
 	{
-		return getRadius(true) > getActiveParam().divRadius;
+		return getRadius(true) > getSpeciesParam().divRadius;
 	}
 
 	/**
@@ -271,8 +271,8 @@ public class ParticulateEPS extends LocatedAgent
 	 */
 	public boolean willTransfer()
 	{
-		return getRadius(true)<=ExtraMath.deviateFromCV(getActiveParam().transferRadius,
-		        getActiveParam().deathRadiusCV);
+		return getRadius(true)<=ExtraMath.deviateFromCV(getSpeciesParam().transferRadius,
+		        getSpeciesParam().deathRadiusCV);
 	}
 
 	/**
@@ -328,12 +328,12 @@ public class ParticulateEPS extends LocatedAgent
 	{
 		_volume = 0.0;
 		for (int i = 0; i < particleMass.length - 1; i++)
-			_volume += particleMass[i]/getActiveParam().particleDensity[i];
+			_volume += particleMass[i]/getSpeciesParam().particleDensity[i];
 		
 		// Add the volume of the EPS capsule to the volume of the intracellular
 		// particles
 		int i = particleMass.length - 1;
-		_totalVolume = _volume+particleMass[i]/getActiveParam().particleDensity[i];
+		_totalVolume = _volume+particleMass[i]/getSpeciesParam().particleDensity[i];
 	}
 	
 	/**
@@ -379,9 +379,9 @@ public class ParticulateEPS extends LocatedAgent
 	 * @return Object of ParticulateParam that stores the parameters associated with this species
 	 */
 	@Override
-	public ParticulateEPSParam getActiveParam()
+	public ParticulateEPSParam getSpeciesParam()
 	{
-		return (ParticulateEPSParam) _activeParam;
+		return (ParticulateEPSParam) _speciesParam;
 	}
 
 	

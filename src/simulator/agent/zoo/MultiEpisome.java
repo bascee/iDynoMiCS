@@ -19,9 +19,10 @@ import utils.XMLParser;
 import utils.ExtraMath;
 import idyno.SimTimer;
 import simulator.agent.*;
+import simulator.reaction.Reaction;
 import simulator.Simulator;
 
-public class MultiEpisome extends Agent
+public class MultiEpisome extends InfoAgent
 {
 	//sonia:I've changed it to public
 	public MultiEpiBac              _host;
@@ -41,6 +42,10 @@ public class MultiEpisome extends Agent
 	private boolean             _conjugationIsOff = false;
 	public boolean              isHot             = false;
 
+	public Reaction[]            allReactions;
+	protected ArrayList<Integer> reactionActive;
+	protected ArrayList<Integer> reactionKnown;
+	
 	//sonia 11.10.2010 array containing list of potential nbh to be screened during the hgt time step
 	protected LinkedList<LocatedAgent> nbhList = new LinkedList<LocatedAgent>();
 
@@ -51,7 +56,7 @@ public class MultiEpisome extends Agent
 
 	public MultiEpisome() {
 		super();
-		_activeParam = new MultiEpisomeParam();
+		_speciesParam = new MultiEpisomeParam();
 	}
 
 	//sonia 12.10.09
@@ -60,7 +65,7 @@ public class MultiEpisome extends Agent
 	public Object clone() throws CloneNotSupportedException {
 		MultiEpisome o = (MultiEpisome) super.clone();
 		o._host = this._host;
-		o._activeParam = _activeParam;
+		o._speciesParam = _speciesParam;
 		o.allReactions = this.allReactions.clone();
 		o.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
 		o.reactionKnown = (ArrayList<Integer>) this.reactionKnown.clone();
@@ -98,8 +103,8 @@ public class MultiEpisome extends Agent
 		// super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		// init();
 		
-		_nCopy = getActiveParam().nCopy;
-		_pilusLength = getActiveParam().pilusLength;
+		_nCopy = getSpeciesParam().nCopy;
+		_pilusLength = getSpeciesParam().pilusLength;
 		int reacIndex;
 		
 		allReactions = aSim.reactionList;
@@ -224,7 +229,7 @@ public class MultiEpisome extends Agent
 	 */
 	public void segregation(MultiEpisome aPlasmid)
 	{
-		if ( ExtraMath.getUniRandDbl() > getActiveParam().lossProbability )
+		if ( ExtraMath.getUniRandDbl() > getSpeciesParam().lossProbability )
 			_nCopy = 1;
 		else
 			_nCopy = 0;
@@ -235,9 +240,9 @@ public class MultiEpisome extends Agent
 	 * 
 	 */
 	@Override
-	public MultiEpisomeParam getActiveParam()
+	public MultiEpisomeParam getSpeciesParam()
 	{
-		return (MultiEpisomeParam) _activeParam;
+		return (MultiEpisomeParam) _speciesParam;
 	}
 	
 	/**

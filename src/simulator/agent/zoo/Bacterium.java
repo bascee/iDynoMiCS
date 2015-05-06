@@ -80,7 +80,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	public Bacterium() 
 	{
 		super();
-		_activeParam = new BacteriumParam();
+		_speciesParam = new BacteriumParam();
 	}
 
 	/**
@@ -240,13 +240,13 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	{	
 		// distMethod true -> distribute exponentially
 		// distMethod false -> distribute normally
-		if (getActiveParam().distMethod)
+		if (getSpeciesParam().distMethod)
 			for (int i = 0; i < particleMass.length; i++)
 				particleMass[i] *= ExtraMath.getExp2Rand();
 		else
 			for (int i = 0; i<particleMass.length; i++)
 				particleMass[i] = ExtraMath.deviateFromCV(
-						1.5*particleMass[i], getActiveParam().initialMassCV);
+						1.5*particleMass[i], getSpeciesParam().initialMassCV);
 	}
 	
 	/**
@@ -326,7 +326,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 		/*
 		 * Manage excretion.
 		 */
-		if ( _volume < _totalVolume*(1-getActiveParam().epsMax) )
+		if ( _volume < _totalVolume*(1-getSpeciesParam().epsMax) )
 			excreteEPS(ExtraMath.getUniRand(.6, .9));
 	}
 
@@ -368,7 +368,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 */
 	public void guessMass()
 	{
-		Double val = getActiveParam().divRadius;
+		Double val = getSpeciesParam().divRadius;
 		/*
 		 * We calculate the mass-at-division:
 		 *  - in chemostats and 3D the cell is spherical.
@@ -378,7 +378,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 			val = ExtraMath.volumeOfASphere(val); 
 		else
 			val = ExtraMath.volumeOfACylinder(val, _species.domain.length_Z);
-		particleMass[0] = getActiveParam().particleDensity[0] * val / 2;
+		particleMass[0] = getSpeciesParam().particleDensity[0] * val / 2;
 		updateMass();
 	}
 	
@@ -391,7 +391,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	@Override
 	public void updateVolume()
 	{
-		Double[] density = getActiveParam().particleDensity;
+		Double[] density = getSpeciesParam().particleDensity;
 		_totalVolume = 0.0;
 		for ( int i = 0; i < particleMass.length; i++ )
 			_totalVolume += particleMass[i] / density[i];
@@ -414,9 +414,9 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * with this species.
 	 */
 	@Override
-	public BacteriumParam getActiveParam()
+	public BacteriumParam getSpeciesParam()
 	{
-		return (BacteriumParam) _activeParam;
+		return (BacteriumParam) _speciesParam;
 	}
 
 	/**
@@ -478,7 +478,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	public Color getColorCapsule()
 	{
 		if ( _epsSpecies == null )
-			return getActiveParam().epsColor;
+			return getSpeciesParam().epsColor;
 		else
 			return _epsSpecies.color;
 	}

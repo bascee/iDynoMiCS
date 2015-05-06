@@ -68,7 +68,7 @@ public class MultiEpiBac extends BactEPS
 	 */
 	public MultiEpiBac() {
 		super();
-		_activeParam = new MultiEpiBacParam();
+		_speciesParam = new MultiEpiBacParam();
 	}
 
 	@Override
@@ -242,7 +242,7 @@ public class MultiEpiBac extends BactEPS
 			{
 				deltaMass = particleYield[reacIndex][i]*growthRate[reacIndex];
 				_netGrowthRate += deltaMass;
-				_netVolumeRate += deltaMass/getActiveParam().particleDensity[i];
+				_netVolumeRate += deltaMass/getSpeciesParam().particleDensity[i];
 				particleMass[i] += (deltaMass*SimTimer.getCurrentTimeStep());	
 			}
 		}
@@ -279,10 +279,10 @@ public class MultiEpiBac extends BactEPS
 		//sonia:
 		//if it is host specific, then we have to assess whether the plasmid to transfer (aPlasmid) can be
 		// maintained in the recipient cell being queued (using the markers)	
-		int sizeM = aPlasmid.getActiveParam().hostCompatibilityMarkers.size();		
+		int sizeM = aPlasmid.getSpeciesParam().hostCompatibilityMarkers.size();		
 		loopA:
 			for (int i=0; i<sizeM; i++){
-				if( partner.getName().equals(aPlasmid.getActiveParam().hostCompatibilityMarkers.get(i))){
+				if( partner.getName().equals(aPlasmid.getSpeciesParam().hostCompatibilityMarkers.get(i))){
 					hMarker = true;
 					break loopA;
 				}
@@ -300,11 +300,11 @@ public class MultiEpiBac extends BactEPS
 			}
 
 
-			int sizeP = aPlasmid.getActiveParam().plasmidCompatibilityMarkers.size();
+			int sizeP = aPlasmid.getSpeciesParam().plasmidCompatibilityMarkers.size();
 			loopB:
 				for (int i=0; i<sizeP; i++){
 					for (int j=0; j< plHostedNames.size(); j++){
-						if( plHostedNames.get(j).equals(aPlasmid.getActiveParam().plasmidCompatibilityMarkers.get(i))){
+						if( plHostedNames.get(j).equals(aPlasmid.getSpeciesParam().plasmidCompatibilityMarkers.get(i))){
 							pMarker = true;
 							break loopB;
 						}
@@ -401,11 +401,11 @@ public class MultiEpiBac extends BactEPS
 			conjugate = true;
 		}*/
 
-		tP = aPlasmid.getActiveParam().transferProb;
+		tP = aPlasmid.getSpeciesParam().transferProb;
 
 		//sonia: the recipient probability encompasses the retroransfer probability and enzyme restriction systems acting on the
 		//recipient cell
-		rP = partner.getActiveParam().recipientProbability;
+		rP = partner.getSpeciesParam().recipientProbability;
 
 		conjugate &= (ExtraMath.getUniRandDbl()<=tP*rP*distBasedProb); 
 
@@ -419,7 +419,7 @@ public class MultiEpiBac extends BactEPS
 		double tP;
 		boolean conjugate = true;
 
-		tP = aPlasmid.getActiveParam().transferProb;
+		tP = aPlasmid.getSpeciesParam().transferProb;
 
 		conjugate &= (ExtraMath.getUniRandDbl()<=tP); 
 
@@ -588,9 +588,9 @@ public class MultiEpiBac extends BactEPS
 	}
 	
 	@Override
-	public MultiEpiBacParam getActiveParam()
+	public MultiEpiBacParam getSpeciesParam()
 	{
-		return (MultiEpiBacParam) _activeParam;
+		return (MultiEpiBacParam) _speciesParam;
 	}
 
 	/**
@@ -602,7 +602,7 @@ public class MultiEpiBac extends BactEPS
 	@Override
 	public Color getColor()
 	{
-		MultiEpiBacParam param = getActiveParam();
+		MultiEpiBacParam param = getSpeciesParam();
 		if ( plasmidHosted.isEmpty() )
 			return param.rColor;
 		for ( MultiEpisome plasmid : plasmidHosted )
@@ -633,7 +633,7 @@ public class MultiEpiBac extends BactEPS
 		for ( MultiEpisome anEpi : plasmidHosted )
 		{	
 			tempString.append(",");
-			tempString.append(anEpi.getActiveParam().plasmidName + ",");
+			tempString.append(anEpi.getSpeciesParam().plasmidName + ",");
 			tempString.append(anEpi.getCopyNumber()+ ",");
 			/*
 			 * Count cells that carry a certain type of plasmid; the copy
@@ -650,7 +650,7 @@ public class MultiEpiBac extends BactEPS
 
 	@Override
 	public void writePOVColorDefinition(FileWriter fr) throws IOException {
-		MultiEpiBacParam param = getActiveParam();
+		MultiEpiBacParam param = getSpeciesParam();
 
 		fr.write("#declare "+_species.speciesName+"_d = color rgb < ");
 		fr.write((param.dColor.getRed()) / 255.0 + " , ");
