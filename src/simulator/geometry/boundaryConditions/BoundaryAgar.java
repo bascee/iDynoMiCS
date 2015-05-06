@@ -2,6 +2,7 @@ package simulator.geometry.boundaryConditions;
 
 import simulator.Simulator;
 import simulator.SoluteGrid;
+import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.ContinuousVector;
@@ -39,7 +40,7 @@ public class BoundaryAgar extends InternalBoundary
 	}
 
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	public void applyBoundary(Agent anAgent, ContinuousVector target)
 	{
 		hardBoundary(anAgent, target);
 	};

@@ -67,8 +67,7 @@ public class AgentContainer
 	 * Visibility public so that it can be accessed from LocatedGroup in
 	 * killAll().
 	 */
-	private LinkedList<Agent> _agentToKill = 
-										new LinkedList<Agent>();
+	private LinkedList<Agent> _agentToKill = new LinkedList<Agent>();
 
 	/**
 	 * Array of SpatialGrids - one for each species in the simulation
@@ -638,7 +637,7 @@ public class AgentContainer
 		//rebuilt tree
 		agentTree.clear();
 		for(Agent a: agentList) {
-			if (a instanceof LocatedAgent) {
+			if (a instanceof LocatedActiveAgent) {
 				agentTree.insert(a.getBoundingBoxCoord(),
 											a.getBoundingBoxDimensions(), a);
 			}
@@ -962,7 +961,7 @@ public class AgentContainer
 //		for ( LocatedGroup aSquare : _grid )
 //			for ( LocatedAgent aLoc : aSquare.group )
 		for ( Agent agent : getAll() )
-			if ( agent instanceof LocatedAgent ) 
+			if ( agent instanceof LocatedActiveAgent ) 
 				agent.fitMassOnGrid(biomassGrid);
 	}
 
@@ -980,7 +979,7 @@ public class AgentContainer
 //		for (LocatedGroup aSquare : _grid)
 //			for (LocatedAgent aLoc : aSquare.group)
 		for ( Agent agent : getAll() )
-			if ( agent instanceof LocatedAgent ) 
+			if ( agent instanceof LocatedActiveAgent ) 
 				agent.fitVolRateOnGrid(biomassGrid);
 	}
 
@@ -1019,7 +1018,7 @@ public class AgentContainer
 		
 		// Sum biomass concentrations
 		for (Agent anA : getAll())
-			if (anA instanceof LocatedAgent)
+			if (anA instanceof LocatedActiveAgent)
 			{
 				aLoc = anA;
 				aLoc.fitMassOnGrid(_speciesGrid[aLoc.speciesIndex]);
@@ -1116,7 +1115,7 @@ public class AgentContainer
 		/* <----- HGT Stats End ----> */
 		
 		// Fill the agent_state file, build the state for the summary
-  		LocatedAgent aLoc;
+  		Agent aLoc;
   		MultiEpiBac anEpiBac;
  		int spIndex;
  		for (Agent anAgent : getAll())
@@ -1131,9 +1130,9 @@ public class AgentContainer
  			
  			// TODO RC - why aren't we including the mass and growth rates
  			// of all ActiveAgents, only LocatedAgents?
- 			if (anAgent instanceof LocatedAgent)
+ 			if (anAgent instanceof LocatedActiveAgent)
  			{
- 				aLoc = (LocatedAgent) anAgent;	
+ 				aLoc = anAgent;	
  				spMass[spIndex] += aLoc.getTotalMass();
  				spGrowth[spIndex] += aLoc.getNetGrowth();
   				speciesBuffer[spIndex].append(aLoc.writeOutput()+";\n");
@@ -1316,7 +1315,7 @@ public class AgentContainer
   		  	
   		  	// TODO RC - why aren't we including the mass and growth rates
   			// of all ActiveAgents, only LocatedAgents?
-  			if (anAgent instanceof ActiveAgent)
+  			if (anAgent instanceof LocatedActiveAgent)
   			{
   				aLoc = anAgent;
   				spMass[spIndex] += aLoc.getTotalMass();

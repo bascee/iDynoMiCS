@@ -14,6 +14,7 @@ package simulator.geometry.boundaryConditions;
 import utils.XMLParser;
 import simulator.Simulator;
 import simulator.SoluteGrid;
+import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
@@ -28,7 +29,7 @@ import simulator.geometry.*;
  * boundary are considered to have entered the planktonic bulk domain. 
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author Sï¿½nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  *
  */
@@ -111,7 +112,7 @@ public class BoundaryConstant extends ExternalBoundary
 	 * @param target	Vector of where this agent was going to be placed.
 	 */
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	public void applyBoundary(Agent anAgent, ContinuousVector target)
 	{
 		deadlyBoundary(anAgent, target, "overBoard");
 	}

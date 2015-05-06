@@ -11,6 +11,7 @@ package simulator.agent.zoo;
 
 import java.math.BigInteger;
 
+import simulator.agent.LocatedActiveAgent;
 import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
 import simulator.Simulator;
@@ -31,7 +32,7 @@ import utils.XMLParser;
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
-public class ParticulateEPS extends LocatedAgent
+public class ParticulateEPS extends LocatedActiveAgent
 {
 	/**
 	 * Serial version used for the serialisation of the class
@@ -225,7 +226,7 @@ public class ParticulateEPS extends LocatedAgent
 	{
 		if ( getTotalMass() < 0.0 )
 			return true;
-		return ( getRadius(true) <= this.getDeathRadius() );
+		return ( getRadius(true) <= this.getMyDeathRadius() );
 	}
 
 	/**

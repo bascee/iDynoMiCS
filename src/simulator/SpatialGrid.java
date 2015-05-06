@@ -15,6 +15,7 @@ import java.io.Serializable;
 
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
+import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
 import utils.ExtraMath;
 import utils.MatrixOperations;
@@ -513,7 +514,7 @@ public class SpatialGrid implements Serializable
 	 * @param aLocAgent	The agent to use as the centre of the search
 	 * @return	Average grid value seen around this point
 	 */
-	public Double getValueAround(LocatedAgent aLocAgent)
+	public Double getValueAround(Agent aLocAgent)
 	{
 		return getValueAround(aLocAgent.getLocation(),
 								aLocAgent.getRadius(true));

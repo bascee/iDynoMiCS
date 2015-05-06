@@ -12,10 +12,12 @@
 package simulator.geometry.boundaryConditions;
 
 import java.util.List;
+
 import org.jdom.Element;
 
 import simulator.Simulator;
 import simulator.SoluteGrid;
+import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
@@ -174,7 +176,7 @@ public class BoundaryCyclic extends ExternalBoundary
 	 * @param target	The target position that the agent is moving to.
 	 */
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	public void applyBoundary(Agent anAgent, ContinuousVector target)
 	{
 		// Determine the intersection with the crossed boundary.
 		// TODO Using first intersection is a quick fix.

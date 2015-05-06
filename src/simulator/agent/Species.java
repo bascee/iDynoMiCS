@@ -240,14 +240,14 @@ public class Species implements Serializable
 		ContinuousVector cc = new ContinuousVector();
 
 		for (int i = 0; i < howMany; i++) 
-			if ( _progenitor instanceof Agent ) 
+			if ( _progenitor instanceof LocatedActiveAgent ) 
 			{
 				// Set coordinates within the birth area - randomly
 				if( ! Simulator.isChemostat )					
 					shuffleCoordinates(cc, _initArea);
 
 				// Create the agent at these coordinates
-				((LocatedAgent) _progenitor).createNewAgent(cc);
+				_progenitor.createNewAgent(cc);
 			}
 			else
 				_progenitor.createNewAgent();

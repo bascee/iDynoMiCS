@@ -18,6 +18,7 @@ import utils.XMLParser;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.SpatialGrid;
+import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
@@ -217,7 +218,7 @@ public abstract class AllBC
      * 
      * @see LocatedAgent.move();
      */
-	public abstract void applyBoundary(LocatedAgent anAgent, 
+	public abstract void applyBoundary(Agent anAgent, 
 													ContinuousVector newLoc);
 	
 	public void applyBoundary(DiscreteVector coord)
@@ -346,7 +347,7 @@ public abstract class AllBC
 	 * 
 	 * @see applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	 */
-	protected void deadlyBoundary(LocatedAgent anAgent,
+	protected void deadlyBoundary(Agent anAgent,
 									ContinuousVector target, String reason)
 	{
 		/*
@@ -371,7 +372,7 @@ public abstract class AllBC
 	 * 
 	 * @see applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	 */
-	protected void hardBoundary(LocatedAgent anAgent, ContinuousVector target)
+	protected void hardBoundary(Agent anAgent, ContinuousVector target)
 	{
 		// Define coordinates of the corrected position.
 		_myShape.orthoProj(target, target);

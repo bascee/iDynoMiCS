@@ -33,6 +33,7 @@ import utils.UnitConverter;
 import utils.XMLParser;
 import simulator.Simulator;
 import simulator.SoluteGrid;
+import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
@@ -187,7 +188,7 @@ public class BoundaryGasMembrane extends ConnectedBoundary
      * @see LocatedAgent.move();
      */
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	public void applyBoundary(Agent anAgent, ContinuousVector target)
 	{
 		// Define coordinates of the corrected position
 		_myShape.orthoProj(target, target);

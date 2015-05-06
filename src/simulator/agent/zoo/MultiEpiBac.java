@@ -230,7 +230,7 @@ public class MultiEpiBac extends BactEPS
 
 		int reacIndex;
 		_netGrowthRate = 0.0;
-		_netVolumeRate = 0.0;
+		setNetVolumeRate(0.0);
 		// Compute mass growth rate of each active reaction
 		for (int iReac = 0; iReac<reactionActive.size(); iReac++)
 		{
@@ -242,7 +242,7 @@ public class MultiEpiBac extends BactEPS
 			{
 				deltaMass = particleYield[reacIndex][i]*growthRate[reacIndex];
 				_netGrowthRate += deltaMass;
-				_netVolumeRate += deltaMass/getSpeciesParam().particleDensity[i];
+				setNetVolumeRate(getNetVolumeRate() + deltaMass/getSpeciesParam().particleDensity[i]);
 				particleMass[i] += (deltaMass*SimTimer.getCurrentTimeStep());	
 			}
 		}

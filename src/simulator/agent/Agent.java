@@ -11,6 +11,7 @@
  */
 package simulator.agent;
 
+import java.awt.Color;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -447,7 +448,6 @@ public abstract class Agent implements Cloneable
 
 	public void createNewAgent() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public Double getTotalMass() {
@@ -593,5 +593,80 @@ public abstract class Agent implements Cloneable
 	public Double getNetGrowth() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void fitReacRateOnGrid(SpatialGrid aRateGrid, int reactionIndex) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public ContinuousVector getMovement() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected void updateGrowthRates() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void createNewAgent(ContinuousVector position) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Color getColor() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Double getActiveFrac() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Boolean hasEPS() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Color getColorCapsule() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected void setMyDivRadius(Double _myDivRadius) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	protected void setMyDeathRadius(Double _myDeathRadius) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void subtractMovement(ContinuousVector _divisionDirection) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	protected void setNetVolumeRate(Double _netVolumeRate) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void divide() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setLocation(ContinuousVector position) {
+		// TODO Auto-generated method stub
+		
 	}
 }

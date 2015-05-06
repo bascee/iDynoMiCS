@@ -292,7 +292,7 @@ public class Biofilm3D implements Serializable
 	 */
 	protected void particlesToFile(FileWriter f) throws IOException {
 		for (Agent anAgent : _pov.mySim.agentGrid.getAll()) {
-			ParticleWithCapsule s = new ParticleWithCapsule((LocatedAgent)anAgent);
+			ParticleWithCapsule s = new ParticleWithCapsule(anAgent);
 			f.write(s.toString());
 		}
 	}

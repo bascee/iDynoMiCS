@@ -53,7 +53,7 @@ import utils.XMLParser;
  * University of Birmingham (UK).
  *
  */
-public class Bacterium extends LocatedAgent implements Cloneable 
+public class Bacterium extends LocatedActiveAgent implements Cloneable 
 {	
 	/**
 	 * Boolean noting whether any EPS particles have been declared as part of
