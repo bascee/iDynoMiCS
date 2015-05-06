@@ -99,7 +99,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	/**
 	 * List of neighbouring agents in this agent's vicinity.
 	 */
-	protected LinkedList<LocatedAgent> _myNeighbors = new LinkedList<LocatedAgent>();
+	protected LinkedList<Agent> _myNeighbors = new LinkedList<Agent>();
 
 	/**
 	 * Index of the agent position on the vectorized grid.
@@ -115,7 +115,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	/**
 	 * Detachment priority
 	 */
-	public Double detPriority = 0.0;
+	private Double detPriority = 0.0;
 
 	/**
 	 * Stores the simulation time since the last division check
@@ -130,7 +130,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	/**
 	 * Cumulative probability as to whether the plasmid will be transferred.
 	 */
-	public Double _distCumProb = 0.0; 	
+	private Double _distCumProb = 0.0; 	
 
 
 	/**
@@ -158,7 +158,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		o._movement = (ContinuousVector) this._movement.clone();
 		o._divisionDirection = (ContinuousVector)
 											this._divisionDirection.clone();
-		o._myNeighbors = (LinkedList<LocatedAgent>) this._myNeighbors.clone();
+		o._myNeighbors = (LinkedList<Agent>) this._myNeighbors.clone();
 		o._agentGridIndex = this._agentGridIndex;
 		return o;
 	}
@@ -311,7 +311,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		/*
 		 * Check the mass is positive.
 		 */
-		if ( _totalMass < 0.0 )
+		if ( getTotalMass() < 0.0 )
 			LogFile.writeLog("Warning: negative mass on agent "+sendName());
 		/*
 		 * Sum of (particles masses / particles density).
@@ -377,7 +377,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public boolean willDie()
 	{
-		return (_totalMass < 0.0) || (getRadius(false) <= _myDeathRadius);
+		return (getTotalMass() < 0.0) || (getRadius(false) <= _myDeathRadius);
 	}
 	
 	/**
@@ -457,24 +457,22 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * \brief On agent division, transfers biomass and EPS between the old and
 	 * new agent, at a specified ratio.
 	 * 
-	 * @param baby	The new agent, which is inheriting mass.
+	 * @param agent	The new agent, which is inheriting mass.
 	 * @param babyMassFrac	The ratio of the biomass/EPS that should be 
 	 * transferred to the new agent.
 	 */
-	public void transferCompounds(LocatedAgent baby, Double babyMassFrac)
+	public void transferCompounds(Agent agent, Double babyMassFrac)
 	{
-		Double massToTransfer;
+		Double[] massToTransfer = new Double[particleMass.length];
 		for (int i = 0; i<particleMass.length; i++)
-		{
-			massToTransfer = this.particleMass[i] * babyMassFrac;
-			baby.particleMass[i] += massToTransfer;
-			this.particleMass[i] -= massToTransfer;
-		}
+			massToTransfer[i] = this.particleMass[i] * babyMassFrac;
+		agent.addToParticleMasses(massToTransfer);
+		this.subtractFromParticleMasses(massToTransfer);
 		/*
 		 * Update radius, mass and volumes.
 		 */
 		updateSize();
-		baby.updateSize();
+		agent.updateSize();
 	}
 	
 	/**
@@ -516,7 +514,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		 * Rebuild your neighbourhood.
 		 */
 		getPotentialShovers(getInteractDistance(),_location,_radius);
-		for ( LocatedAgent neighbour : _myNeighbors )
+		for ( Agent neighbour : _myNeighbors )
 			addPushMovement(neighbour, MUTUAL);
 		_myNeighbors.clear();
 		return move();
@@ -534,22 +532,22 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param gain	Double noting change in position
 	 * @return Boolean stating whether shoving is detected (true) or not (false)
 	 */
-	public void addPushMovement(LocatedAgent aNeighbor, boolean isMutual)
+	public void addPushMovement(Agent neighbour, boolean isMutual)
 	{
 		/*
 		 * Cannot push oneself!
 		 */
-		if ( aNeighbor == this )
+		if ( neighbour == this )
 			return;
 		/*
 		 * Find the vector from your neighbour's cell centre to your cell
 		 * centre.
 		 */
-		ContinuousVector diff = computeDifferenceVector(aNeighbor);
+		ContinuousVector diff = computeDifferenceVector(neighbour);
 		/*
 		 * Compute effective cell-cell distance.
 		 */
-		Double delta = diff.norm() - getInteractDistance(aNeighbor);
+		Double delta = diff.norm() - getInteractDistance(neighbour);
 		/*
 		 * Apply the shoving calculated. If it's mutual, apply half to each.
 		 */
@@ -559,7 +557,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			if ( isMutual )
 			{
 				diff.times(0.5);
-				aNeighbor._movement.add(diff);
+				neighbour.addMovement(diff);
 			}
 			this._movement.subtract(diff);
 		}
@@ -621,7 +619,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * TODO Can we do this without assuming cyclic boundaries? I.e. actually
 	 * check..
 	 * 
-	 * @param position	ContinuousVector of position to calculate distance to.
+	 * @param neighbour	ContinuousVector of position to calculate distance to.
 	 * @return The shortest movement vector to go from a to b, taking into
 	 * account the cyclic boundary.
 	 * @see addOverlapMovement
@@ -670,9 +668,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aLoc
 	 * @return
 	 */
-	public ContinuousVector computeDifferenceVector(LocatedAgent aLoc)
+	public ContinuousVector computeDifferenceVector(Agent aLoc)
 	{
-		return computeDifferenceVector(aLoc._location);
+		return computeDifferenceVector(aLoc.getLocation());
 	}
 	
 	/**
@@ -691,7 +689,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			
 		
 		for (Agent a: tempAgentList)
-			_myNeighbors.add((LocatedAgent) a);
+			_myNeighbors.add(a);
 		
 	}
 
@@ -718,7 +716,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	public void findCloseSiblings(int indexSpecies) 
 	{
 		Double shoveDist;
-		LocatedAgent aNb;
+		Agent aNb;
 		/*
 		 * Find and count neighbours.
 		 */
@@ -865,7 +863,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		if (isDead)
 			return;
 
-		Double value = _totalMass/aSpG.getVoxelVolume();
+		Double value = getTotalMass()/aSpG.getVoxelVolume();
 		if ( ! Double.isFinite(value) )
 			value = 0.0;
 		aSpG.addValueAt(value, _location);
@@ -1070,7 +1068,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public Double getMass(Boolean withCapsule)
 	{
-		return (withCapsule ? _totalMass : _totalMass);
+		return (withCapsule ? getTotalMass() : getTotalMass());
 	}
 	
 	/**
@@ -1135,9 +1133,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @return	Double specifying the shoving interaction distance that will
 	 * be applied.
 	 */
-	public Double getInteractDistance(LocatedAgent aLoc)
+	public Double getInteractDistance(Agent neighbour)
 	{
-		return getShoveRadius() + aLoc.getShoveRadius() + getShoveLimit();
+		return getShoveRadius() + neighbour.getShoveRadius() + getShoveLimit();
 	}
 	
 	/**
@@ -1242,8 +1240,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		@Override
 		public int compare(Object b1, Object b2)
 		{
-			Double f1 = ((LocatedAgent) b1).detPriority;
-			Double f2 = ((LocatedAgent) b2).detPriority;
+			Double f1 = ((Agent) b1).getDetPriority();
+			Double f2 = ((Agent) b2).getDetPriority();
 			return (int) Math.signum(f1 - f2);
 		}
 	}
@@ -1258,8 +1256,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		@Override
 		public int compare(Object b1, Object b2)
 		{
-			Double f1 = ((LocatedAgent) b1)._totalMass;
-			Double f2 = ((LocatedAgent) b2)._totalMass;
+			Double f1 = ((Agent) b1).getTotalMass();
+			Double f2 = ((Agent) b2).getTotalMass();
 			return (int) Math.signum(f1 - f2);
 		}
 	}
@@ -1282,9 +1280,74 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @return Distance from this agent to that given (assuming cyclic
 	 * boundaries).
 	 */
-	public Double getDistance(LocatedAgent aLoc)
+	public Double getDistance(Agent aLoc)
 	{
-		return getDistance(aLoc._location);
+		return getDistance(aLoc.getLocation());
+	}
+	
+	@Override
+	public Double[] getParticleMass() {
+		return particleMass;
+	}
+	
+	@Override
+	public void addParticleMass(Double mass, int particleIndex) {
+			particleMass[particleIndex] += mass;
+	}
+	
+	@Override
+	public void multiplyParticleMass(Double multiplier, int particleIndex) {
+			particleMass[particleIndex] *= multiplier;
+	}
+	
+	@Override
+	public void addToParticleMasses(Double[] mass) {
+		for (int i=0; i < particleMass.length; i++)
+			particleMass[i] += mass[i];
+	}
+	
+	@Override
+	public void subtractFromParticleMasses(Double[] mass) {
+		for (int i=0; i < particleMass.length; i++)
+			particleMass[i] -= mass[i];
+	}
+	
+	
+	@Override
+	public void setDetPriority(Double priority) {
+		this.detPriority = priority;
+	}
+	
+	@Override
+	public void addDetPriority(Double priority) {
+		setDetPriority(getDetPriority() + priority);
+	}
+	
+	@Override
+	public void multiplyDetPriority(Double multiplier) {
+		setDetPriority(getDetPriority() * multiplier);
+	}
+	
+	@Override
+	public void setDistProb(Double prob) {
+		this._distProb = prob;
+	}
+	
+	@Override
+	public Double getDistProb() {
+		return _distProb;
+	}
+
+	public Double getDistCumProb() {
+		return _distCumProb;
+	}
+
+	public void setDistCumProb(Double _distCumProb) {
+		this._distCumProb = _distCumProb;
+	}
+
+	public Double getDetPriority() {
+		return detPriority;
 	}
 
 	/**

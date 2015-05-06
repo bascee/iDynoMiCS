@@ -11,6 +11,7 @@ package simulator.agent.zoo;
 
 import java.math.BigInteger;
 
+import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
 import simulator.Simulator;
 import simulator.geometry.ContinuousVector;
@@ -222,7 +223,7 @@ public class ParticulateEPS extends LocatedAgent
 	@Override
 	public boolean willDie()
 	{
-		if ( _totalMass < 0.0 )
+		if ( getTotalMass() < 0.0 )
 			return true;
 		return ( getRadius(true) <= this.getDeathRadius() );
 	}
@@ -289,7 +290,7 @@ public class ParticulateEPS extends LocatedAgent
 		 * Remove any large siblings, i.e. those about to divide.
 		 */
 		int nNb = _myNeighbors.size();
-		LocatedAgent aLoc;
+		Agent aLoc;
 		for ( int iNb = 0; iNb < nNb; iNb++ )
 		{
 			aLoc = _myNeighbors.removeFirst();
@@ -313,7 +314,7 @@ public class ParticulateEPS extends LocatedAgent
 	@Override
 	public void die(Boolean isStarving)
 	{
-		if ( isStarving && (_totalMass > 0.0) )
+		if ( isStarving && (getTotalMass() > 0.0) )
 			transferBiomass();
 		super.die(isStarving);
 	}

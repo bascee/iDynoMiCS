@@ -19,6 +19,7 @@ import idyno.SimTimer;
 import simulator.AgentContainer;
 import simulator.Simulator;
 import simulator.SpatialGrid;
+import simulator.geometry.ContinuousVector;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -447,5 +448,120 @@ public abstract class Agent implements Cloneable
 	public void createNewAgent() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public Double getTotalMass() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Double getVolume(boolean b) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void addMovement(ContinuousVector move) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public ContinuousVector getLocation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Double getShoveRadius() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void updateSize() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean willDie() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	public void setDetPriority(Double priority) {
+	}
+
+	public void addDetPriority(Double detFunction) {
+		// TODO Auto-generated method stub
+	}
+
+	public void multiplyDetPriority(Double multiplier) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double getRadius(boolean b) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setDistProb(Double prob) {
+		// TODO Auto-generated method stub
+	}
+
+	public Double getDistProb() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setDistCumProb(Double prob) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double getDistCumProb() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public boolean willDivide() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void setParticleMass(Double[] particleMass) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double[] getParticleMass() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void addToParticleMasses(Double[] mass) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void subtractFromParticleMasses(Double[] mass) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addParticleMass(Double mass, int particleIndex) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void multiplyParticleMass(Double multiplier, int particleIndex) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double getDetPriority() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected void setTotalMass(Double _totalMass) {
+		// TODO Auto-generated method stub
 	}
 }

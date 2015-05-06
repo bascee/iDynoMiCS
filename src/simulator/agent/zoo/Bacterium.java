@@ -131,11 +131,11 @@ public class Bacterium extends LocatedAgent implements Cloneable
 		}
 
 		/* If no mass defined, use the division radius to find the mass */
-		if ( this._totalMass.equals(0.0))
+		if ( this.getTotalMass().equals(0.0))
 		{
 			guessMass();
 			LogFile.writeLog("Guessing "+this.getSpecies().speciesName+
-										" initial mass at: "+this._totalMass);
+										" initial mass at: "+this.getTotalMass());
 		}
 
 		// SET CELL RADIUS, GENERATION, AND GENEOLOGY
@@ -208,7 +208,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 			updateMass();
 			/* If no mass defined, use the division radius to find the mass */
 			// Note this should have been done already in initFromProtocolFile
-			if ( this._totalMass == 0.0 )
+			if ( this.getTotalMass() == 0.0 )
 			{
 				guessMass();
 				LogFile.writeLog("Warning: Bacterium.createNewAgent calling guessMass()");

@@ -10,8 +10,8 @@
 package simulator.agent.zoo;
 
 import idyno.SimTimer;
+import simulator.agent.Agent;
 import simulator.agent.LocatedAgent;
-
 import utils.ExtraMath;
 
 /**
@@ -47,7 +47,7 @@ public class BactEPS extends Bacterium
 	public void manageEPS() 
 	{
 
-		LocatedAgent aNb;
+		Agent aNb;
 		double deltaM;int nEPS;
 
 		if ( ! _hasEps )
@@ -84,7 +84,7 @@ public class BactEPS extends Bacterium
 			nEPS = _myNeighbors.size();			
 			for (int iNb = 0; iNb<nEPS; iNb++) {
 				aNb = _myNeighbors.removeFirst();
-				aNb.particleMass[epsIndex] += value/nEPS;
+				aNb.addParticleMass(value/nEPS,epsIndex);
 				aNb.updateSize();
 			}			
 		}

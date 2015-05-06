@@ -60,7 +60,7 @@ public class MultiEpiBac extends BactEPS
 
 	//sonia 8-12-2010
 	//distance based probability ordering management
-	public Map<Double, LocatedAgent> test = new HashMap <Double, LocatedAgent> ();
+	public Map<Double, Agent> test = new HashMap <Double, Agent> ();
 	/* _________________________ CONSTRUCTOR _____________________________ */
 	/**
 	 * Empty constructor ; called to build a progenitor ; the speciesParameter
@@ -462,17 +462,17 @@ public class MultiEpiBac extends BactEPS
 			if ( testDonorTransfer(aPlasmid) )
 			{
 				Double cumProbSum = 0.0;
-				for ( LocatedAgent agent : aPlasmid.nbhList )
-					cumProbSum += agent._distCumProb;
+				for ( Agent agent : aPlasmid.nbhList )
+					cumProbSum += agent.getDistCumProb();
 				Double normRand = ExtraMath.getUniRandDbl()*cumProbSum;
 				/*
 				 * Find a neighbour to try conjugation with.
 				 */
-				LocatedAgent aLoc = null;
+				Agent aLoc = null;
 				for (int i = 0; i< aPlasmid.nbhList.size(); i++)
 				{
 					aLoc =	aPlasmid.nbhList.get(i);
-					if( aLoc._distCumProb < normRand )
+					if( aLoc.getDistCumProb() < normRand )
 					{
 						aLoc = aPlasmid.nbhList.remove(i);
 						break;
@@ -515,7 +515,7 @@ public class MultiEpiBac extends BactEPS
 		/*
 		 * Now remove any agents that are too far (apply circular perimeter).
 		 */
-		for ( LocatedAgent aLocAgent : _myNeighbors )
+		for ( Agent aLocAgent : _myNeighbors )
 		{
 			if ( aLocAgent == this )
 				continue;
@@ -529,7 +529,7 @@ public class MultiEpiBac extends BactEPS
 			if ( dist < nbhRadius )
 			{
 				distProb = ExtraMath.sq(donorRadius/(donorRadius+dist));
-				aLocAgent._distProb = distProb;
+				aLocAgent.setDistProb(distProb);
 				test.put(distProb, aLocAgent);	
 			}	
 		}
@@ -544,10 +544,10 @@ public class MultiEpiBac extends BactEPS
 		 * Calculate and apply the cumulative probabilities.
 		 */
 		Double cumulative = 0.0;
-		for ( LocatedAgent aLoc : aPlasmid.nbhList )
+		for ( Agent aLoc : aPlasmid.nbhList )
 		{
-			cumulative += aLoc._distProb;
-			aLoc._distCumProb = cumulative;
+			cumulative += aLoc.getDistProb();
+			aLoc.setDistCumProb(cumulative);
 		}
 	}
 

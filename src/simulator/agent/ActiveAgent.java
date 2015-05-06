@@ -10,6 +10,7 @@
 package simulator.agent;
 
 import java.util.ArrayList;
+
 import org.jdom.Element;
 
 import idyno.SimTimer;
@@ -98,7 +99,7 @@ public abstract class ActiveAgent extends Agent {
 	/**
 	 * Sum of masses of all particles
 	 */
-	protected Double _totalMass;
+	private Double _totalMass;
 
 	/**
 	 * \brief Creates an ActiveAgent object and initialises the object in
@@ -445,7 +446,7 @@ public abstract class ActiveAgent extends Agent {
 	 */
 	public void updateMass()
 	{
-		_totalMass = ExtraMath.sum(particleMass);
+		setTotalMass(ExtraMath.sum(particleMass));
 	}
 
 	/* ______________________ REACTION MANAGEMENT __________________________ */
@@ -733,6 +734,19 @@ public abstract class ActiveAgent extends Agent {
 		return (ActiveParam) _speciesParam;
 	}
 
+	@Override
+	public void setDetPriority(Double priority) {
+		// TODO Auto-generated method stub	
+	}
+
+	public void addDetPriority(Double detFunction) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	protected void setTotalMass(Double _totalMass) {
+		this._totalMass = _totalMass;
+	}
 
 
 }

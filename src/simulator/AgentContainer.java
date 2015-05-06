@@ -311,7 +311,7 @@ public class AgentContainer
 		Double dist = 0.0;
 		// Now iterate through each one. If we're close enough, move done.
 		// Shoving can then sort out distance between the two cells.
-		for (LocatedAgent aLoc : agentsInGrid.group)
+		for (Agent aLoc : agentsInGrid.group)
 		dist = aLoc.getLocation().distance(Point); 
 		if ( dist <= distance )
 		return true;
@@ -710,7 +710,7 @@ public class AgentContainer
 	 * @param nbList: the list of located agents
 	 */
 	public void getPotentialShovers(int index, Double range,
-											LinkedList<LocatedAgent> nbList)
+											LinkedList<Agent> nbList)
 	{
 		LocatedGroup aGroup;
 		int radius = Math.max(1, (int) Math.floor(range / this._res));
@@ -1595,10 +1595,10 @@ public class AgentContainer
 			tallyVariable = aBorderElement.totalMass * ratio;
 
 
-			for (LocatedAgent aLoc : _grid[index].group) {
+			for (Agent aLoc : _grid[index].group) {
 				mass += aLoc.getTotalMass() * ratio;
-				for (int iComp = 0; iComp < aLoc.particleMass.length; iComp++)
-					aLoc.particleMass[iComp] *= 1.0 - ratio;
+				for (int iComp = 0; iComp < aLoc.getParticleMass().length; iComp++)
+					aLoc.multiplyParticleMass(1.0 - ratio,iComp);
 
 				aLoc.updateSize();
 				if (aLoc.willDie()) {
@@ -1651,7 +1651,7 @@ public class AgentContainer
 		 */
 		_levelset.refreshBorder(true, mySim);
 		// List of agents to consider for removal.
-		LinkedList<LocatedAgent> detGroup = new LinkedList<LocatedAgent>();
+		LinkedList<Agent> detGroup = new LinkedList<Agent>();
 		// For groups on _close list:
 		for (LocatedGroup borderElem : _levelset.getBorder())
 		{
@@ -1669,7 +1669,7 @@ public class AgentContainer
 			borderElem.erosionRatio = Math.min(borderElem.erosionRatio, 1.0);
 			tallyVariable += borderElem.totalMass * borderElem.erosionRatio;
 			// Add them to detGroup.
-			for ( LocatedAgent aLoc : borderElem.group )
+			for ( Agent aLoc : borderElem.group )
 				detGroup.add(aLoc);
 		} // end of: for (LocatedGroup aBorderElement : _levelset.getBorder())
 		
@@ -1678,7 +1678,7 @@ public class AgentContainer
 		 * calculating detachment priorities.
 		 */
 		Comparator<Object> comp = new LocatedAgent.totalMassComparator();
-		LocatedAgent aLoc = Collections.min(detGroup, comp);
+		Agent aLoc = Collections.min(detGroup, comp);
 		if ( tallyVariable < aLoc.getTotalMass() )
 			return;
 		
@@ -1725,8 +1725,8 @@ public class AgentContainer
 	{
 		int i = 0;
 		// Reset all detPriority values to zero
-		for (LocatedAgent aLoc:aBorderElement.group)
-			aLoc.detPriority = 0.0;
+		for (Agent aLoc : aBorderElement.group)
+			aLoc.setDetPriority(0.0);
 		/*
 		 * For each free neighbour run through the agents in our border
 		 * element, adding the square of the agent's proximity to that
@@ -1738,8 +1738,8 @@ public class AgentContainer
 			// x-side
 			if (aBorderElement.nbhGroup[i][1][1].status==2) {
 				// LogFile.writeLog(aBorderElement.nbhGroup[i][1][1].dc+"is free");
-				for (LocatedAgent aLoc:aBorderElement.group) {
-					aLoc.detPriority += detFunction(i,aLoc.getLocation().x);
+				for (Agent aLoc:aBorderElement.group) {
+					aLoc.addDetPriority(detFunction(i,aLoc.getLocation().x));
 					// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().x+", detPriority: "+aLoc.detPriority);
 				}
 			}
@@ -1747,23 +1747,23 @@ public class AgentContainer
 			if (agentGrid.is3D) {
 				if (aBorderElement.nbhGroup[1][i][1].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][i][1].dc+"is free");
-					for (LocatedAgent aLoc:aBorderElement.group) {
-						aLoc.detPriority += detFunction(i,aLoc.getLocation().y);
+					for (Agent aLoc:aBorderElement.group) {
+						aLoc.addDetPriority(detFunction(i,aLoc.getLocation().y));
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().y+", detPriority: "+aLoc.detPriority);
 					}
 				}
 				if (aBorderElement.nbhGroup[1][1][i].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][1][i].dc+"is free");
-					for (LocatedAgent aLoc:aBorderElement.group) {
-						aLoc.detPriority += detFunction(i,aLoc.getLocation().z);
+					for (Agent aLoc:aBorderElement.group) {
+						aLoc.addDetPriority(detFunction(i,aLoc.getLocation().z));
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().z+", detPriority: "+aLoc.detPriority);
 					}
 				}
 			} else {
 				if (aBorderElement.nbhGroup[1][i][1].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][i][1].dc+"is free");
-					for (LocatedAgent aLoc:aBorderElement.group) {
-						aLoc.detPriority += 2*detFunction(i,aLoc.getLocation().y);
+					for (Agent aLoc:aBorderElement.group) {
+						aLoc.addDetPriority(2*detFunction(i,aLoc.getLocation().y));
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().y+", detPriority: "+aLoc.detPriority);
 					} // end of: for (LocatedAgent aLoc:aBorderElement.group) {
 				} // end of: if (aBorderElement.nbhGroup[1][i][1].status==2) {
@@ -1771,7 +1771,7 @@ public class AgentContainer
 		} // end of: for (i=0;i<3;i+=2){
 
 		// weight the detPriority of each agent by its Located Group ratio
-		for (LocatedAgent aLoc:aBorderElement.group) aLoc.detPriority *= ratio;
+		for (Agent aLoc:aBorderElement.group) aLoc.multiplyDetPriority(ratio);
 	}
 
 	/* __________________________ GET & SET _________________________________ */

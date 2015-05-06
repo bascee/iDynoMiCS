@@ -40,7 +40,7 @@ public class LocatedGroup
 	/**
 	 * Linked list to hold members of this group
 	 */
-	public LinkedList<LocatedAgent> group = new LinkedList<LocatedAgent>();
+	public LinkedList<Agent> group = new LinkedList<Agent>();
 
 	/**
 	 * Concentration of species in this group, thus area represented
@@ -214,7 +214,7 @@ public class LocatedGroup
 		totalConcentration = 0.0;
 		totalMass = 0.0;
 		Arrays.fill(speciesConcentration, 0.0);
-		for (LocatedAgent aLoc : group)
+		for (Agent aLoc : group)
 		{
 			totalMass += aLoc.getTotalMass();
 			value = aLoc.getTotalMass()/volume;
@@ -235,7 +235,7 @@ public class LocatedGroup
 	public Double refreshVolume()
 	{
 		totalVolume = 0.0;
-		for (LocatedAgent aLoc : group)
+		for (Agent aLoc : group)
 			totalVolume += aLoc.getVolume(true);
 		return totalVolume;
 	}
@@ -277,7 +277,7 @@ public class LocatedGroup
 	 */
 	public void addMoveToAgents(Double alpha)
 	{
-		for (LocatedAgent aLoc : group)
+		for (Agent aLoc : group)
 		{
 			move.times(alpha);
 			aLoc.addMovement(move);
@@ -291,7 +291,7 @@ public class LocatedGroup
 	 */
 	public void killAll(String reason)
 	{
-		for ( LocatedAgent aLoc : group )
+		for ( Agent aLoc : group )
 		{
 			aLoc.death = reason;
 			agentGrid.registerDeath(aLoc);
