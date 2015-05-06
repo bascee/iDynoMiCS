@@ -11,7 +11,6 @@ package simulator.agent.zoo;
 
 import idyno.SimTimer;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import utils.ExtraMath;
 
 /**

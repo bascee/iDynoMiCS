@@ -1230,39 +1230,6 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Comparator used by AgentContainer.erodeBorder()
-	 * 
-	 * Comparator used by AgentContainer.erodeBorder()
-	 * @author Rob Clegg
-	 */
-	public static class detPriorityComparator implements java.util.Comparator<Object>
-	{
-		@Override
-		public int compare(Object b1, Object b2)
-		{
-			Double f1 = ((Agent) b1).getDetPriority();
-			Double f2 = ((Agent) b2).getDetPriority();
-			return (int) Math.signum(f1 - f2);
-		}
-	}
-
-	/**
-	 * \brief Comparator used by AgentContainer.erodeBorder()
-	 * 
-	 * @author Rob Clegg
-	 */
-	public static class totalMassComparator implements java.util.Comparator<Object>
-	{
-		@Override
-		public int compare(Object b1, Object b2)
-		{
-			Double f1 = ((Agent) b1).getTotalMass();
-			Double f2 = ((Agent) b2).getTotalMass();
-			return (int) Math.signum(f1 - f2);
-		}
-	}
-	
-	/**
 	 * \brief Return the distance from this agent to a ContinuousVector.
 	 * 
 	 * @param position	ContinuousVector to find distance to.
@@ -1379,6 +1346,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return Integer grid index of where this agent is placed.
 	 */
+	@Override
 	public int getGridIndex()
 	{
 		return _agentGridIndex;
@@ -1401,6 +1369,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @param aGridIndex Grid index in which this agent should now be placed.
 	 */
+	@Override
 	public void setGridIndex(int aGridIndex)
 	{
 		_agentGridIndex = aGridIndex;
@@ -1417,6 +1386,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	}
 	
 	//Bas: added methods to return bounding boxes
+	@Override
 	public double[] getBoundingBoxCoord() {
 		int dim = 2;
 		if (_agentGrid.is3D)
@@ -1429,6 +1399,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		 
 	}
 	
+	@Override
 	public double[] getSearchCoord(Double range) {
 		int dim = 2;
 		if (_agentGrid.is3D)
@@ -1442,6 +1413,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	}
 	
 	// this method only holds for spherical bodies!
+	@Override
 	public double[] getBoundingBoxDimensions() {
 		int dim = 2;
 		if (_agentGrid.is3D)

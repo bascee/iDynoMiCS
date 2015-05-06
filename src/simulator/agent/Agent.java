@@ -564,4 +564,34 @@ public abstract class Agent implements Cloneable
 	protected void setTotalMass(Double _totalMass) {
 		// TODO Auto-generated method stub
 	}
+
+	public double[] getBoundingBoxCoord() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public double[] getSearchCoord(Double range) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public double[] getBoundingBoxDimensions() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setGridIndex(int aGridIndex) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getGridIndex() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public Double getNetGrowth() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

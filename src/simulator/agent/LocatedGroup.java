@@ -307,7 +307,7 @@ public class LocatedGroup
 	 * 
 	 * @param anAgent	LocatedAgent to remove from this group.
 	 */
-	public void remove(LocatedAgent anAgent)
+	public void remove(Agent anAgent)
 	{
 		group.remove(anAgent);
 		if ( group.isEmpty() && !Simulator.isChemostat )
@@ -319,7 +319,7 @@ public class LocatedGroup
 	 * 
 	 * @param anAgent	LocatedAgent to add to this group.
 	 */
-	public void add(LocatedAgent anAgent) 
+	public void add(Agent anAgent) 
 	{
 		group.add(anAgent);
 		status = 1;

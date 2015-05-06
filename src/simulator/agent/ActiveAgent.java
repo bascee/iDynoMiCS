@@ -666,6 +666,7 @@ public abstract class ActiveAgent extends Agent {
 	 *
 	 * @return Double stating the net growth rate of this agent
 	 */
+	@Override
 	public Double getNetGrowth()
 	{
 		return _netGrowthRate;

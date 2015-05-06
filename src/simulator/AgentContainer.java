@@ -638,9 +638,9 @@ public class AgentContainer
 		//rebuilt tree
 		agentTree.clear();
 		for(Agent a: agentList) {
-			if (a instanceof Agent) {
-				agentTree.insert(((LocatedAgent) a).getBoundingBoxCoord(),
-							((LocatedAgent) a).getBoundingBoxDimensions(), a);
+			if (a instanceof LocatedAgent) {
+				agentTree.insert(a.getBoundingBoxCoord(),
+											a.getBoundingBoxDimensions(), a);
 			}
 		}
 	}
@@ -757,7 +757,7 @@ public class AgentContainer
 		// Add the agent on the grid
 		if (anAgent instanceof Agent)
 		{
-			LocatedAgent aLoc = (LocatedAgent) anAgent;
+			Agent aLoc = anAgent;
 			try
 			{
 				if ( Simulator.isChemostat )
@@ -902,7 +902,7 @@ public class AgentContainer
 	{
 		if (anAgent instanceof Agent)
 		{
-			LocatedAgent aLoc = (LocatedAgent) anAgent;
+			Agent aLoc = anAgent;
 			int index = getIndexedPosition(aLoc.getLocation());
 			if ( ! Double.isNaN(index) )
 				_grid[index].remove(aLoc);
@@ -916,7 +916,7 @@ public class AgentContainer
 	 * 
 	 * @param anAgent	Agent that has moved and needs the location updated.
 	 */
-	public void registerMove(LocatedAgent anAgent)
+	public void registerMove(Agent anAgent)
 	{
 		/*
 		 * Compute the theoretical index on the agentGrid
@@ -962,7 +962,7 @@ public class AgentContainer
 //		for ( LocatedGroup aSquare : _grid )
 //			for ( LocatedAgent aLoc : aSquare.group )
 		for ( Agent agent : getAll() )
-			if ( agent instanceof Agent ) 
+			if ( agent instanceof LocatedAgent ) 
 				agent.fitMassOnGrid(biomassGrid);
 	}
 
@@ -980,7 +980,7 @@ public class AgentContainer
 //		for (LocatedGroup aSquare : _grid)
 //			for (LocatedAgent aLoc : aSquare.group)
 		for ( Agent agent : getAll() )
-			if ( agent instanceof Agent ) 
+			if ( agent instanceof LocatedAgent ) 
 				agent.fitVolRateOnGrid(biomassGrid);
 	}
 
@@ -1002,7 +1002,7 @@ public class AgentContainer
 	public void writeGrids(Simulator aSim, ResultFile bufferState,
 									ResultFile bufferSum) throws Exception
 	{
-		LocatedAgent aLoc;
+		Agent aLoc;
 
 		//sonia:chemostat
 		//I've modified the refreshElement() method for the chemostat case
@@ -1019,9 +1019,9 @@ public class AgentContainer
 		
 		// Sum biomass concentrations
 		for (Agent anA : getAll())
-			if (anA instanceof Agent)
+			if (anA instanceof LocatedAgent)
 			{
-				aLoc = (LocatedAgent) anA;
+				aLoc = anA;
 				aLoc.fitMassOnGrid(_speciesGrid[aLoc.speciesIndex]);
 			}
 
@@ -1131,7 +1131,7 @@ public class AgentContainer
  			
  			// TODO RC - why aren't we including the mass and growth rates
  			// of all ActiveAgents, only LocatedAgents?
- 			if (anAgent instanceof Agent)
+ 			if (anAgent instanceof LocatedAgent)
  			{
  				aLoc = (LocatedAgent) anAgent;	
  				spMass[spIndex] += aLoc.getTotalMass();
@@ -1306,7 +1306,7 @@ public class AgentContainer
 		/*
 		 * Collate the information for the agent_StateDeath file.
 		 */
-		LocatedAgent aLoc;
+		Agent aLoc;
   		MultiEpiBac anEpiBac;
   		int spIndex;
   		for (Agent anAgent : _agentToKill)
@@ -1316,9 +1316,9 @@ public class AgentContainer
   		  	
   		  	// TODO RC - why aren't we including the mass and growth rates
   			// of all ActiveAgents, only LocatedAgents?
-  			if (anAgent instanceof Agent)
+  			if (anAgent instanceof ActiveAgent)
   			{
-  				aLoc = (LocatedAgent) anAgent;
+  				aLoc = anAgent;
   				spMass[spIndex] += aLoc.getTotalMass();
   				spGrowth[spIndex] += aLoc.getNetGrowth();
   				speciesBuffer[spIndex].append(aLoc.writeOutput());
@@ -1677,7 +1677,7 @@ public class AgentContainer
 		 * If the tally is smaller than the smallest agent, no point
 		 * calculating detachment priorities.
 		 */
-		Comparator<Object> comp = new LocatedAgent.totalMassComparator();
+		Comparator<Object> comp = new totalMassComparator();
 		Agent aLoc = Collections.min(detGroup, comp);
 		if ( tallyVariable < aLoc.getTotalMass() )
 			return;
@@ -1687,7 +1687,7 @@ public class AgentContainer
 		// Counter of agents removed.
 		int nDetach = 0;
 		// Calculate detPriority for all agents in the _close list.
-		comp = new LocatedAgent.detPriorityComparator();
+		comp = new detPriorityComparator();
 		for (LocatedGroup borderElem : _levelset.getBorder() )
 			calcDetPriority(agentGrid, borderElem, borderElem.erosionRatio);
 		// aLoc is the most exposed cell.
@@ -2015,5 +2015,38 @@ public class AgentContainer
 	public LocatedGroup returnGroupInVoxel(int gridVoxel)
 	{
 		return _grid[gridVoxel];
+	}
+	
+	/**
+	 * \brief Comparator used by AgentContainer.erodeBorder()
+	 * 
+	 * @author Rob Clegg
+	 */
+	public static class totalMassComparator implements java.util.Comparator<Object>
+	{
+		@Override
+		public int compare(Object b1, Object b2)
+		{
+			Double f1 = ((Agent) b1).getTotalMass();
+			Double f2 = ((Agent) b2).getTotalMass();
+			return (int) Math.signum(f1 - f2);
+		}
+	}
+
+	/**
+	 * \brief Comparator used by AgentContainer.erodeBorder()
+	 * 
+	 * Comparator used by AgentContainer.erodeBorder()
+	 * @author Rob Clegg
+	 */
+	public static class detPriorityComparator implements java.util.Comparator<Object>
+	{
+		@Override
+		public int compare(Object b1, Object b2)
+		{
+			Double f1 = ((Agent) b1).getDetPriority();
+			Double f2 = ((Agent) b2).getDetPriority();
+			return (int) Math.signum(f1 - f2);
+		}
 	}
 }
