@@ -14,13 +14,11 @@ package simulator.diffusionSolver;
 
 import idyno.SimTimer;
 import simulator.diffusionSolver.multigrid.MultigridSolute;
-import simulator.geometry.Domain;
 import simulator.geometry.boundaryConditions.AllBC;
 import simulator.geometry.boundaryConditions.BoundaryAgar;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.Simulator;
 import simulator.SoluteGrid;
-import utils.LogFile;
 import utils.XMLParser;
 
 /**

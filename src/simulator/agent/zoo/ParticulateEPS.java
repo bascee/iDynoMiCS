@@ -11,7 +11,8 @@ package simulator.agent.zoo;
 
 import java.math.BigInteger;
 
-import simulator.agent.LocatedAgent;
+import simulator.agent.LocatedActiveAgent;
+import simulator.agent.Agent;
 import simulator.Simulator;
 import simulator.geometry.ContinuousVector;
 import simulator.reaction.Reaction;
@@ -30,7 +31,7 @@ import utils.XMLParser;
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
-public class ParticulateEPS extends LocatedAgent
+public class ParticulateEPS extends LocatedActiveAgent
 {
 	/**
 	 * Serial version used for the serialisation of the class
@@ -44,7 +45,7 @@ public class ParticulateEPS extends LocatedAgent
 	public ParticulateEPS()
 	{
 		super();
-		_activeParam = new ParticulateEPSParam();
+		_speciesParam = new ParticulateEPSParam();
 	}
 	
 	/**
@@ -129,7 +130,7 @@ public class ParticulateEPS extends LocatedAgent
 	{
 		try
 		{
-			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
+			ParticulateEPS baby = sendNewAgent();
 			baby.setLocation(position);
 			baby.updateSize();
 			baby.registerBirth();
@@ -222,9 +223,9 @@ public class ParticulateEPS extends LocatedAgent
 	@Override
 	public boolean willDie()
 	{
-		if ( _totalMass < 0.0 )
+		if ( getTotalMass() < 0.0 )
 			return true;
-		return ( getRadius(true) <= this.getDeathRadius() );
+		return ( getRadius(true) <= this.getMyDeathRadius() );
 	}
 
 	/**
@@ -259,7 +260,7 @@ public class ParticulateEPS extends LocatedAgent
 	@Override
 	public boolean willDivide() 
 	{
-		return getRadius(true) > getActiveParam().divRadius;
+		return getRadius(true) > getSpeciesParam().divRadius;
 	}
 
 	/**
@@ -271,8 +272,8 @@ public class ParticulateEPS extends LocatedAgent
 	 */
 	public boolean willTransfer()
 	{
-		return getRadius(true)<=ExtraMath.deviateFromCV(getActiveParam().transferRadius,
-		        getActiveParam().deathRadiusCV);
+		return getRadius(true)<=ExtraMath.deviateFromCV(getSpeciesParam().transferRadius,
+		        getSpeciesParam().deathRadiusCV);
 	}
 
 	/**
@@ -289,7 +290,7 @@ public class ParticulateEPS extends LocatedAgent
 		 * Remove any large siblings, i.e. those about to divide.
 		 */
 		int nNb = _myNeighbors.size();
-		LocatedAgent aLoc;
+		Agent aLoc;
 		for ( int iNb = 0; iNb < nNb; iNb++ )
 		{
 			aLoc = _myNeighbors.removeFirst();
@@ -313,7 +314,7 @@ public class ParticulateEPS extends LocatedAgent
 	@Override
 	public void die(Boolean isStarving)
 	{
-		if ( isStarving && (_totalMass > 0.0) )
+		if ( isStarving && (getTotalMass() > 0.0) )
 			transferBiomass();
 		super.die(isStarving);
 	}
@@ -328,12 +329,12 @@ public class ParticulateEPS extends LocatedAgent
 	{
 		_volume = 0.0;
 		for (int i = 0; i < particleMass.length - 1; i++)
-			_volume += particleMass[i]/getActiveParam().particleDensity[i];
+			_volume += particleMass[i]/getSpeciesParam().particleDensity[i];
 		
 		// Add the volume of the EPS capsule to the volume of the intracellular
 		// particles
 		int i = particleMass.length - 1;
-		_totalVolume = _volume+particleMass[i]/getActiveParam().particleDensity[i];
+		_totalVolume = _volume+particleMass[i]/getSpeciesParam().particleDensity[i];
 	}
 	
 	/**
@@ -379,18 +380,20 @@ public class ParticulateEPS extends LocatedAgent
 	 * @return Object of ParticulateParam that stores the parameters associated with this species
 	 */
 	@Override
-	public ParticulateEPSParam getActiveParam()
+	public ParticulateEPSParam getSpeciesParam()
 	{
-		return (ParticulateEPSParam) _activeParam;
+		return (ParticulateEPSParam) _speciesParam;
 	}
 
 	
+	@Override
 	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	
+	@Override
 	public void addReaction(Reaction aReaction, Boolean useDefaultParam) {
 		// TODO Auto-generated method stub
 		

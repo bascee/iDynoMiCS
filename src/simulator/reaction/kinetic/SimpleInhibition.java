@@ -59,6 +59,7 @@ public class SimpleInhibition extends IsKineticFactor
 	 * 
 	 * @param defMarkUp	XML tags that define this kinetic in the protocol file.
 	 */
+	@Override
 	public void init(Element defMarkUp)
 	{
 		_Ki = (new XMLParser(defMarkUp)).getParamDbl("Ki");		
@@ -72,6 +73,7 @@ public class SimpleInhibition extends IsKineticFactor
 	 * @param kineticParam	Array of parameters associated with this reaction.
 	 * @param paramIndex	An index to the parameter array.
 	 */
+	@Override
 	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
 	{	
 		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl("Ki");	
@@ -87,6 +89,7 @@ public class SimpleInhibition extends IsKineticFactor
 	 * @param index	An index to the parameter array.
 	 * @return Double value of the kinetic rate for this solute concentration.
 	 */
+	@Override
 	public Double kineticValue(Double solute, Double[] paramTable, int index)
 	{
 		return paramTable[index] / (paramTable[index] + solute);
@@ -98,6 +101,7 @@ public class SimpleInhibition extends IsKineticFactor
 	 * @param solute	Double giving the solute concentration.
 	 * @return Double giving kinetic rate for this solute concentration.
 	 */
+	@Override
 	public Double kineticValue(Double solute) 
 	{
 		return _Ki / (_Ki + solute);
@@ -113,6 +117,7 @@ public class SimpleInhibition extends IsKineticFactor
 	 * @return Double value of the kinetic differential for this solute
 	 * concentration.
 	 */
+	@Override
 	public Double kineticDiff(Double solute, Double[] paramTable, int index)
 	{
 		return -_Ki / ExtraMath.sq(paramTable[index] + solute);
@@ -126,6 +131,7 @@ public class SimpleInhibition extends IsKineticFactor
 	 * @return Double value of the kinetic differential for this solute
 	 * concentration.
 	 */
+	@Override
 	public Double kineticDiff(Double solute)
 	{
 		return -_Ki / ExtraMath.sq(_Ki + solute);

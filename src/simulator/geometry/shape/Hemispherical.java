@@ -7,7 +7,6 @@ import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
 import simulator.geometry.pointProcess.Edge;
-import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
 import utils.Complex;
@@ -122,6 +121,7 @@ public class Hemispherical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public void readShape(XMLParser shapeRoot, Domain aDomain)
 	{
 		_dPointCenterBase =
@@ -168,6 +168,7 @@ public class Hemispherical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public Boolean isOutside(ContinuousVector point)
 	{
 		ContinuousVector baseToPoint = getRelativePosition(point);
@@ -178,6 +179,7 @@ public class Hemispherical extends IsShape
 		return Boolean.logicalXor(isInsideHS, _interiorMatchesDomain);
 	}
 	
+	@Override
 	public DiscreteVector getRelativePosition(DiscreteVector coord)
 	{
 		DiscreteVector pointOnPlaneToPoint = new DiscreteVector();
@@ -185,6 +187,7 @@ public class Hemispherical extends IsShape
 		return pointOnPlaneToPoint;
 	}
 	
+	@Override
 	public DiscreteVector getAbsolutePosition(DiscreteVector coord)
 	{
 		DiscreteVector out = new DiscreteVector();
@@ -195,6 +198,7 @@ public class Hemispherical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
 		ContinuousVector diff = getRelativePosition(ccIn);
@@ -217,6 +221,7 @@ public class Hemispherical extends IsShape
 	 * \brief Gets the (Euclidean) distance from given point to the nearest
 	 * position on this shape. 
 	 */
+	@Override
 	public Double getDistance(ContinuousVector point)
 	{
 		ContinuousVector baseToPoint = getRelativePosition(point);
@@ -244,6 +249,7 @@ public class Hemispherical extends IsShape
 	 * coordinates, relative to global origin) 
 	 * @see azimuthCoord, radialCoord, zenithCoord
 	 */
+	@Override
 	public Double[] convertToLocal(ContinuousVector point)
 	{
 		return convertToPolar(point, _cVectorRadiusV, _cVectorToApex);
@@ -342,6 +348,7 @@ public class Hemispherical extends IsShape
 	 * @param point2
 	 * @return
 	 */
+	@Override
 	public Double distance(ContinuousVector point1, ContinuousVector point2)
 	{
 		return _radius * getRelativePosition(point1).angle(getRelativePosition(point2));
@@ -352,6 +359,7 @@ public class Hemispherical extends IsShape
 	 * @param point Any point in Cartesian space.
 	 * @return	The vector from _cPointCenterBase to this point.
 	 */
+	@Override
 	public ContinuousVector getRelativePosition(ContinuousVector point)
 	{
 		ContinuousVector out = new ContinuousVector(point);
@@ -359,6 +367,7 @@ public class Hemispherical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public ContinuousVector getAbsolutePosition(ContinuousVector point)
 	{
 		ContinuousVector out = new ContinuousVector(point);
@@ -385,6 +394,7 @@ public class Hemispherical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public Edge bisect(Site site1, Site site2)
 	{
 		// If the sites are co-localised, there's no unique bisector.
@@ -412,6 +422,7 @@ public class Hemispherical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public Vertex intersect(Edge edge1, Edge edge2)
 	{
 		Vertex out = new Vertex();
@@ -419,6 +430,7 @@ public class Hemispherical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public LinkedList<ContinuousVector> getIntersections(ContinuousVector position,
 													ContinuousVector vector) 
 	{
@@ -455,11 +467,13 @@ public class Hemispherical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public void readyToFollowBoundary(SpatialGrid aSG)
 	{
 		// TODO Auto-generated method stub
 	}
 	
+	@Override
 	public Boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut,
 															SpatialGrid aSG) 
 	{
@@ -467,17 +481,20 @@ public class Hemispherical extends IsShape
 	}
 	
 	
+	@Override
 	public ContinuousVector getNormalInside()
 	{
 		return null;
 	}
 	
+	@Override
 	public Double getDistance(IsShape aBoundary)
 	{
 		
 		return null;
 	}
 	
+	@Override
 	public DiscreteVector getNormalDiscrete()
 	{
 		return null;
@@ -505,6 +522,7 @@ public class Hemispherical extends IsShape
 		return null;
 	}
 	
+	@Override
 	public StringBuffer writeShapeInformation(StringBuffer outputString)
 	{
 		outputString.append("<Surface shape=\"Hemispherical\"");
@@ -518,11 +536,13 @@ public class Hemispherical extends IsShape
 		return outputString;
 	}
 	
+	@Override
 	public StringBuffer getSitesHeader()
 	{
 		return new StringBuffer("azimuth,zenith");
 	}
 	
+	@Override
 	public StringBuffer getEdgesHeader()
 	{
 		return new StringBuffer("azimuth1,zenith1,azimuth2,zenith2");

@@ -13,7 +13,7 @@ package simulator.geometry.boundaryConditions;
 
 import simulator.Simulator;
 import simulator.SoluteGrid;
-import simulator.agent.LocatedAgent;
+import simulator.agent.Agent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 import utils.XMLParser;
@@ -101,7 +101,7 @@ public class BoundaryZeroFlux  extends ExternalBoundary
 	 * @param target	The target position that the agent is moving to
 	 */
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	public void applyBoundary(Agent anAgent, ContinuousVector target)
 	{
 		hardBoundary(anAgent, target);
 	}

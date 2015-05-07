@@ -16,6 +16,7 @@ import org.jdom.Element;
 
 import Jama.Matrix;
 import simulator.Simulator;
+import simulator.agent.LocatedActiveAgent;
 import simulator.agent.Agent;
 import simulator.agent.zoo.MultiEpiBac;
 import simulator.agent.zoo.MultiEpisomeParam;
@@ -162,7 +163,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @see Simulator.createReaction()
 	 */
 	@Override
-	public void initFromAgent(Agent anAgent, Simulator aSim, XMLParser aReactionRoot) {
+	public void initFromAgent(LocatedActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot) {
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
 
@@ -275,6 +276,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param s	Temporary container for solute concentration 
 	 * @return	The specific growth rate
 	 */
+	@Override
 	public Double computeSpecRate(Double[] s)
 	{
 		Double specRate = _muMax;
@@ -457,7 +459,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * mass of the particle which is mediating this reaction)
 	 */
 	@Override
-	public Double computeMassGrowthRate(Agent anAgent)
+	public Double computeMassGrowthRate(LocatedActiveAgent anAgent)
 	{
 		Double plFitness = 0.0;
 		for (Double cost : setYield(anAgent))
@@ -470,7 +472,7 @@ public class ReactionGrowthFitness extends Reaction{
 	}
 
 	@Override
-	public Double computeSpecGrowthRate(Agent anAgent)
+	public Double computeSpecGrowthRate(LocatedActiveAgent anAgent)
 	{
 		Double plFitness = 1.0;
 		for (Double cost : setYield(anAgent))
@@ -489,7 +491,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param anAgent Parameters used are those defined for THIS agent
 	 */
 	@Override
-	public void computeSpecificGrowthRate(Double[] s, Agent anAgent)
+	public void computeSpecificGrowthRate(Double[] s, LocatedActiveAgent anAgent)
 	{
 		Double[] kineticParam = anAgent.reactionKinetic[reactionIndex];
 		
@@ -532,7 +534,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @see Episome.computeRate(EpiBac)
 	 */
 	@Override
-	public void computeSpecificGrowthRate(Agent anAgent)
+	public void computeSpecificGrowthRate(LocatedActiveAgent anAgent)
 	{
 		computeSpecificGrowthRate(readConcentrationSeen(anAgent, _soluteList), anAgent);
 	}
@@ -559,7 +561,7 @@ public class ReactionGrowthFitness extends Reaction{
 			{	
 				for (int pl=0; pl< anEpiBac.plasmidHosted.size(); pl++)
 				{
-					MultiEpisomeParam plParam = anEpiBac.plasmidHosted.get(pl).getActiveParam();
+					MultiEpisomeParam plParam = anEpiBac.plasmidHosted.get(pl).getSpeciesParam();
 					initialCost = plParam.initialCost;
 					//System.out.println("plasmidCost is " + initialCost);
 					rateDec = plParam.rateDec;

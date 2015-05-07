@@ -12,11 +12,12 @@
 package simulator.geometry.boundaryConditions;
 
 import java.util.List;
+
 import org.jdom.Element;
 
 import simulator.Simulator;
 import simulator.SoluteGrid;
-import simulator.agent.LocatedAgent;
+import simulator.agent.Agent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 import simulator.geometry.shape.*;
@@ -174,19 +175,25 @@ public class BoundaryCyclic extends ExternalBoundary
 	 * @param target	The target position that the agent is moving to.
 	 */
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	public void applyBoundary(Agent anAgent, ContinuousVector target)
 	{
 		// Determine the intersection with the crossed boundary.
 		// TODO Using first intersection is a quick fix.
-		vectorIn = _myShape.getIntersections(anAgent.getLocation(),
-											anAgent.getMovement()).getFirst();
-		// Determine the remaining movement when we touch the boundary.
-		target.sendDiff(target, vectorIn);
-		// Apply the residual movement on the symmetric point.
-		vectorIn = getSymmetric(vectorIn);
-		target.add(vectorIn);
-		// Compute and update the movement vector leading to this new position.
-		anAgent.getMovement().sendDiff(target, anAgent.getLocation());
+		// Bas - in case of planar biofilms only one intersection is returned
+		// hemispherical cyclic boundaries would be a pain.. yes.
+		if (isOutside(target)) {
+			//TODO: Bas - repaired this method, works for planar did not check
+			// for other shapes
+			vectorIn = _myShape.getIntersections(anAgent.getLocation(),
+											_myShape.getCVectorOut()).getFirst();
+			// Determine the remaining movement when we touch the boundary.
+			target.sendDiff(target, vectorIn);
+			// Apply the residual movement on the symmetric point.
+			vectorIn = getSymmetric(vectorIn);
+			target.add(vectorIn);
+			// Compute and update the movement vector leading to this new position.
+			anAgent.getMovement().sendDiff(target, anAgent.getLocation());
+		}
 	}
 
 	/**

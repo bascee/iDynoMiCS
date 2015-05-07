@@ -12,8 +12,10 @@
 package simulator.geometry;
 
 import java.util.LinkedList;
+
 import simulator.SoluteGrid;
 import simulator.SpatialGrid;
+import simulator.agent.Agent;
 import simulator.geometry.boundaryConditions.AllBC;
 
 /**
@@ -100,4 +102,6 @@ public interface IsComputationDomain
 	 * Used in the creation of output files
 	 */
 	public void refreshBioFilmGrids();
+
+	AllBC testCrossedBoundary(Agent anAgent, ContinuousVector newLoc);
 }

@@ -711,15 +711,16 @@ public class Idynomics
 		XMLParser inputFile = new XMLParser(activePath,protocolFile);
 		XMLParser info = new XMLParser(inputFile.getChildElement("simulator"));
 		
-		if(info.getParamBool("checkForReleaseUpdate"))
-		{
-			// Check whether this is is the latest version
-			return iDyno_New_Released_Version_Check();
-		}
-		else
-		{
-			return false;
-		}
+//		if(info.getParamBool("checkForReleaseUpdate"))
+//		{
+//			// Check whether this is is the latest version
+//			return iDyno_New_Released_Version_Check();
+//		}
+//		else
+//		{
+//			return false;
+//		}
+		return false;
 	}
 	
 	/**

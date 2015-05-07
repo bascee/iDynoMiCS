@@ -72,6 +72,7 @@ public class Edge
 	/**
 	 * 
 	 */
+	@Override
 	public String toString()
 	{
 		String out = "Edge: ";

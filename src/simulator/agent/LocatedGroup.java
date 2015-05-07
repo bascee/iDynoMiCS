@@ -19,7 +19,6 @@ import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
-import utils.LogFile;
 
 /**
  * \brief Object to hold a group of agents in one location on the agent grid.
@@ -40,7 +39,7 @@ public class LocatedGroup
 	/**
 	 * Linked list to hold members of this group
 	 */
-	public LinkedList<LocatedAgent> group = new LinkedList<LocatedAgent>();
+	public LinkedList<Agent> group = new LinkedList<Agent>();
 
 	/**
 	 * Concentration of species in this group, thus area represented
@@ -214,7 +213,7 @@ public class LocatedGroup
 		totalConcentration = 0.0;
 		totalMass = 0.0;
 		Arrays.fill(speciesConcentration, 0.0);
-		for (LocatedAgent aLoc : group)
+		for (Agent aLoc : group)
 		{
 			totalMass += aLoc.getTotalMass();
 			value = aLoc.getTotalMass()/volume;
@@ -235,7 +234,7 @@ public class LocatedGroup
 	public Double refreshVolume()
 	{
 		totalVolume = 0.0;
-		for (LocatedAgent aLoc : group)
+		for (Agent aLoc : group)
 			totalVolume += aLoc.getVolume(true);
 		return totalVolume;
 	}
@@ -277,7 +276,7 @@ public class LocatedGroup
 	 */
 	public void addMoveToAgents(Double alpha)
 	{
-		for (LocatedAgent aLoc : group)
+		for (Agent aLoc : group)
 		{
 			move.times(alpha);
 			aLoc.addMovement(move);
@@ -291,7 +290,7 @@ public class LocatedGroup
 	 */
 	public void killAll(String reason)
 	{
-		for ( LocatedAgent aLoc : group )
+		for ( Agent aLoc : group )
 		{
 			aLoc.death = reason;
 			agentGrid.registerDeath(aLoc);
@@ -307,7 +306,7 @@ public class LocatedGroup
 	 * 
 	 * @param anAgent	LocatedAgent to remove from this group.
 	 */
-	public void remove(LocatedAgent anAgent)
+	public void remove(Agent anAgent)
 	{
 		group.remove(anAgent);
 		if ( group.isEmpty() && !Simulator.isChemostat )
@@ -319,7 +318,7 @@ public class LocatedGroup
 	 * 
 	 * @param anAgent	LocatedAgent to add to this group.
 	 */
-	public void add(LocatedAgent anAgent) 
+	public void add(Agent anAgent) 
 	{
 		group.add(anAgent);
 		status = 1;

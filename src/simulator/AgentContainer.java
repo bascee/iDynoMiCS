@@ -246,7 +246,7 @@ public class AgentContainer
 		}
 
 		// Now set the domain where this container is defined
-		domain = (Domain) aSimulator.world.getDomain(root.getParam("computationDomain"));
+		domain = aSimulator.world.getDomain(root.getParam("computationDomain"));
 		mySim = aSimulator;
 		
 		agentList = new LinkedList<Agent>();
@@ -310,7 +310,7 @@ public class AgentContainer
 		Double dist = 0.0;
 		// Now iterate through each one. If we're close enough, move done.
 		// Shoving can then sort out distance between the two cells.
-		for (LocatedAgent aLoc : agentsInGrid.group)
+		for (Agent aLoc : agentsInGrid.group)
 		dist = aLoc.getLocation().distance(Point); 
 		if ( dist <= distance )
 		return true;
@@ -363,16 +363,10 @@ public class AgentContainer
 	}
 	
 	public List<Agent> neighborhoodSearch(double[] coords, double dimensions) {
+		
 		if(is3D)
-		{
-			return agentTree.search(helperMethods.doubleToFloatArray(coords), 
-					helperMethods.filledFloatArray((float) (dimensions),3));
-		}
-		else
-		{
-			return agentTree.search(helperMethods.doubleToFloatArray(coords), 
-					helperMethods.filledFloatArray((float) (dimensions),2));
-		}
+			return agentTree.search(helperMethods.doubleToFloatArray(coords), helperMethods.filledFloatArray((float) (dimensions),3));
+		return agentTree.search(helperMethods.doubleToFloatArray(coords), helperMethods.filledFloatArray((float) (dimensions),2));
 	}
 	
 	
@@ -643,9 +637,9 @@ public class AgentContainer
 		//rebuilt tree
 		agentTree.clear();
 		for(Agent a: agentList) {
-			if (a instanceof Agent) {
-				agentTree.insert(((LocatedAgent) a).getBoundingBoxCoord(),
-							((LocatedAgent) a).getBoundingBoxDimensions(), a);
+			if (a instanceof LocatedActiveAgent) {
+				agentTree.insert(a.getBoundingBoxCoord(),
+											a.getBoundingBoxDimensions(), a);
 			}
 		}
 	}
@@ -715,7 +709,7 @@ public class AgentContainer
 	 * @param nbList: the list of located agents
 	 */
 	public void getPotentialShovers(int index, Double range,
-											LinkedList<LocatedAgent> nbList)
+											LinkedList<Agent> nbList)
 	{
 		LocatedGroup aGroup;
 		int radius = Math.max(1, (int) Math.floor(range / this._res));
@@ -762,7 +756,7 @@ public class AgentContainer
 		// Add the agent on the grid
 		if (anAgent instanceof Agent)
 		{
-			LocatedAgent aLoc = (LocatedAgent) anAgent;
+			Agent aLoc = anAgent;
 			try
 			{
 				if ( Simulator.isChemostat )
@@ -907,7 +901,7 @@ public class AgentContainer
 	{
 		if (anAgent instanceof Agent)
 		{
-			LocatedAgent aLoc = (LocatedAgent) anAgent;
+			Agent aLoc = anAgent;
 			int index = getIndexedPosition(aLoc.getLocation());
 			if ( ! Double.isNaN(index) )
 				_grid[index].remove(aLoc);
@@ -921,7 +915,7 @@ public class AgentContainer
 	 * 
 	 * @param anAgent	Agent that has moved and needs the location updated.
 	 */
-	public void registerMove(LocatedAgent anAgent)
+	public void registerMove(Agent anAgent)
 	{
 		/*
 		 * Compute the theoretical index on the agentGrid
@@ -967,7 +961,7 @@ public class AgentContainer
 //		for ( LocatedGroup aSquare : _grid )
 //			for ( LocatedAgent aLoc : aSquare.group )
 		for ( Agent agent : getAll() )
-			if ( agent instanceof Agent ) 
+			if ( agent instanceof LocatedActiveAgent ) 
 				agent.fitMassOnGrid(biomassGrid);
 	}
 
@@ -985,7 +979,7 @@ public class AgentContainer
 //		for (LocatedGroup aSquare : _grid)
 //			for (LocatedAgent aLoc : aSquare.group)
 		for ( Agent agent : getAll() )
-			if ( agent instanceof Agent ) 
+			if ( agent instanceof LocatedActiveAgent ) 
 				agent.fitVolRateOnGrid(biomassGrid);
 	}
 
@@ -1007,7 +1001,7 @@ public class AgentContainer
 	public void writeGrids(Simulator aSim, ResultFile bufferState,
 									ResultFile bufferSum) throws Exception
 	{
-		LocatedAgent aLoc;
+		Agent aLoc;
 
 		//sonia:chemostat
 		//I've modified the refreshElement() method for the chemostat case
@@ -1024,9 +1018,9 @@ public class AgentContainer
 		
 		// Sum biomass concentrations
 		for (Agent anA : getAll())
-			if (anA instanceof Agent)
+			if (anA instanceof LocatedActiveAgent)
 			{
-				aLoc = (LocatedAgent) anA;
+				aLoc = anA;
 				aLoc.fitMassOnGrid(_speciesGrid[aLoc.speciesIndex]);
 			}
 
@@ -1121,7 +1115,7 @@ public class AgentContainer
 		/* <----- HGT Stats End ----> */
 		
 		// Fill the agent_state file, build the state for the summary
-  		LocatedAgent aLoc;
+  		Agent aLoc;
   		MultiEpiBac anEpiBac;
  		int spIndex;
  		for (Agent anAgent : getAll())
@@ -1136,9 +1130,9 @@ public class AgentContainer
  			
  			// TODO RC - why aren't we including the mass and growth rates
  			// of all ActiveAgents, only LocatedAgents?
- 			if (anAgent instanceof Agent)
+ 			if (anAgent instanceof LocatedActiveAgent)
  			{
- 				aLoc = (LocatedAgent) anAgent;	
+ 				aLoc = anAgent;	
  				spMass[spIndex] += aLoc.getTotalMass();
  				spGrowth[spIndex] += aLoc.getNetGrowth();
   				speciesBuffer[spIndex].append(aLoc.writeOutput()+";\n");
@@ -1311,7 +1305,7 @@ public class AgentContainer
 		/*
 		 * Collate the information for the agent_StateDeath file.
 		 */
-		LocatedAgent aLoc;
+		Agent aLoc;
   		MultiEpiBac anEpiBac;
   		int spIndex;
   		for (Agent anAgent : _agentToKill)
@@ -1321,9 +1315,9 @@ public class AgentContainer
   		  	
   		  	// TODO RC - why aren't we including the mass and growth rates
   			// of all ActiveAgents, only LocatedAgents?
-  			if (anAgent instanceof Agent)
+  			if (anAgent instanceof LocatedActiveAgent)
   			{
-  				aLoc = (LocatedAgent) anAgent;
+  				aLoc = anAgent;
   				spMass[spIndex] += aLoc.getTotalMass();
   				spGrowth[spIndex] += aLoc.getNetGrowth();
   				speciesBuffer[spIndex].append(aLoc.writeOutput());
@@ -1600,10 +1594,10 @@ public class AgentContainer
 			tallyVariable = aBorderElement.totalMass * ratio;
 
 
-			for (LocatedAgent aLoc : _grid[index].group) {
+			for (Agent aLoc : _grid[index].group) {
 				mass += aLoc.getTotalMass() * ratio;
-				for (int iComp = 0; iComp < aLoc.particleMass.length; iComp++)
-					aLoc.particleMass[iComp] *= 1.0 - ratio;
+				for (int iComp = 0; iComp < aLoc.getParticleMass().length; iComp++)
+					aLoc.multiplyParticleMass(1.0 - ratio,iComp);
 
 				aLoc.updateSize();
 				if (aLoc.willDie()) {
@@ -1656,7 +1650,7 @@ public class AgentContainer
 		 */
 		_levelset.refreshBorder(true, mySim);
 		// List of agents to consider for removal.
-		LinkedList<LocatedAgent> detGroup = new LinkedList<LocatedAgent>();
+		LinkedList<Agent> detGroup = new LinkedList<Agent>();
 		// For groups on _close list:
 		for (LocatedGroup borderElem : _levelset.getBorder())
 		{
@@ -1674,7 +1668,7 @@ public class AgentContainer
 			borderElem.erosionRatio = Math.min(borderElem.erosionRatio, 1.0);
 			tallyVariable += borderElem.totalMass * borderElem.erosionRatio;
 			// Add them to detGroup.
-			for ( LocatedAgent aLoc : borderElem.group )
+			for ( Agent aLoc : borderElem.group )
 				detGroup.add(aLoc);
 		} // end of: for (LocatedGroup aBorderElement : _levelset.getBorder())
 		
@@ -1682,8 +1676,8 @@ public class AgentContainer
 		 * If the tally is smaller than the smallest agent, no point
 		 * calculating detachment priorities.
 		 */
-		Comparator<Object> comp = new LocatedAgent.totalMassComparator();
-		LocatedAgent aLoc = Collections.min(detGroup, comp);
+		Comparator<Object> comp = new totalMassComparator();
+		Agent aLoc = Collections.min(detGroup, comp);
 		if ( tallyVariable < aLoc.getTotalMass() )
 			return;
 		
@@ -1692,7 +1686,7 @@ public class AgentContainer
 		// Counter of agents removed.
 		int nDetach = 0;
 		// Calculate detPriority for all agents in the _close list.
-		comp = new LocatedAgent.detPriorityComparator();
+		comp = new detPriorityComparator();
 		for (LocatedGroup borderElem : _levelset.getBorder() )
 			calcDetPriority(agentGrid, borderElem, borderElem.erosionRatio);
 		// aLoc is the most exposed cell.
@@ -1730,8 +1724,8 @@ public class AgentContainer
 	{
 		int i = 0;
 		// Reset all detPriority values to zero
-		for (LocatedAgent aLoc:aBorderElement.group)
-			aLoc.detPriority = 0.0;
+		for (Agent aLoc : aBorderElement.group)
+			aLoc.setDetPriority(0.0);
 		/*
 		 * For each free neighbour run through the agents in our border
 		 * element, adding the square of the agent's proximity to that
@@ -1743,8 +1737,8 @@ public class AgentContainer
 			// x-side
 			if (aBorderElement.nbhGroup[i][1][1].status==2) {
 				// LogFile.writeLog(aBorderElement.nbhGroup[i][1][1].dc+"is free");
-				for (LocatedAgent aLoc:aBorderElement.group) {
-					aLoc.detPriority += detFunction(i,aLoc.getLocation().x);
+				for (Agent aLoc:aBorderElement.group) {
+					aLoc.addDetPriority(detFunction(i,aLoc.getLocation().x));
 					// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().x+", detPriority: "+aLoc.detPriority);
 				}
 			}
@@ -1752,23 +1746,23 @@ public class AgentContainer
 			if (agentGrid.is3D) {
 				if (aBorderElement.nbhGroup[1][i][1].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][i][1].dc+"is free");
-					for (LocatedAgent aLoc:aBorderElement.group) {
-						aLoc.detPriority += detFunction(i,aLoc.getLocation().y);
+					for (Agent aLoc:aBorderElement.group) {
+						aLoc.addDetPriority(detFunction(i,aLoc.getLocation().y));
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().y+", detPriority: "+aLoc.detPriority);
 					}
 				}
 				if (aBorderElement.nbhGroup[1][1][i].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][1][i].dc+"is free");
-					for (LocatedAgent aLoc:aBorderElement.group) {
-						aLoc.detPriority += detFunction(i,aLoc.getLocation().z);
+					for (Agent aLoc:aBorderElement.group) {
+						aLoc.addDetPriority(detFunction(i,aLoc.getLocation().z));
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().z+", detPriority: "+aLoc.detPriority);
 					}
 				}
 			} else {
 				if (aBorderElement.nbhGroup[1][i][1].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][i][1].dc+"is free");
-					for (LocatedAgent aLoc:aBorderElement.group) {
-						aLoc.detPriority += 2*detFunction(i,aLoc.getLocation().y);
+					for (Agent aLoc:aBorderElement.group) {
+						aLoc.addDetPriority(2*detFunction(i,aLoc.getLocation().y));
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().y+", detPriority: "+aLoc.detPriority);
 					} // end of: for (LocatedAgent aLoc:aBorderElement.group) {
 				} // end of: if (aBorderElement.nbhGroup[1][i][1].status==2) {
@@ -1776,7 +1770,7 @@ public class AgentContainer
 		} // end of: for (i=0;i<3;i+=2){
 
 		// weight the detPriority of each agent by its Located Group ratio
-		for (LocatedAgent aLoc:aBorderElement.group) aLoc.detPriority *= ratio;
+		for (Agent aLoc:aBorderElement.group) aLoc.multiplyDetPriority(ratio);
 	}
 
 	/* __________________________ GET & SET _________________________________ */
@@ -2020,5 +2014,38 @@ public class AgentContainer
 	public LocatedGroup returnGroupInVoxel(int gridVoxel)
 	{
 		return _grid[gridVoxel];
+	}
+	
+	/**
+	 * \brief Comparator used by AgentContainer.erodeBorder()
+	 * 
+	 * @author Rob Clegg
+	 */
+	public static class totalMassComparator implements java.util.Comparator<Object>
+	{
+		@Override
+		public int compare(Object b1, Object b2)
+		{
+			Double f1 = ((Agent) b1).getTotalMass();
+			Double f2 = ((Agent) b2).getTotalMass();
+			return (int) Math.signum(f1 - f2);
+		}
+	}
+
+	/**
+	 * \brief Comparator used by AgentContainer.erodeBorder()
+	 * 
+	 * Comparator used by AgentContainer.erodeBorder()
+	 * @author Rob Clegg
+	 */
+	public static class detPriorityComparator implements java.util.Comparator<Object>
+	{
+		@Override
+		public int compare(Object b1, Object b2)
+		{
+			Double f1 = ((Agent) b1).getDetPriority();
+			Double f2 = ((Agent) b2).getDetPriority();
+			return (int) Math.signum(f1 - f2);
+		}
 	}
 }

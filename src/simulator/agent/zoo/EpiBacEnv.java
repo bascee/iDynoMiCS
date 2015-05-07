@@ -24,7 +24,7 @@ public class EpiBacEnv extends MultiEpiBac{
 	 */
 	public EpiBacEnv() {
 		super();
-		_activeParam = new EpiBacEnvParam();
+		_speciesParam = new EpiBacEnvParam();
 	}
 	
 	
@@ -60,8 +60,8 @@ public void internalStep() {
 	
 	
 	@Override
-	public EpiBacEnvParam getActiveParam() {
-		return (EpiBacEnvParam) _activeParam;
+	public EpiBacEnvParam getSpeciesParam() {
+		return (EpiBacEnvParam) _speciesParam;
 	}
 	
 	/**
@@ -78,7 +78,7 @@ public void internalStep() {
 		double rand = num.nextDouble();
 
 		
-		ArrayList<String> envSens = this.getActiveParam().envSensitivity;
+		ArrayList<String> envSens = this.getSpeciesParam().envSensitivity;
 		
 		//current environment set by the Deterministic version of FluctEnv
 		String currentEnv = FluctEnv.envStatus;
@@ -94,7 +94,7 @@ public void internalStep() {
 		}
 	
 		//retrieving variable values to kill the agent with a given probability
-		HashMap <String, Double> probDieMap = this.getActiveParam().envProbDie;
+		HashMap <String, Double> probDieMap = this.getSpeciesParam().envProbDie;
 		double probDie=0;
 		
 		if(isSensible){

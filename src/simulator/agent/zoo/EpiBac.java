@@ -16,14 +16,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import org.jdom.Element;
-
 import idyno.SimTimer;
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
 import simulator.agent.*;
-import simulator.geometry.ContinuousVector;
 import simulator.Simulator;
 
 // bvm 30.1.2009
@@ -48,7 +45,7 @@ public class EpiBac extends BactEPS
 	public EpiBac()
 	{
 		super();
-		_activeParam = new EpiBacParam();
+		_speciesParam = new EpiBacParam();
 	}
 
 	@Override
@@ -63,7 +60,7 @@ public class EpiBac extends BactEPS
 			newEpisome.setHost(out);
 			out._plasmidHosted.add(newEpisome);
 		}
-		return (Object) out;
+		return out;
 	}
 
 	/**
@@ -248,7 +245,7 @@ public class EpiBac extends BactEPS
 		// Manhattan perimeter
 		getPotentialShovers(nbhRadius,_location,_radius);
 		// Now remove too far agents (apply circular perimeter)
-		LocatedAgent aLocAgent;
+		Agent aLocAgent;
 		for (int iter = 0; iter < _myNeighbors.size(); iter++)
 		{
 			aLocAgent = _myNeighbors.removeFirst();
@@ -372,9 +369,9 @@ public class EpiBac extends BactEPS
 
 	
 	@Override
-	public EpiBacParam getActiveParam()
+	public EpiBacParam getSpeciesParam()
 	{
-		return (EpiBacParam) _activeParam;
+		return (EpiBacParam) _speciesParam;
 	}
 
 	public Double getMaxTest()
@@ -391,14 +388,14 @@ public class EpiBac extends BactEPS
 		// (for no growth dependence, set highTonus = -Double.MAX_VALUE)
 		// (for step dependence, set high & low tonus the same)
 
-		Double lowTonus = ((EpiBacParam) _activeParam).lowTonusCutoff;
-		Double highTonus = ((EpiBacParam) _activeParam).highTonusCutoff;
+		Double lowTonus = ((EpiBacParam) _speciesParam).lowTonusCutoff;
+		Double highTonus = ((EpiBacParam) _speciesParam).highTonusCutoff;
 		Double theTonus = sendTonus();
 
 		if (theTonus >= highTonus) {
 			//			System.out.println("high case: "+theTonus);
 			// high tonus, so return maximum (same effect as no growth dependence)
-			return ((EpiBacParam) _activeParam).scanSpeed*
+			return ((EpiBacParam) _speciesParam).scanSpeed*
 			SimTimer.getCurrentTimeStep();
 		}
 		else if (theTonus < lowTonus)
@@ -411,7 +408,7 @@ public class EpiBac extends BactEPS
 		{
 			//			System.out.println("middle case: "+theTonus);
 			// middle case, so do linear interpolation
-			Double vs = ((EpiBacParam) _activeParam).scanSpeed;
+			Double vs = ((EpiBacParam) _speciesParam).scanSpeed;
 			vs = vs*(theTonus-lowTonus)/(highTonus-lowTonus);
 			return vs*SimTimer.getCurrentTimeStep();
 		}
@@ -440,7 +437,7 @@ public class EpiBac extends BactEPS
 	@Override
 	public Color getColor()
 	{
-		EpiBacParam param = getActiveParam();
+		EpiBacParam param = getSpeciesParam();
 
 		// recipients have no plasmid
 		if (_plasmidHosted.size() == 0)
@@ -554,7 +551,7 @@ public class EpiBac extends BactEPS
 	@Override
 	public void writePOVColorDefinition(FileWriter fr) throws IOException
 	{
-		EpiBacParam param = getActiveParam();
+		EpiBacParam param = getSpeciesParam();
 
 		fr.write("#declare "+_species.speciesName+"_d = color rgb < ");
 		fr.write((param.dColor.getRed()) / 255.0 + " , ");

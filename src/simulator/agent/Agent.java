@@ -11,19 +11,16 @@
  */
 package simulator.agent;
 
+import java.awt.Color;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-
-import org.jdom.Element;
 
 import idyno.SimTimer;
 import simulator.AgentContainer;
 import simulator.Simulator;
 import simulator.SpatialGrid;
-import simulator.reaction.Reaction;
-import utils.ExtraMath;
+import simulator.geometry.ContinuousVector;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -43,11 +40,6 @@ public abstract class Agent implements Cloneable
 	/* Temporary variables stored in static fields __________________________ */
 	/* Parameters common (strict equality) to all agents of a Species _________ */
 	/* Parameters mutated from species parameters ___________________________ */
-
-	/**
-	 * Integer noting the last simulation timestep when this agent was stepped
-	 */
-	protected int _lastStep;
 
 	/**
 	 * The number of generations between the progenitor and the current agent
@@ -93,74 +85,14 @@ public abstract class Agent implements Cloneable
 	public int speciesIndex;
 
 	/**
-	 * Set of parameters associated with this active agent
+	 * Set of parameters associated with this specialised agent
 	 */
-	protected ActiveParam _activeParam;
+	protected SpeciesParam _speciesParam;
 
 	/**
 	 * Grid in which this agent is contained
 	 */
 	protected AgentContainer _agentGrid;
-
-	/**
-	 * Array of all the reactions this agent is involved in
-	 */
-	public Reaction[] allReactions;
-
-	/**
-	 * Array of the reactions that are active
-	 */
-	public ArrayList<Integer> reactionActive;
-
-	/**
-	 * Array of all reactions (even those not active on this agent)
-	 */
-	protected ArrayList<Integer> reactionKnown;
-
-	/**
-	 * Net growth rate of this agent due to reactions
-	 */
-	protected Double _netGrowthRate = 0.0;
-
-	/**
-	 * Net volume change rate of this agent due to reactions
-	 */
-	protected Double _netVolumeRate = 0.0;
-
-	/**
-	 * Growth rate of this agent due to reactions
-	 */
-	protected Double[] growthRate;
-
-	/**
-	 * The change to each particle due to reactions. Units fg.
-	 */
-	protected Double[] deltaParticle;
-
-	/**
-	 * Solute yield for reactions involving this agent
-	 */
-	public Double[][] soluteYield;
-
-	/**
-	 * Array of the kinetic factor parameters for the reactions this agent is involved in
-	 */
-	public Double[][] reactionKinetic;
-
-	/**
-	 * Particle yield for reactions involving this agent
-	 */
-	public Double[][] particleYield;
-
-	/**
-	 * Mass of the agent (table for all particles belonging to the agent)
-	 */
-	public Double[] particleMass;
-
-	/**
-	 * Sum of masses of all particles
-	 */
-	protected Double _totalMass;
 
 
 	
@@ -171,114 +103,24 @@ public abstract class Agent implements Cloneable
 	public Agent()
 	{
 		_birthday = SimTimer.getCurrentTime();
-		_lastStep = SimTimer.getCurrentIter()-1;
 	}
 	
 	/**
-	 * \brief Creates an agent of the specified species and notes the grid in which this is assigned
-	 *
-	 * Creates an agent of the specified species and notes the grid in which this is assigned
+	 * \brief Initialise the agent from the protocol file.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
+	 * Implemented by classes that extend this class.
+	 * 
+	 * @param aSimulator	The simulation object used to simulate the
+	 * conditions specified in the protocol file.
+	 * @param aSpeciesRoot	A Species mark-up within the specified protocol
+	 * file.
 	 */
-	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) {
-		try 
-		{
-			// Create the agent object
-			_agentGrid = aSim.agentGrid;
-		} 
-		catch (Exception e) 
-		{
-			LogFile.writeLog("Creating "+this.getSpecies().speciesName);
-			System.exit(-1);
-		}
-		
-		/* Create internal compounds_______________________________________ */
-		// Initialise tables for the compartments description.
-		int nParticle = aSim.particleDic.size();
-		int nReaction = aSim.reactionList.length;
-		int nSolute = aSim.soluteList.length;
-		int reacIndex;
-		
-		/*
-		 * Build the list of particles. Set the average mass of each particle
-		 * within the initial population. 
-		 */
-		particleMass = ExtraMath.newDoubleArray(nParticle);
-		int particleIndex;
-		for ( XMLParser aParser : aSpeciesRoot.getChildrenParsers("particle") )
-		{
-			particleIndex = aSim.getParticleIndex(aParser.getName());
-			particleMass[particleIndex] = aParser.getParamMass("mass");
-		}
-		
-		deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
-		
-		updateMass();
-		
-		/* Create description of reactions ________________________________ */
-		// Initialise the arrays.
-		allReactions = aSim.reactionList;
-		reactionKnown = new ArrayList<Integer>();
-		reactionActive = new ArrayList<Integer>();
-		growthRate = ExtraMath.newDoubleArray(nReaction);
-		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);
-		/* 
-		 * Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
-		 * as the number of j-elements in each i-array varies. Each i-array is
-		 * cloned from the reaction mark up, so no need to fill with zeros now.
-		 */
-		reactionKinetic = new Double[nReaction][];
-		
-		particleYield = ExtraMath.newDoubleArray(nReaction, nParticle);
-		
-		Reaction aReaction;
-		/*
-		 * Read the XML file. Note that this is not a parser (yet) and so we
-		 * should not use XMLParser.getName(), etc.
-		 */
-		for (Element aReacElem : aSpeciesRoot.getChildrenElements("reaction"))
-		{
-			reacIndex = aSim.getReactionIndex(
-										aReacElem.getAttributeValue("name"));
-			aReaction = allReactions[reacIndex];
-			/*
-			 * Add the reaction to the list of known (and active) reactions.
-			 */
-			reactionKnown.add(reacIndex);
-			if (aReacElem.getAttributeValue("status").equals("active"))
-				reactionActive.add(reacIndex);
-			/* 
-			 * If reaction parameters have been redefined, load them; 
-			 * else load the parameters defined for the reaction.
-			 */
-			if ( aReacElem.getContentSize() == 0 )
-			{
-				soluteYield[reacIndex] = aReaction.getSoluteYield();
-				particleYield[reacIndex] = aReaction.getParticulateYield();
-				reactionKinetic[reacIndex] = aReaction.getKinetic();
-			}
-			else
-			{
-				/*
-				 * TODO Rob 15Apr2014: This seems a dangerous way of doing
-				 * things... having kinetics here that differ from those in
-				 * the simulator may play havoc with the diffusion-reaction
-				 * solver(s).
-				 */
-				aReaction.initFromAgent(this, aSim, new XMLParser(aReacElem));
-			}
-		}
-		/*
-		 * Now copy these value in the speciesParam structure.
-		 */
-		getActiveParam().soluteYield = soluteYield.clone();
-		getActiveParam().particleYield = particleYield.clone();
-		getActiveParam().reactionKinetic = reactionKinetic.clone();
-
-	}
-
+//	public void initFromProtocolFile(Simulator aSimulator,
+//													XMLParser aSpeciesRoot)
+//	{
+//		
+//	}
+	
 	/**
 	 * \brief Create an agent using information in a previous state or
 	 * initialisation file.
@@ -290,37 +132,11 @@ public abstract class Agent implements Cloneable
 	 */
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
 	{
-		int nValsRead = 2 + particleMass.length;
-		int iDataStart = singleAgentData.length - nValsRead;
-		
-		// Read in info from the result file IN THE SAME ORDER AS IT WAS OUTPUT
-		// Particle masses:
-		for ( int iComp = 0; iComp < particleMass.length; iComp++ )
-		{
-			particleMass[iComp] = 
-						Double.parseDouble(singleAgentData[iDataStart+iComp]);
-		}
-		deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
-		// Other values:
-		_netGrowthRate = Double.parseDouble(
-						singleAgentData[iDataStart+particleMass.length]);
-		_netVolumeRate = Double.parseDouble(
-						singleAgentData[iDataStart+particleMass.length+1]);
-		
-		// Now go up the hierarchy with the rest of the data.
-		String[] remainingSingleAgentData = new String[iDataStart];
-		for ( int i = 0; i < iDataStart; i++ )
-			remainingSingleAgentData[i] = singleAgentData[i];
-
 		// read in info from the result file IN THE SAME ORDER AS IT WAS OUTPUT
 		_family     = Integer.parseInt(singleAgentData[0]);
 		_genealogy  = new BigInteger(singleAgentData[1]);
 		_generation = Integer.parseInt(singleAgentData[2]);
 		_birthday   = Double.parseDouble(singleAgentData[3]);
-		
-		// Finally some creation-time calls.
-		updateSize();
-		registerBirth();	
 	}
 	
 	/**
@@ -344,7 +160,6 @@ public abstract class Agent implements Cloneable
 	 * @throws CloneNotSupportedException	Exception should the class not
 	 * implement Cloneable.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
@@ -352,38 +167,18 @@ public abstract class Agent implements Cloneable
 
 		// Copy the references (superficial copy)
 		out._species = this._species;
-		out._activeParam = this._activeParam;
-
-		//from active
-		out.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
-		out.reactionKnown = (ArrayList<Integer>) this.reactionKnown.clone();
-		out.allReactions = this.allReactions.clone();
-		out.growthRate = ExtraMath.newDoubleArray(this.growthRate.length);
-		/*
-		 * No need to initialise out.soluteYield, out.reactionKinetic, or
-		 * out.particleYield using ExtraMath.newDoubleArray() as their
-		 * elements are all cloned from this agent.
-		 */
-		out.soluteYield = new Double[this.soluteYield.length][];
-		for (int iter = 0; iter < this.soluteYield.length; iter++)
-			out.soluteYield[iter] = this.soluteYield[iter].clone();
-		out.reactionKinetic = new Double[this.reactionKinetic.length][];
-		out.particleYield = new Double[this.particleYield.length][];
-		for ( int jReac : this.reactionKnown )
-		{
-			if ( this.reactionKinetic[jReac] == null )
-				out.reactionKinetic[jReac] = ExtraMath.newDoubleArray(1);
-			else
-			{
-				out.reactionKinetic[jReac] =
-										this.reactionKinetic[jReac].clone();
-			}
-			out.particleYield[jReac] = this.particleYield[jReac].clone();
-		}
-		out.particleMass = this.particleMass.clone();
-		return (Object) out;
+		out._speciesParam = this._speciesParam;
+		return out;
 	}
 
+	/**
+	 * \brief Registers a created agent into a respective container.
+	 * 
+	 * Each agent must be referenced by one such container. Implemented by
+	 * classes that extend Agent.
+	 */
+//	public abstract void registerBirth();
+	
 	/**
 	 * \brief Perform the next timestep of the simulation for this agent.
 	 * 
@@ -392,10 +187,17 @@ public abstract class Agent implements Cloneable
 	 */
 	public void step()
 	{
-		_lastStep = SimTimer.getCurrentIter();
 		internalStep();
 	}
-
+	
+	/**
+	 * \brief Called at each time step (under the control of the method Step
+	 * of the class Agent to avoid multiple calls).
+	 * 
+	 * Implemented by classes that extend Agent.
+	 */
+	protected abstract void internalStep();
+	
 	/**
 	 * \brief Specifies the header of the columns of output information for
 	 * this agent.
@@ -407,11 +209,7 @@ public abstract class Agent implements Cloneable
 	 */
 	public StringBuffer sendHeader()
 	{
-		StringBuffer tempString = new StringBuffer("family,genealogy,generation,birthday");
-		for (String particle : _species.currentSimulator.particleDic)
-			tempString.append(","+particle);
-		tempString.append(",growthRate,volumeRate");
-		return tempString;
+		return new StringBuffer("family,genealogy,generation,birthday");
 	}
 	
 	/**
@@ -425,16 +223,8 @@ public abstract class Agent implements Cloneable
 	 */
 	public StringBuffer writeOutput()
 	{
-		StringBuffer tempString = new StringBuffer(
+		return new StringBuffer(
 						_family+","+_genealogy+","+_generation+","+_birthday);
-		
-		// Mass of different particles
-		for (int i = 0; i < particleMass.length; i++)
-			tempString.append(","+particleMass[i]);
-		
-		// Agent growth and volume rates
-		tempString.append(","+_netGrowthRate+","+_netVolumeRate);
-		return tempString;
 	}
 	
 	/**
@@ -503,6 +293,7 @@ public abstract class Agent implements Cloneable
 	public Double move() {
 		return null;
 		// TODO Auto-generated method stub
+		
 	}
 
 	public Double interact(boolean mUTUAL) {
@@ -510,9 +301,21 @@ public abstract class Agent implements Cloneable
 		return null;
 	}
 
+	public void die(boolean b) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void fitMassOnGrid(SpatialGrid biomassGrid) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public void fitVolRateOnGrid(SpatialGrid biomassGrid) {
 		// TODO Auto-generated method stub
+		
 	}
+
 
 	/**
 	 * \brief Returns the object containing a set of parameters associated with a particular agent (species)
@@ -520,7 +323,7 @@ public abstract class Agent implements Cloneable
 	 * Returns the object containing a set of parameters associated with a particular agent (species)
 	 */
 	public SpeciesParam getSpeciesParam() {
-		return _activeParam;
+		return _speciesParam;
 	}
 
 	/**
@@ -561,6 +364,28 @@ public abstract class Agent implements Cloneable
 	}
 
 	/**
+	 * \brief Creates an agent of the specified species and notes the grid in which this is assigned
+	 *
+	 * Creates an agent of the specified species and notes the grid in which this is assigned
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
+	 */
+
+	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) {
+		try 
+		{
+			// Create the agent object
+			_agentGrid = aSim.agentGrid;
+		} 
+		catch (Exception e) 
+		{
+			LogFile.writeLog("Creating "+this.getSpecies().speciesName);
+			System.exit(-1);
+		}
+	}
+
+	/**
 	 * \brief Registers a created agent into a respective container.
 	 *  
 	 * Each agent must be referenced by one such container. In this case, the 
@@ -570,8 +395,6 @@ public abstract class Agent implements Cloneable
 		_agentGrid = _species.currentSimulator.agentGrid;
 		_agentGrid.registerBirth(this);
 		_species.notifyBirth();
-		// Register the agent in the metabolic containers.
-				registerOnAllActiveReaction();
 	}
 
 	/**
@@ -589,7 +412,6 @@ public abstract class Agent implements Cloneable
 		_species.notifyDeath();
 		isDead = true;
 		_agentGrid.registerDeath(this);
-		unregisterFromAllActiveReactions();
 	}
 
 	/**
@@ -617,340 +439,238 @@ public abstract class Agent implements Cloneable
 	 */
 	public abstract Agent sendNewAgent() throws CloneNotSupportedException;
 
-	public void createNewAgent()
-	{
-		try
-		{
-			Agent baby = (Agent) sendNewAgent();
-			// Register the baby in the pathway guilds.
-			baby.registerBirth();
-		}
-		catch (CloneNotSupportedException e)
-		{
-			System.out.println("At ActiveAgent: createNewAgent error " + e);
-		}
+	public void createNewAgent() {
+		// TODO Auto-generated method stub
 	}
 
-	/**
-	 * \brief Called at each time step of the simulation to compute cell
-	 * growth, update size, and monitor cell death and division.
-	 * 
-	 * Also determines whether the agent has reached the size at which it must
-	 * divide.
-	 */
-	protected void internalStep() {
-		}
-
-	/**
-	 * \brief Put growth rates into effect by changing the particle masses.
-	 * 
-	 * We adjust the particle masses after calculating all the deltaParticle
-	 * values so that the reactions occur simultaneously.
-	 */
-	public void grow() {
-		updateGrowthRates();
-		for (int i = 0; i < particleMass.length; i++)
-			particleMass[i] += deltaParticle[i];
-	}
-
-	/**
-	 * \brief Perform agent growth by calling all active reaction pathways.
-	 * 
-	 */
-	protected void updateGrowthRates() {
-		Double deltaMass = 0.0;
-		for (int i = 0; i < particleMass.length; i++)
-			deltaParticle[i] = 0.0;
-		
-		int reacIndex = 0;
-		// TODO RC 20 Jan 2014: Shouldn't this be the agentTimeStep?
-		Double tStep = SimTimer.getCurrentTimeStep();
-		Double catMass = 0.0; // Catalyst mass
-		Double catYield = 0.0;
-		_netGrowthRate = 0.0;
-		_netVolumeRate = 0.0;
-		
-		// Compute mass growth rate of each active reaction
-		for (int iReac = 0; iReac<reactionActive.size(); iReac++)
-		{
-			// Compute the growth rate
-			reacIndex = reactionActive.get(iReac);
-			catMass = particleMass[allReactions[reacIndex]._catalystIndex];
-			// get the growth rate in [fgX.hr-1]
-			growthRate[reacIndex] = allReactions[reacIndex].computeSpecGrowthRate(this);
-			
-			for (int i = 0; i<particleYield[reacIndex].length; i++)
-			{
-				if (allReactions[reacIndex].autocatalytic)
-				{
-					// Exponential growth/decay
-					catYield = particleYield[reacIndex][allReactions[reacIndex]._catalystIndex];
-					deltaParticle[i] += catMass * (particleYield[reacIndex][i]/catYield)
-									    	* Math.expm1(catYield * growthRate[reacIndex]*tStep);
-					deltaMass = deltaParticle[i]/tStep;
-				}
-				else
-				{
-					// Constant growth/decay
-					deltaMass = catMass * particleYield[reacIndex][i]*growthRate[reacIndex];
-					deltaParticle[i] += deltaMass*tStep;
-				}
-				_netGrowthRate += deltaMass;
-				_netVolumeRate += deltaMass/getActiveParam().particleDensity[i];
-			}
-		}
-	}
-
-	/**
-	 * \brief Update size of agent to take growth into account
-	 * 
-	 * Update mass of agent to take growth into account
-	 * 
-	 */
-	public void updateSize() {
-		updateMass();
-	}
-
-	/**
-	 * \brief Update mass of agent, summing the particle mass
-	 * 
-	 * Update mass of agent, summing the particle mass
-	 */
-	public void updateMass() {
-		_totalMass = ExtraMath.sum(particleMass);
-	}
-
-	/**
-	 * \brief Add the reaction to the list of known reactions
-	 * 
-	 * Add the reaction to the list of known reactions
-	 * 
-	 * @param aReaction	The reaction to add to the list
-	 * @param useDefaultParam	Whether to use default reaction parameters or bespoke parameters have been specified in the protocol file
-	 */
-	public void addReaction(Reaction aReaction, Boolean useDefaultParam) {
-		// Add the reaction to the list of known reaction
-		reactionKnown.add(aReaction.reactionIndex);
-	
-		// Test if specific parameters exist for this reaction
-		int index = aReaction.reactionIndex;
-		boolean test = getActiveParam().soluteYield[index]==null;
-	
-		if (useDefaultParam||test) {
-			// Use parameters defined in the reaction object
-			reactionKinetic[index] = aReaction.getKinetic();
-			soluteYield[index] = aReaction.getSoluteYield();
-			particleYield[index] = aReaction.getParticulateYield();
-		} else {
-	
-			// Use parameters defined in the speciesParam structure
-			reactionKinetic[index] = getActiveParam().reactionKinetic[index];
-			soluteYield[index] = getActiveParam().soluteYield[index];
-			particleYield[index] = getActiveParam().particleYield[index];
-		}
-	}
-
-	/**
-	 * \brief Adds an active reaction to the list of known reactions and switches the reaction on
-	 * 
-	 * Adds an active reaction to the list of known reactions and switches the reaction on
-	 * 
-	 * @param aReaction	The reaction to add to the list
-	 * @param useDefaultParam	Whether to use default reaction parameters or bespoke parameters have been specified in the protocol file
-	 * 
-	 */
-	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam) {
-		addReaction(aReaction, useDefaultParam);
-		switchOnReaction(aReaction);
-	}
-
-	/**
-	 * \brief Remove a reaction from the list of known reactions
-	 * 
-	 * Remove a reaction from the list of known reactions
-	 * 
-	 * @param aPathway	The reaction to remove from the list
-	 */
-	public void removeReaction(Reaction aPathway) {
-		switchOffreaction(aPathway);
-		reactionKnown.remove(aPathway);
-	}
-
-	/**
-	 * \brief Switches off a reaction by removing it from the active reaction array
-	 * 
-	 * Switches off a reaction by removing it from the active reaction array. BVM 27.11.08: added the '.reactionIndex' calls to the 
-	 * two lines below in order to get this function to work correctly
-	 * 
-	 * @param aPathway	The reaction to switch off
-	 */
-	public void switchOffreaction(Reaction aPathway) {
-		if (reactionActive.contains(aPathway.reactionIndex)) {
-			// need to remove using indexOf because the remove(object) version thinks
-			// the int being passed in is the index to remove rather than the object to remove
-			reactionActive.remove(reactionActive.indexOf(aPathway.reactionIndex));
-			aPathway.removeAgent(this);
-		}
-	}
-
-	/**
-	 * \brief Switches on a reaction by adding it to the active reaction array
-	 * 
-	 * Switches off a reaction by adding it to the active reaction array. BVM 27.11.08: added the if statement to prevent adding a 
-	 * reaction if it is already present
-	 * 
-	 * @param aReaction	The reaction to switch on
-	 */
-	public void switchOnReaction(Reaction aReaction) {
-		//		System.out.println("Turn it on? "+aReaction.reactionName);
-		if (!reactionActive.contains(aReaction.reactionIndex)) {
-			//			System.out.println("Turn on: "+aReaction.reactionName);
-			reactionActive.add(aReaction.reactionIndex);
-			aReaction.addAgent(this);
-		}
-	}
-
-	/**
-	 * \brief Register the agent on each guild of its activated pathways. Called by makeKid
-	 * 
-	 * Register the agent on each guild of its activated pathways. Called by makeKid
-	 */
-	public void registerOnAllActiveReaction() {
-		for (int iReac = 0; iReac<reactionActive.size(); iReac++) {
-			allReactions[reactionActive.get(iReac)].addAgent(this);
-		}
-	}
-
-	/**
-	 * \brief Called by the die method, to unregister the agent from all active reactions
-	 * 
-	 * Called by the die method, to unregister the agent from all active reactions
-	 */
-	public void unregisterFromAllActiveReactions() {
-		for (int iReac = 0; iReac<reactionActive.size(); iReac++) {
-			allReactions[reactionActive.get(iReac)].removeAgent(this);
-		}
-	}
-
-	/**
-	 * \brief Add the reacting concentration of an agent to the received grid
-	 * 
-	 * Add the reacting concentration of an agent to the received grid
-	 * 
-	 * @param aSpG	Spatial grid used to sum catalysing mass
-	 * @param catalystIndex	Index of the compartment of the cell supporting the reaction
-	 */
-	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex) {
-	}
-
-	/**
-	 * \brief Add the reaction/growth rate of an agent on received grid, for a specified reaction
-	 * 
-	 * Add the total reaction/growth rate of an agent on received grid, for a specified reaction
-	 * 
-	 * @param aRateGrid	Spatial grid used to store total reaction rate
-	 * @param reactionIndex	Index of this declared reaction in the simulation dictionary
-	 */
-	public void fitReacRateOnGrid(SpatialGrid aRateGrid, int reactionIndex) {
-	}
-
-	/**
-	 * \brief Add the total concentration of an agent on received grid
-	 * 
-	 * Add the total concentration of an agent on received grid
-	 * 
-	 * @param aSpG	Spatial grid used to sum total mass
-	 */
-	public void fitMassOnGrid(SpatialGrid aSpG) {
-	}
-
-	/**
-	 * \brief Return total mass of this agent
-	 *
-	 * Return total mass of this agent
-	 *
-	 * @return Double stating the total mass of this agent
-	 */
 	public Double getTotalMass() {
-		return _totalMass;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	/**
-	 * \brief Return particle mass of this agent
-	 *
-	 * Return particle mass of this agent
-	 *
-	 * @return Double stating the particle mass of this agent
-	 */
-	public Double getParticleMass(int particleIndex) {
-		return particleMass[particleIndex];
+	public Double getVolume(boolean b) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	/**
-	 * \brief Return net growth rate of this agent
-	 *
-	 * Return net growth rate of this agent
-	 *
-	 * @return Double stating the net growth rate of this agent
-	 */
+	public void addMovement(ContinuousVector move) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public ContinuousVector getLocation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Double getShoveRadius() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void updateSize() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean willDie() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	public void setDetPriority(Double priority) {
+	}
+
+	public void addDetPriority(Double detFunction) {
+		// TODO Auto-generated method stub
+	}
+
+	public void multiplyDetPriority(Double multiplier) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double getRadius(boolean b) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setDistProb(Double prob) {
+		// TODO Auto-generated method stub
+	}
+
+	public Double getDistProb() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setDistCumProb(Double prob) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double getDistCumProb() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public boolean willDivide() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void setParticleMass(Double[] particleMass) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double[] getParticleMass() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void addToParticleMasses(Double[] mass) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void subtractFromParticleMasses(Double[] mass) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addParticleMass(Double mass, int particleIndex) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void multiplyParticleMass(Double multiplier, int particleIndex) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Double getDetPriority() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected void setTotalMass(Double _totalMass) {
+		// TODO Auto-generated method stub
+	}
+
+	public double[] getBoundingBoxCoord() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public double[] getSearchCoord(Double range) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public double[] getBoundingBoxDimensions() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setGridIndex(int aGridIndex) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getGridIndex() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 	public Double getNetGrowth() {
-		return _netGrowthRate;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	/**
-	 * \brief Return volume growth rate of this agent
-	 *
-	 * Return volume growth rate of this agent
-	 *
-	 * @return Double stating the volume growth rate of this agent
-	 */
-	public Double getVolGrowth() {
-		return _netVolumeRate;
+	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex) {
+		// TODO Auto-generated method stub
+		
 	}
 
-	/**
-	 * \brief Set net growth rate of this agent
-	 *
-	 * Set net growth rate of this agent
-	 *
-	 * @param value	Double stating the net growth rate of this agent
-	 */
-	public void setNetGrowth(Double value) {
-		_netGrowthRate = value;
+	public void fitReacRateOnGrid(SpatialGrid aRateGrid, int reactionIndex) {
+		// TODO Auto-generated method stub
+		
 	}
 
-	/**
-	 * \brief Return solute yield for a particular reaction
-	 * 
-	 * Return solute yield for a particular reaction
-	 * 
-	 * @param indexReaction	Index to a reaction in the simulation dictionary
-	 * @return	Double array of the solute yields for that reaction
-	 */
-	public Double[] getSoluteYield(int indexReaction) {
-		return soluteYield[indexReaction];
+	public ContinuousVector getMovement() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	/**
-	 * \brief Return the reaction kinetic parameters for a particular reaction
-	 * 
-	 * Return rection kinetic parameters for a particular reaction
-	 * 
-	 * @param indexReaction	Index to a reaction in the simulation dictionary
-	 * @return	Double array of the rection kinetic parameters for that reaction
-	 */
-	public Double[] getReactionKinetic(int indexReaction) {
-		return reactionKinetic[indexReaction];
+	protected void updateGrowthRates() {
+		// TODO Auto-generated method stub
+		
 	}
 
-	/**
-	 * \brief Return the parameters associated with this agent (speciesParam)
-	 * 
-	 * Return the parameters associated with this agent (speciesParam)
-	 * 
-	 * @return ActiveParam object containing the species associated with this agent
-	 */
-	public ActiveParam getActiveParam() {
-		return (ActiveParam) _activeParam;
+	public void createNewAgent(ContinuousVector position) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Color getColor() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Double getActiveFrac() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Boolean hasEPS() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Color getColorCapsule() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected void setMyDivRadius(Double _myDivRadius) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	protected void setMyDeathRadius(Double _myDeathRadius) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void subtractMovement(ContinuousVector _divisionDirection) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	protected void setNetVolumeRate(Double _netVolumeRate) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void divide() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setLocation(ContinuousVector position) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public LocatedParam getLocatedParam() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ContinuousVector getVerifiedMovement(ContinuousVector continuousVector) {
+		// TODO Auto-generated method stub
+		return null;
+		
 	}
 }

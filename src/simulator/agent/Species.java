@@ -180,14 +180,14 @@ public class Species implements Serializable
 		_progenitor = (Agent) aSpRoot.instanceCreator("simulator.agent.zoo");
 		// Get parameters for this progenitor object from the protocol file if present
 
-		_progenitor.getActiveParam().init(aSimulator, aSpRoot, speciesDefaults);
+		_progenitor.getSpeciesParam().init(aSimulator, aSpRoot, speciesDefaults);
 		
 		_progenitor.setSpecies(this);
 
 		// Set the computational domain this species is associated with
 		// KA Aug 13 - changed as this may be a default
 		domain = aSimulator.world.getDomain(
-				_progenitor.getActiveParam().getSpeciesParameterString("computationDomain", aSpRoot, speciesDefaults));
+				_progenitor.getSpeciesParam().getSpeciesParameterString("computationDomain", aSpRoot, speciesDefaults));
 	}
 
 	/**
@@ -240,14 +240,14 @@ public class Species implements Serializable
 		ContinuousVector cc = new ContinuousVector();
 
 		for (int i = 0; i < howMany; i++) 
-			if ( _progenitor instanceof Agent ) 
+			if ( _progenitor instanceof LocatedActiveAgent ) 
 			{
 				// Set coordinates within the birth area - randomly
 				if( ! Simulator.isChemostat )					
 					shuffleCoordinates(cc, _initArea);
 
 				// Create the agent at these coordinates
-				((LocatedAgent) _progenitor).createNewAgent(cc);
+				_progenitor.createNewAgent(cc);
 			}
 			else
 				_progenitor.createNewAgent();
@@ -336,7 +336,7 @@ public class Species implements Serializable
 					case 1:	// Successfully Attached
 						numberAttachedInjectedAgents--;						
 						// Create the agent at these coordinates
-						((LocatedAgent) _progenitor).createNewAgent(this.swimmingAgentPosition);
+						_progenitor.createNewAgent(this.swimmingAgentPosition);
 						break;
 					case 2:
 						agentsReturnedToBulk++;
@@ -892,7 +892,7 @@ public class Species implements Serializable
 	 */
 	public SpeciesParam getSpeciesParam() 
 	{
-		return _progenitor.getActiveParam();
+		return _progenitor.getSpeciesParam();
 	}
 
 	/**
@@ -916,7 +916,7 @@ public class Species implements Serializable
 	 */
 	public LocatedParam getLocatedParam()
 	{
-		return ((LocatedAgent) _progenitor).getActiveParam();
+		return _progenitor.getLocatedParam();
 	}
 	
 	/**

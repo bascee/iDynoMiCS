@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-
-
 /**
  * Implementation of an arbitrary-dimension RTree. Based on R-Trees: A Dynamic
  * Index Structure for Spatial Searching (Antonn Guttmann, 1984)
@@ -973,7 +971,8 @@ public class RTree<T>
       this.entry = entry;
     }
 
-    public String toString()
+    @Override
+	public String toString()
     {
       return "Entry: " + entry;
     }

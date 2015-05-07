@@ -17,8 +17,6 @@ import java.util.*;
 import Jama.Matrix;
 import simulator.*;
 import simulator.agent.*;
-import simulator.geometry.boundaryConditions.AllBC;
-import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
 import utils.ExtraMath;
 import utils.LogFile;
@@ -60,7 +58,7 @@ public abstract class Reaction implements Serializable
 	/**
 	 * Agents hosting this process
 	 */
-	protected LinkedList<Agent> _guild = new LinkedList<Agent>();
+	protected LinkedList<LocatedActiveAgent> _guild = new LinkedList<LocatedActiveAgent>();
 
 	/**
 	 * Local copy of the solute grids used in this simulation. Used for efficiency purposes 
@@ -217,7 +215,7 @@ public abstract class Reaction implements Serializable
 	 * @param xmlRoot	The XML object containing the definition of one reaction in the protocol file
 	 * @see Simulator.createReaction()
 	 */
-	public void initFromAgent(Agent anAgent, Simulator aSim, XMLParser xmlRoot)
+	public void initFromAgent(LocatedActiveAgent anAgent, Simulator aSim, XMLParser xmlRoot)
 	{
 		Double yield;
 		// Populate yield for solutes __________________________________
@@ -373,10 +371,10 @@ public abstract class Reaction implements Serializable
 	 *
 	 * Register an agent among the guild of this pathway
 	 * 
-	 * @param agent	ActiveAgent to register
+	 * @param anAgent	ActiveAgent to register
 	 */
-	public void addAgent(Agent agent) {
-		_guild.add(agent);
+	public void addAgent(LocatedActiveAgent anAgent) {
+		_guild.add(anAgent);
 	}
 
 	/**
@@ -384,10 +382,10 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * Remove an agent among the guild of this pathway
 	 * 
-	 * @param agent	ActiveAgent to remove
+	 * @param anAgent	ActiveAgent to remove
 	 */
-	public void removeAgent(Agent agent) {
-		_guild.remove(agent);
+	public void removeAgent(LocatedActiveAgent anAgent) {
+		_guild.remove(anAgent);
 	}
 
 	/**
@@ -398,7 +396,7 @@ public abstract class Reaction implements Serializable
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The marginal growth rate
 	 */
-	public abstract Double computeMassGrowthRate(Agent anAgent);
+	public abstract Double computeMassGrowthRate(LocatedActiveAgent anAgent);
 	
 	/**
 	 * \brief Compute the specific growth rate
@@ -408,7 +406,7 @@ public abstract class Reaction implements Serializable
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The specific growth rate
 	 */
-	public abstract Double computeSpecGrowthRate(Agent anAgent);
+	public abstract Double computeSpecGrowthRate(LocatedActiveAgent anAgent);
 
 	/**
 	 * \brief Return the specific reaction rate for a given agent
@@ -419,7 +417,7 @@ public abstract class Reaction implements Serializable
 	 * @see ActiveAgent.grow()
 	 * @see Episome.computeRate(EpiBac)
 	 */
-	public abstract void computeSpecificGrowthRate(Agent anAgent);
+	public abstract void computeSpecificGrowthRate(LocatedActiveAgent anAgent);
 
 	/**
 	 * \brief Compute specific growth rate in function to concentrations sent
@@ -429,7 +427,7 @@ public abstract class Reaction implements Serializable
 	 * @param s	Array of solute concentration
 	 * @param anAgent	Parameters used are those defined for THIS agent
 	 */
-	public abstract void computeSpecificGrowthRate(Double[] s, Agent anAgent);
+	public abstract void computeSpecificGrowthRate(Double[] s, LocatedActiveAgent anAgent);
 
 	/**
 	 * \brief Compute specific growth rate in function of concentrations sent Parameters used are those defined for the reaction.
@@ -543,8 +541,7 @@ public abstract class Reaction implements Serializable
 				// The agent is a located agent, use the local concentration
 				for (int iGrid = 0; iGrid<_soluteList.length; iGrid++)
 				{
-					out[iGrid] = _soluteList[iGrid].getValueAround(
-													(LocatedAgent) anAgent);
+					out[iGrid] = _soluteList[iGrid].getValueAround(anAgent);
 				}
 			} 
 			else 
@@ -680,7 +677,7 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * @return	LinkedList containing all agents in the guild
 	 */
-	public LinkedList<Agent> getGuild()
+	public LinkedList<LocatedActiveAgent> getGuild()
 	{
 		return _guild;
 	}

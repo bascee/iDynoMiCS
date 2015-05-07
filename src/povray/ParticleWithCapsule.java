@@ -13,7 +13,7 @@ import java.awt.Color;
 import java.io.Serializable;
 
 import simulator.geometry.ContinuousVector;
-import simulator.agent.LocatedAgent;
+import simulator.agent.Agent;
 import utils.LogFile;
 
 /**
@@ -92,7 +92,7 @@ public class ParticleWithCapsule implements Serializable
 	 * 
 	 * Constructor that initialises this storage object with a specific LocatedAgent, creating the required center and colour vector properties
 	 */
-	public ParticleWithCapsule(LocatedAgent p) 
+	public ParticleWithCapsule(Agent p) 
 	{
 		center = new VectorProperty("");
 		setCenter(p.getLocation());

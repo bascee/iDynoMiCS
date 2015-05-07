@@ -8,10 +8,8 @@
  */
 package simulator;
 
-import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
-import utils.UnitConverter;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
 

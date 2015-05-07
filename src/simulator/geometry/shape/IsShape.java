@@ -19,7 +19,6 @@ import simulator.geometry.Domain;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.pointProcess.Edge;
-import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
 import utils.XMLParser;
@@ -351,4 +350,9 @@ public abstract class IsShape implements Serializable
      */
 	public abstract Boolean followBoundary(DiscreteVector dcIn,
 									DiscreteVector dcOut, SpatialGrid aSG);
+
+	public ContinuousVector getCVectorOut() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
