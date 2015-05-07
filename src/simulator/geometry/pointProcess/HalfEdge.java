@@ -112,6 +112,7 @@ public class HalfEdge
 	 * 
 	 * Useful during testing and debugging.
 	 */
+	@Override
 	public String toString()
 	{
 		String out = "HalfEdge ";

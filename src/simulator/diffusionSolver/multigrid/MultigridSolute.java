@@ -11,12 +11,10 @@ package simulator.diffusionSolver.multigrid;
 
 import simulator.geometry.boundaryConditions.AllBC;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
-import simulator.geometry.DiscreteVectorIterator;
 import simulator.geometry.Domain;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
-import utils.LogFile;
 import utils.MatrixOperations;
 
 /**

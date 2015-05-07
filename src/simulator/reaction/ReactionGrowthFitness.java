@@ -276,6 +276,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param s	Temporary container for solute concentration 
 	 * @return	The specific growth rate
 	 */
+	@Override
 	public Double computeSpecRate(Double[] s)
 	{
 		Double specRate = _muMax;

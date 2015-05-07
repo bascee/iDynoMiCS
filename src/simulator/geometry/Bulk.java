@@ -13,8 +13,6 @@
 package simulator.geometry;
 
 import java.util.*;
-import org.jdom.Element;
-
 import idyno.SimTimer;
 import simulator.Simulator;
 import simulator.SoluteGrid;

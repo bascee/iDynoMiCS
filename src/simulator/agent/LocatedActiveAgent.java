@@ -48,11 +48,6 @@ public abstract class LocatedActiveAgent extends Agent {
 	// its compounds)
 
 	/**
-	 * Temporary store of the new location this cell will move to.
-	 */
-	protected static ContinuousVector _newLoc = new ContinuousVector();
-
-	/**
 	 * Array of all the reactions this agent is involved in
 	 */
 	public Reaction[]            allReactions;
@@ -299,9 +294,9 @@ public abstract class LocatedActiveAgent extends Agent {
 		/*
 		 * Now copy these value in the speciesParam structure.
 		 */
-		getSpeciesParam().soluteYield = soluteYield.clone();
-		getSpeciesParam().particleYield = particleYield.clone();
-		getSpeciesParam().reactionKinetic = reactionKinetic.clone();
+		getLocatedParam().soluteYield = soluteYield.clone();
+		getLocatedParam().particleYield = particleYield.clone();
+		getLocatedParam().reactionKinetic = reactionKinetic.clone();
 
 		setMyDivRadius(getRandomisedDivRadius());
 		setMyDeathRadius(getRandomisedDeathRadius());
@@ -403,7 +398,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	{
 		try
 		{
-			Agent baby = (Agent) sendNewAgent();
+			Agent baby = sendNewAgent();
 			// Register the baby in the pathway guilds.
 			baby.registerBirth();
 		}
@@ -474,7 +469,7 @@ public abstract class LocatedActiveAgent extends Agent {
 											this._divisionDirection.clone();
 		out._myNeighbors = (LinkedList<Agent>) this._myNeighbors.clone();
 		out._agentGridIndex = this._agentGridIndex;
-		return (Object) out;
+		return out;
 	}
 	
 	/**
@@ -566,7 +561,7 @@ public abstract class LocatedActiveAgent extends Agent {
 					deltaParticle[i] += deltaMass*tStep;
 				}
 				_netGrowthRate += deltaMass;
-				setNetVolumeRate(getNetVolumeRate() + deltaMass/getSpeciesParam().particleDensity[i]);
+				setNetVolumeRate(getNetVolumeRate() + deltaMass/getLocatedParam().particleDensity[i]);
 			}
 		}
 		
@@ -609,7 +604,7 @@ public abstract class LocatedActiveAgent extends Agent {
 
 		// Test if specific parameters exist for this reaction
 		int index = aReaction.reactionIndex;
-		boolean test = getSpeciesParam().soluteYield[index]==null;
+		boolean test = getLocatedParam().soluteYield[index]==null;
 
 		if (useDefaultParam||test) {
 			// Use parameters defined in the reaction object
@@ -619,9 +614,9 @@ public abstract class LocatedActiveAgent extends Agent {
 		} else {
 
 			// Use parameters defined in the speciesParam structure
-			reactionKinetic[index] = getSpeciesParam().reactionKinetic[index];
-			soluteYield[index] = getSpeciesParam().soluteYield[index];
-			particleYield[index] = getSpeciesParam().particleYield[index];
+			reactionKinetic[index] = getLocatedParam().reactionKinetic[index];
+			soluteYield[index] = getLocatedParam().soluteYield[index];
+			particleYield[index] = getLocatedParam().particleYield[index];
 		}
 	}
 
@@ -761,6 +756,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 *
 	 * @return Double stating the total mass of this agent
 	 */
+	@Override
 	public Double getTotalMass() {
 		return _totalMass;
 	}
@@ -1071,6 +1067,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * @return	Boolean stating whether cell death should be triggered (true)
 	 * or not (false).
 	 */
+	@Override
 	public boolean willDie() {
 		return (getTotalMass() < 0.0) || (getRadius(false) <= getMyDeathRadius());
 	}
@@ -1245,7 +1242,7 @@ public abstract class LocatedActiveAgent extends Agent {
 				diff.times(0.5);
 				neighbour.addMovement(diff);
 			}
-			this._movement.subtract(diff);
+			this.subtractMovement(diff);
 		}
 	}
 
@@ -1446,14 +1443,11 @@ public abstract class LocatedActiveAgent extends Agent {
 		 */
 		if (_movement.isZero())
 			return 0.0;
-		/*
-		 * Check we're inside the boundaries.
-		 */
-		checkBoundaries();
+
 		/*
 		 * Now apply the movement.
 		 */
-		_location.set(_newLoc);
+		setLocation(getVerifiedMovement(_movement));
 		_agentGrid.registerMove(this);
 		/*
 		 * Calculate how far we've traveled relative to the total radius.
@@ -1467,11 +1461,15 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * \brief Used by the move method to determine if an agent's move crosses
 	 * any of the domain's boundaries.
 	 */
-	public void checkBoundaries() {
+	public ContinuousVector getVerifiedMovement(ContinuousVector movement) {
 		// Search a boundary which will be crossed
-		_newLoc.set(_location);
-		_newLoc.add(_movement);
-		AllBC aBoundary = getDomain().testCrossedBoundary(_newLoc);
+		ContinuousVector newLoc = new ContinuousVector(_location);
+		newLoc.add(movement);
+		return getVerifiedLocation(newLoc);
+	}
+	
+	public ContinuousVector getVerifiedLocation(ContinuousVector location) {
+		AllBC aBoundary = getDomain().testCrossedBoundary(this,location);
 		int nDim = (_agentGrid.is3D ? 3 : 2);
 		Boolean test = ( aBoundary != null );
 		int counter = 0;
@@ -1482,24 +1480,25 @@ public abstract class LocatedActiveAgent extends Agent {
 		while (test)
 		{
 			counter++;
-			aBoundary.applyBoundary(this, _newLoc);
-			aBoundary = getDomain().testCrossedBoundary(_newLoc);
+			aBoundary.applyBoundary(this, location);
+			aBoundary = getDomain().testCrossedBoundary(this,location);
 			test = (aBoundary != null) || (counter > nDim);
 			// TODO Rob 16Mar2015: Not sure why iDynoMiCS is failing at cyclic
 			// boundaries.
-			test = test && !(aBoundary instanceof BoundaryCyclic);
+//			test = test && !(aBoundary instanceof BoundaryCyclic);
 			if (counter > nDim)
 			{
 				LogFile.writeLogAlways(
 						"Problem in LocatedAgent.checkBoundaries(): "+
 						"\n\tLocatedAgent at "+_location.toString()+
-						", trying to move to "+_newLoc.toString()+
+						", trying to move to "+location.toString()+
 						", with radius "+_totalRadius+" on boundary "+
 						aBoundary.getSide()+" ("+aBoundary.getClass()+")"+
 						"\n\tcounter ("+counter+") > nDim ("+nDim+")");
-				return;
+				return _location;
 			}
 		}
+		return location;
 	}
 
 	/**
@@ -1550,6 +1549,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * 
 	 * @param aSpG	Spatial grid used to sum volume
 	 */
+	@Override
 	public void fitVolRateOnGrid(SpatialGrid aSpG) {
 		Double value = getNetVolumeRate()/aSpG.getVoxelVolume();
 		if ( ! Double.isFinite(value) )
@@ -1635,7 +1635,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	public void updateVolume() {
 		_volume = 0.0;
 		for (int i = 0; i<particleMass.length; i++) {
-			_volume += particleMass[i]/getSpeciesParam().particleDensity[i];
+			_volume += particleMass[i]/getLocatedParam().particleDensity[i];
 		}
 		_totalVolume = _volume;
 	}
@@ -1682,10 +1682,12 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * 
 	 * @param aMove	ContinuousVector to add to the movement vector.
 	 */
+	@Override
 	public void addMovement(ContinuousVector aMove) {
 		this._movement.add(aMove);
 	}
 	
+	@Override
 	public void subtractMovement(ContinuousVector aMove) {
 		this._movement.subtract(aMove);
 	}
@@ -1697,8 +1699,13 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * @return LocatedParam object of parameters associated with this agent.
 	 */
 	@Override
-	public LocatedParam getSpeciesParam() {
+	public LocatedParam getLocatedParam() {
 		return (LocatedParam) _speciesParam;
+	}
+	
+	@Override
+	public SpeciesParam getSpeciesParam() {
+		return _speciesParam;
 	}
 
 	/**
@@ -1708,6 +1715,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * included in this calculation.
 	 * @return	Double specifying the volume of this agent.
 	 */
+	@Override
 	public Double getVolume(boolean withCapsule) {
 		return withCapsule ? _totalVolume : _volume;
 	}
@@ -1719,6 +1727,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * included in this calculation.
 	 * @return	Double specifying the radius of this agent
 	 */
+	@Override
 	public Double getRadius(boolean withCapsule) {
 		return (withCapsule ? _totalRadius : _radius);
 	}
@@ -1760,6 +1769,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * 
 	 * @return	Double specifying the shove radius that will be applied.
 	 */
+	@Override
 	public Double getShoveRadius() {
 		return _totalRadius * getShoveFactor();
 	}
@@ -1804,8 +1814,8 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * new agent on cell division.
 	 */
 	public Double getBabyMassFrac() {
-		return ExtraMath.deviateFromCV(getSpeciesParam().babyMassFrac,
-											getSpeciesParam().babyMassFracCV);
+		return ExtraMath.deviateFromCV(getLocatedParam().babyMassFrac,
+											getLocatedParam().babyMassFracCV);
 	}
 
 	/**
@@ -1815,8 +1825,8 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * triggered.
 	 */
 	public Double getRandomisedDivRadius() {
-		return ExtraMath.deviateFromCV(getSpeciesParam().divRadius,
-											getSpeciesParam().divRadiusCV);
+		return ExtraMath.deviateFromCV(getLocatedParam().divRadius,
+											getLocatedParam().divRadiusCV);
 	}
 
 	/**
@@ -1825,8 +1835,8 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * @return	Double stating the agent radius at which cell death is triggered
 	 */
 	public Double getRandomisedDeathRadius() {
-		return ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
-											getSpeciesParam().deathRadiusCV);
+		return ExtraMath.deviateFromCV(getLocatedParam().deathRadius,
+											getLocatedParam().deathRadiusCV);
 	}
 
 	/**
@@ -1878,6 +1888,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * 
 	 * @return	ContinuousVector stating the location of this agent.
 	 */
+	@Override
 	public ContinuousVector getLocation() {
 		return _location;
 	}
@@ -1964,14 +1975,17 @@ public abstract class LocatedActiveAgent extends Agent {
 		return _distProb;
 	}
 
+	@Override
 	public Double getDistCumProb() {
 		return _distCumProb;
 	}
 
+	@Override
 	public void setDistCumProb(Double _distCumProb) {
 		this._distCumProb = _distCumProb;
 	}
 
+	@Override
 	public Double getDetPriority() {
 		return detPriority;
 	}
@@ -1981,6 +1995,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * 
 	 * @param cc	Location which this agent should be assigned to.
 	 */
+	@Override
 	public void setLocation(ContinuousVector cc) {
 		// In a chemostat set the location of the newborns to zero.
 		if ( Simulator.isChemostat )
@@ -1994,6 +2009,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * 
 	 * @return Continuous vector that states this agents move.
 	 */
+	@Override
 	public ContinuousVector getMovement() {
 		return _movement;
 	}

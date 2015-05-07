@@ -3,7 +3,6 @@ package simulator.geometry.boundaryConditions;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.Domain;
@@ -11,6 +10,7 @@ import utils.XMLParser;
 
 public class BoundaryAgar extends InternalBoundary
 {
+	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser root)
 	{
 		readGeometry(root, aDomain);

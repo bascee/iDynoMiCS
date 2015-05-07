@@ -353,7 +353,7 @@ public class XMLParser implements Serializable
 		List<Element> childList = _localRoot.getChildren(childMarkup);
 		for (Element aChild : childList)
 			if ( aChild.getAttributeValue(attrName).equals(attrValue) ) 
-				return (Element) aChild;
+				return aChild;
 		LogFile.writeLog("Could not find XML child element with name "+
 							childMarkup+" and "+attrName+" = "+attrValue);
 		return null;

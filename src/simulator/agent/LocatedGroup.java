@@ -19,7 +19,6 @@ import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
-import utils.LogFile;
 
 /**
  * \brief Object to hold a group of agents in one location on the agent grid.

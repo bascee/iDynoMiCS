@@ -14,7 +14,6 @@ import java.io.Serializable;
 
 import simulator.geometry.ContinuousVector;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import utils.LogFile;
 
 /**

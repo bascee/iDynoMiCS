@@ -42,11 +42,6 @@ public abstract class Agent implements Cloneable
 	/* Parameters mutated from species parameters ___________________________ */
 
 	/**
-	 * Integer noting the last simulation timestep when this agent was stepped
-	 */
-	protected int _lastStep;
-
-	/**
 	 * The number of generations between the progenitor and the current agent
 	 */
 	protected int _generation = 0;
@@ -108,7 +103,6 @@ public abstract class Agent implements Cloneable
 	public Agent()
 	{
 		_birthday = SimTimer.getCurrentTime();
-		_lastStep = SimTimer.getCurrentIter()-1;
 	}
 	
 	/**
@@ -174,7 +168,7 @@ public abstract class Agent implements Cloneable
 		// Copy the references (superficial copy)
 		out._species = this._species;
 		out._speciesParam = this._speciesParam;
-		return (Object) out;
+		return out;
 	}
 
 	/**
@@ -193,7 +187,6 @@ public abstract class Agent implements Cloneable
 	 */
 	public void step()
 	{
-		_lastStep = SimTimer.getCurrentIter();
 		internalStep();
 	}
 	
@@ -667,6 +660,17 @@ public abstract class Agent implements Cloneable
 
 	public void setLocation(ContinuousVector position) {
 		// TODO Auto-generated method stub
+		
+	}
+
+	public LocatedParam getLocatedParam() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ContinuousVector getVerifiedMovement(ContinuousVector continuousVector) {
+		// TODO Auto-generated method stub
+		return null;
 		
 	}
 }

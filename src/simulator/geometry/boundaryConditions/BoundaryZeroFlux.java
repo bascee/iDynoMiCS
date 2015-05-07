@@ -14,7 +14,6 @@ package simulator.geometry.boundaryConditions;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 import utils.XMLParser;

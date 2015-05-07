@@ -7,7 +7,6 @@ import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
 import simulator.geometry.pointProcess.Edge;
-import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
 import utils.Complex;
@@ -121,6 +120,7 @@ public class Cylindrical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public void readShape(XMLParser shapeRoot, Domain aDomain)
 	{
 		_dPointCenterBase = new DiscreteVector(shapeRoot.getParamParser("pointCenter"));
@@ -167,6 +167,7 @@ public class Cylindrical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public Boolean isOutside(ContinuousVector point)
 	{
 		Double[] position = convertToLocal(point);
@@ -176,6 +177,7 @@ public class Cylindrical extends IsShape
 		return Boolean.logicalXor(isInsideCylinder, _interiorMatchesDomain);
 	}
 	
+	@Override
 	public DiscreteVector getRelativePosition(DiscreteVector coord)
 	{
 		DiscreteVector pointOnPlaneToPoint = new DiscreteVector();
@@ -183,6 +185,7 @@ public class Cylindrical extends IsShape
 		return pointOnPlaneToPoint;
 	}
 	
+	@Override
 	public DiscreteVector getAbsolutePosition(DiscreteVector coord)
 	{
 		DiscreteVector out = new DiscreteVector();
@@ -190,6 +193,7 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public ContinuousVector getRelativePosition(ContinuousVector point)
 	{
 		ContinuousVector out = new ContinuousVector(point);
@@ -197,6 +201,7 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public ContinuousVector getAbsolutePosition(ContinuousVector point)
 	{
 		ContinuousVector out = new ContinuousVector(point);
@@ -204,6 +209,7 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
 		Double[] p = convertToLocal(ccIn);
@@ -213,6 +219,7 @@ public class Cylindrical extends IsShape
 		convertToCartesian(p, ccOut);
 	}
 	
+	@Override
 	public void orthoProj(DiscreteVector dcIn, DiscreteVector dcOut)
 	{
 		// TODO
@@ -223,6 +230,7 @@ public class Cylindrical extends IsShape
 	 * @param point 
 	 * @return 3 Doubles: (0) height, (1) radius, (2) angle
 	 */
+	@Override
 	public Double[] convertToLocal(ContinuousVector point)
 	{
 		Double[] out = new Double[3];
@@ -310,6 +318,7 @@ public class Cylindrical extends IsShape
 		return null;
 	}
 	
+	@Override
 	public Vertex intersect(Edge edge1, Edge edge2)
 	{
 		Vertex out = new Vertex();
@@ -317,6 +326,7 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public LinkedList<ContinuousVector> getIntersections(
 						ContinuousVector position, ContinuousVector vector)
 	{
@@ -365,6 +375,7 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
+	@Override
 	public void readyToFollowBoundary(SpatialGrid aSG)
 	{
 		
@@ -373,6 +384,7 @@ public class Cylindrical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public Boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut,
 															SpatialGrid aSG)
 	{
@@ -382,6 +394,7 @@ public class Cylindrical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public ContinuousVector getNormalInside()
 	{
 		return null;
@@ -390,6 +403,7 @@ public class Cylindrical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public Double getDistance(IsShape aBoundary)
 	{
 		return null;
@@ -398,6 +412,7 @@ public class Cylindrical extends IsShape
 	/**
 	 * 
 	 */
+	@Override
 	public DiscreteVector getNormalDiscrete()
 	{
 		return null;
@@ -424,6 +439,7 @@ public class Cylindrical extends IsShape
 		return null;
 	}
 	
+	@Override
 	public StringBuffer writeShapeInformation(StringBuffer outputString)
 	{
 		outputString.append("<Surface shape=\"Cylindrical\"");
@@ -437,11 +453,13 @@ public class Cylindrical extends IsShape
 		return outputString;
 	}
 	
+	@Override
 	public StringBuffer getSitesHeader()
 	{
 		return new StringBuffer("azimuth,height");
 	}
 	
+	@Override
 	public StringBuffer getEdgesHeader()
 	{
 		return new StringBuffer("azimuth1,height1,azimuth2,height2");

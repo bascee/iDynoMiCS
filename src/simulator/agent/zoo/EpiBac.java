@@ -16,14 +16,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import org.jdom.Element;
-
 import idyno.SimTimer;
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
 import simulator.agent.*;
-import simulator.geometry.ContinuousVector;
 import simulator.Simulator;
 
 // bvm 30.1.2009
@@ -63,7 +60,7 @@ public class EpiBac extends BactEPS
 			newEpisome.setHost(out);
 			out._plasmidHosted.add(newEpisome);
 		}
-		return (Object) out;
+		return out;
 	}
 
 	/**

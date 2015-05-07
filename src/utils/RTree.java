@@ -971,7 +971,8 @@ public class RTree<T>
       this.entry = entry;
     }
 
-    public String toString()
+    @Override
+	public String toString()
     {
       return "Entry: " + entry;
     }

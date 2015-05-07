@@ -11,8 +11,6 @@ package simulator.agent;
 
 import java.util.Arrays;
 
-import org.jdom.Element;
-
 import utils.ExtraMath;
 import simulator.Simulator;
 import utils.XMLParser;

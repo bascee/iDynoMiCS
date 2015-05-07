@@ -13,13 +13,11 @@ package simulator.geometry.boundaryConditions;
 
 import java.util.LinkedList;
 
-import utils.LogFile;
 import utils.XMLParser;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.SpatialGrid;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 import simulator.geometry.shape.*;
@@ -218,8 +216,7 @@ public abstract class AllBC
      * 
      * @see LocatedAgent.move();
      */
-	public abstract void applyBoundary(Agent anAgent, 
-													ContinuousVector newLoc);
+	public abstract void applyBoundary(Agent anAgent, ContinuousVector newLoc);
 	
 	public void applyBoundary(DiscreteVector coord)
 	{
@@ -347,14 +344,13 @@ public abstract class AllBC
 	 * 
 	 * @see applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	 */
-	protected void deadlyBoundary(Agent anAgent,
-									ContinuousVector target, String reason)
+	protected void deadlyBoundary(Agent anAgent, ContinuousVector target)
 	{
 		/*
 		 * Recording reason of death: agent will be moved to agentToKill list
 		 * when die() calls registerDeath().
 		 */
-		anAgent.death = reason;
+		anAgent.death = "overBoard";
 		
 		anAgent.die(false);
 		// To label this agent as "shoving solved", set to zero its movement.
@@ -376,6 +372,7 @@ public abstract class AllBC
 	{
 		// Define coordinates of the corrected position.
 		_myShape.orthoProj(target, target);
+		
 		/*
 		 * Build a vector normal to the boundary and starting from the
 		 * orthogonal projection.
@@ -391,6 +388,17 @@ public abstract class AllBC
 		// Compute the new position.
 		target.add(vectorIn);
 		// Compute and update the movement vector leading to this new position.
-		anAgent.getMovement().sendDiff(anAgent.getLocation(), target);
+		anAgent.getMovement().sendDiff(target,anAgent.getLocation());
+	}
+	
+	public Double overBoundary(Agent anAgent, ContinuousVector target) {
+		Double value = _myShape.getDistance(anAgent.getLocation())
+													-anAgent.getRadius(true);
+		if (value < 0)
+			return value;
+		else
+			return null;
+
+		
 	}
 }

@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.lang.Math;
 import java.util.*;
 
-import org.jdom.Element;
-
 import idyno.SimTimer;
 import simulator.agent.*;
 import simulator.geometry.ContinuousVector;

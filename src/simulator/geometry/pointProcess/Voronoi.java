@@ -8,8 +8,6 @@ import simulator.geometry.ContinuousVector;
 import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.shape.IsShape;
-import utils.LogFile;
-import utils.ResultFile;
 
 public class Voronoi
 {

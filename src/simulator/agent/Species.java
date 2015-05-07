@@ -336,7 +336,7 @@ public class Species implements Serializable
 					case 1:	// Successfully Attached
 						numberAttachedInjectedAgents--;						
 						// Create the agent at these coordinates
-						((LocatedAgent) _progenitor).createNewAgent(this.swimmingAgentPosition);
+						_progenitor.createNewAgent(this.swimmingAgentPosition);
 						break;
 					case 2:
 						agentsReturnedToBulk++;
@@ -916,7 +916,7 @@ public class Species implements Serializable
 	 */
 	public LocatedParam getLocatedParam()
 	{
-		return ((LocatedAgent) _progenitor).getSpeciesParam();
+		return _progenitor.getLocatedParam();
 	}
 	
 	/**

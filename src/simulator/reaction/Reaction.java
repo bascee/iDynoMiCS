@@ -17,8 +17,6 @@ import java.util.*;
 import Jama.Matrix;
 import simulator.*;
 import simulator.agent.*;
-import simulator.geometry.boundaryConditions.AllBC;
-import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
 import utils.ExtraMath;
 import utils.LogFile;

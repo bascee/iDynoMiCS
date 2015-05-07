@@ -15,7 +15,6 @@ import utils.XMLParser;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 
@@ -114,6 +113,6 @@ public class BoundaryConstant extends ExternalBoundary
 	@Override
 	public void applyBoundary(Agent anAgent, ContinuousVector target)
 	{
-		deadlyBoundary(anAgent, target, "overBoard");
+		deadlyBoundary(anAgent, target);
 	}
 }

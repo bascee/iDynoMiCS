@@ -246,7 +246,7 @@ public class AgentContainer
 		}
 
 		// Now set the domain where this container is defined
-		domain = (Domain) aSimulator.world.getDomain(root.getParam("computationDomain"));
+		domain = aSimulator.world.getDomain(root.getParam("computationDomain"));
 		mySim = aSimulator;
 		
 		agentList = new LinkedList<Agent>();

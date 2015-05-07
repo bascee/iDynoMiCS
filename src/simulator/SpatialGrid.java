@@ -16,7 +16,6 @@ import java.io.Serializable;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import utils.ExtraMath;
 import utils.MatrixOperations;
 import utils.ResultFile;

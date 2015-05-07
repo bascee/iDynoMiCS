@@ -16,7 +16,6 @@ import utils.XMLParser;
 import simulator.*;
 import simulator.geometry.*;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 
 /**
@@ -126,7 +125,7 @@ public class BoundaryBulk extends ConnectedBoundary
 	@Override
 	public void applyBoundary(Agent anAgent, ContinuousVector target) 
 	{
-		deadlyBoundary(anAgent, target, "overBoard");
+		deadlyBoundary(anAgent, target);
 	}
 
 

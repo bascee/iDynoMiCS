@@ -13,7 +13,6 @@ import java.math.BigInteger;
 
 import simulator.agent.LocatedActiveAgent;
 import simulator.agent.Agent;
-import simulator.agent.LocatedAgent;
 import simulator.Simulator;
 import simulator.geometry.ContinuousVector;
 import simulator.reaction.Reaction;
@@ -131,7 +130,7 @@ public class ParticulateEPS extends LocatedActiveAgent
 	{
 		try
 		{
-			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
+			ParticulateEPS baby = sendNewAgent();
 			baby.setLocation(position);
 			baby.updateSize();
 			baby.registerBirth();
@@ -387,12 +386,14 @@ public class ParticulateEPS extends LocatedActiveAgent
 	}
 
 	
+	@Override
 	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	
+	@Override
 	public void addReaction(Reaction aReaction, Boolean useDefaultParam) {
 		// TODO Auto-generated method stub
 		
