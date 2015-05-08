@@ -179,13 +179,8 @@ public class BoundaryCyclic extends ExternalBoundary
 	{
 		// Determine the intersection with the crossed boundary.
 		// TODO Using first intersection is a quick fix.
-		// Bas - in case of planar biofilms only one intersection is returned
-		// hemispherical cyclic boundaries would be a pain.. yes.
-		if (isOutside(target)) {
-			//TODO: Bas - repaired this method, works for planar did not check
-			// for other shapes
 			vectorIn = _myShape.getIntersections(anAgent.getLocation(),
-											_myShape.getCVectorOut()).getFirst();
+											anAgent.getMovement()).getFirst();
 			// Determine the remaining movement when we touch the boundary.
 			target.sendDiff(target, vectorIn);
 			// Apply the residual movement on the symmetric point.
@@ -193,7 +188,6 @@ public class BoundaryCyclic extends ExternalBoundary
 			target.add(vectorIn);
 			// Compute and update the movement vector leading to this new position.
 			anAgent.getMovement().sendDiff(target, anAgent.getLocation());
-		}
 	}
 
 	/**

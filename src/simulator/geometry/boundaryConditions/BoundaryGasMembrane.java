@@ -204,6 +204,6 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 		// Compute the new position.
 		target.add(vectorIn);
 		// Compute and update the movement vector leading to this new position.
-		anAgent.getMovement().sendDiff(anAgent.getLocation(), target);
+		anAgent.getMovement().sendDiff(target,anAgent.getLocation());
 	}
 }

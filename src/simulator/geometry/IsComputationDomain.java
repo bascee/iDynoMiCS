@@ -102,6 +102,4 @@ public interface IsComputationDomain
 	 * Used in the creation of output files
 	 */
 	public void refreshBioFilmGrids();
-
-	AllBC testCrossedBoundary(Agent anAgent, ContinuousVector newLoc);
 }

@@ -1364,8 +1364,6 @@ public abstract class LocatedActiveAgent extends Agent {
 
 	public void getPotentialShovers(Double interactDistance, ContinuousVector location, Double radius) {
 		List<Agent> tempAgentList = _agentGrid.neighborhoodSearch(getSearchCoord(radius+interactDistance),(radius+interactDistance)*2);
-			
-		
 		for (Agent a: tempAgentList)
 			_myNeighbors.add(a);
 		
@@ -1447,7 +1445,7 @@ public abstract class LocatedActiveAgent extends Agent {
 		/*
 		 * Now apply the movement.
 		 */
-		setLocation(getVerifiedMovement(_movement));
+		setLocation(getVerifiedLocationFromMovement(_movement));
 		_agentGrid.registerMove(this);
 		/*
 		 * Calculate how far we've traveled relative to the total radius.
@@ -1461,7 +1459,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * \brief Used by the move method to determine if an agent's move crosses
 	 * any of the domain's boundaries.
 	 */
-	public ContinuousVector getVerifiedMovement(ContinuousVector movement) {
+	public ContinuousVector getVerifiedLocationFromMovement(ContinuousVector movement) {
 		// Search a boundary which will be crossed
 		ContinuousVector newLoc = new ContinuousVector(_location);
 		newLoc.add(movement);
@@ -1469,34 +1467,19 @@ public abstract class LocatedActiveAgent extends Agent {
 	}
 	
 	public ContinuousVector getVerifiedLocation(ContinuousVector location) {
-		AllBC aBoundary = getDomain().testCrossedBoundary(this,location);
+		AllBC aBoundary = getDomain().testCrossedBoundary(getRadius(true),location);
 		int nDim = (_agentGrid.is3D ? 3 : 2);
-		Boolean test = ( aBoundary != null );
 		int counter = 0;
+
 		/*
 		 * Test all boundaries and apply corrections according to crossed
 		 * boundaries.
 		 */
-		while (test)
+		while (aBoundary != null || (counter > nDim))
 		{
 			counter++;
 			aBoundary.applyBoundary(this, location);
-			aBoundary = getDomain().testCrossedBoundary(this,location);
-			test = (aBoundary != null) || (counter > nDim);
-			// TODO Rob 16Mar2015: Not sure why iDynoMiCS is failing at cyclic
-			// boundaries.
-//			test = test && !(aBoundary instanceof BoundaryCyclic);
-			if (counter > nDim)
-			{
-				LogFile.writeLogAlways(
-						"Problem in LocatedAgent.checkBoundaries(): "+
-						"\n\tLocatedAgent at "+_location.toString()+
-						", trying to move to "+location.toString()+
-						", with radius "+_totalRadius+" on boundary "+
-						aBoundary.getSide()+" ("+aBoundary.getClass()+")"+
-						"\n\tcounter ("+counter+") > nDim ("+nDim+")");
-				return _location;
-			}
+			aBoundary = getDomain().testCrossedBoundary(getRadius(true),location);
 		}
 		return location;
 	}

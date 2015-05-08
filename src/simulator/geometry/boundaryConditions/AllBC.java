@@ -391,11 +391,10 @@ public abstract class AllBC
 		anAgent.getMovement().sendDiff(target,anAgent.getLocation());
 	}
 	
-	public Double overBoundary(Agent anAgent, ContinuousVector target) {
-		Double value = _myShape.getDistance(anAgent.getLocation())
-													-anAgent.getRadius(true);
-		if (value < 0)
-			return value;
+	public Double overBoundary(Double radius, ContinuousVector target) {
+		Double v = _myShape.getDistance(target)-radius;
+		if (isOutside(target) || (v < 0))
+			return v;
 		else
 			return null;
 

@@ -668,7 +668,7 @@ public abstract class Agent implements Cloneable
 		return null;
 	}
 
-	public ContinuousVector getVerifiedMovement(ContinuousVector continuousVector) {
+	public ContinuousVector getVerifiedLocationFromMovement(ContinuousVector continuousVector) {
 		// TODO Auto-generated method stub
 		return null;
 		

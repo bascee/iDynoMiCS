@@ -162,9 +162,11 @@ public class RTree<T>
   
   //added 15-04-2015
   //FIXME: for testing purposes remove this method from production version
-  public List<T> cyclicsearch(float[] coords, float[] dimensions) {
-	  float[] domain = new float[]{1.0f,1.0f,1.0f}; 
-	  Boolean[] cyclicdimension = new Boolean[]{false,true,false};
+  public List<T> cyclicsearch(float[] coords, float[] dimensions, float[] domain) {
+	  Boolean[] cyclicdimension = new Boolean[dimensions.length];
+	  for (int i = 0; cyclicdimension.length > i; i++) {
+		  cyclicdimension[i] = true;
+	  }
 	  return cyclicsearch(coords,dimensions,domain,cyclicdimension);
   }
   
@@ -192,7 +194,7 @@ public class RTree<T>
 		  
 		  localcoords[0] = coords;
 		  int i = 1;
-		  for(int j = 0; j < cyclicdimension.length; j++) {
+		  for(int j = 0; j < dimensions.length; j++) {
 			  if (cyclicdimension[j]) {
 				  localcoords[i] = adddim(coords,domain,j);
 				  localcoords[i+1] = subdim(coords,domain,j);
@@ -200,7 +202,7 @@ public class RTree<T>
 			  }			  
 		  }
 		  
-		  for(int j = 0; j < localcoords[j].length-1; j++) {
+		  for(int j = 0; j < localcoords.length-1; j++) {
 			  LinkedList<T> results = new LinkedList<T>();
 			  search(localcoords[j], dimensions, root, results);
 			  combinedlist.addAll(results);

@@ -364,9 +364,16 @@ public class AgentContainer
 	
 	public List<Agent> neighborhoodSearch(double[] coords, double dimensions) {
 		
-		if(is3D)
-			return agentTree.search(helperMethods.doubleToFloatArray(coords), helperMethods.filledFloatArray((float) (dimensions),3));
-		return agentTree.search(helperMethods.doubleToFloatArray(coords), helperMethods.filledFloatArray((float) (dimensions),2));
+		if(is3D) {
+			return agentTree.cyclicsearch(helperMethods.doubleToFloatArray(coords), 
+					helperMethods.filledFloatArray((float) (dimensions),3),
+					helperMethods.doubleToFloatArray(new double[]{
+							domain.length_X,domain.length_Y,domain.length_Z}));
+		}
+		return agentTree.cyclicsearch(helperMethods.doubleToFloatArray(coords), 
+				helperMethods.filledFloatArray((float) (dimensions),2),
+				helperMethods.doubleToFloatArray(new double[]{
+						domain.length_X,domain.length_Y}));
 	}
 	
 	
@@ -653,7 +660,6 @@ public class AgentContainer
 	{
 		if( ! Simulator.isChemostat )
 		{
-
 			Collections.shuffle(agentList, ExtraMath.random);
 			shoveAllLocated(5 * MAXITER);
 		}
@@ -944,6 +950,8 @@ public class AgentContainer
 			anAgent.death = "overBoard";
 			anAgent.die(false);
 			registerDeath(anAgent);
+			removeAgent(anAgent);
+			removeLocated(anAgent);
 			LogFile.writeLog("warning: agent overBoard");
 		}
 	}
