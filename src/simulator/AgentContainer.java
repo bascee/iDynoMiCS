@@ -627,14 +627,24 @@ public class AgentContainer
 	 */
 	public void shoveAllLocated(int maxShoveIter)
 	{
-		int nMoved;
+		int nMoved = 0;
 		shovLimit = Math.max(1, (int) (getNumberOfAgents() * SHOVEFRACTION));
 		shovIter = 0;
-		
+		refreshTree();
 			do 
 		{
-			refreshTree();
-			nMoved = performMove();
+			Double deltaMove;
+			for (Agent agent : getAll())
+				agent.interact(MUTUAL);
+			for (Agent agent : getAll()) {
+				double[] tLoc = agent.getSearchCoord(0.0);
+				deltaMove = agent.move();
+				agentTree.delete(helperMethods.doubleToFloatArray(tLoc),agent);
+				agentTree.insert(agent.getBoundingBoxCoord(), 
+						agent.getBoundingBoxDimensions(), agent);
+				nMoved += (deltaMove >= 0.1  ? 1 : 0);
+			}
+
 		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
 		LogFile.writeLog(nMoved + "/" + getNumberOfAgents() + " after " + 
 											shovIter + " shove iterations");
@@ -671,20 +681,7 @@ public class AgentContainer
 	 *
 	 * @param isSynchro
 	 */
-	protected int performMove()
-	{
-		int nMoved = 0;
-		Double deltaMove;
-		/*
-		 * Compute movement, deltaMove is relative movement.
-		 */
-		for ( Agent agent : getAll() )
-		{
-			deltaMove = agent.interact(MUTUAL);
-			nMoved += (deltaMove >= 0.1  ? 1 : 0);
-		}
-		return nMoved;
-	}
+
 
 
 	/**

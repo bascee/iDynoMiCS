@@ -296,9 +296,9 @@ public abstract class Agent implements Cloneable
 		
 	}
 
-	public Double interact(boolean mUTUAL) {
+	public void interact(boolean mUTUAL) {
 		// TODO Auto-generated method stub
-		return null;
+
 	}
 
 	public void die(boolean b) {

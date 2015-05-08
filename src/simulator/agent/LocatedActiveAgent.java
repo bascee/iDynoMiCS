@@ -1189,20 +1189,14 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * 
 	 * @param MUTUAL	Whether movement is shared between two agents or
 	 * applied only to this one. Set in the protocol file.
-	 * @return	The move to be applied once the shoving or pull calculations
-	 * have been performed.
 	 */
 	@Override
-	public Double interact(boolean MUTUAL) {
-		move();
-		/*
-		 * Rebuild your neighbourhood.
-		 */
-		getPotentialShovers(getInteractDistance(),_location,_radius);
-		for ( Agent neighbour : _myNeighbors )
+	public void interact(boolean MUTUAL) {
+		List<Agent> neighbors = _agentGrid.neighborhoodSearch(
+				getSearchCoord(getRadius(true)+getInteractDistance()),
+				(getRadius(true)+getInteractDistance())*2);
+		for ( Agent neighbour : neighbors )
 			addPushMovement(neighbour, MUTUAL);
-		_myNeighbors.clear();
-		return move();
 	}
 
 	/**
@@ -1366,7 +1360,6 @@ public abstract class LocatedActiveAgent extends Agent {
 		List<Agent> tempAgentList = _agentGrid.neighborhoodSearch(getSearchCoord(radius+interactDistance),(radius+interactDistance)*2);
 		for (Agent a: tempAgentList)
 			_myNeighbors.add(a);
-		
 	}
 
 	/**
