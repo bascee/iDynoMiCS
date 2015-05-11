@@ -97,6 +97,13 @@ public class ContinuousVector implements Cloneable
 	 * @param cc Continuous vector of points to set this vector to.
 	 */
 	
+	public ContinuousVector(Double[] position) {
+		Double[] pos = new Double[]{0.0,0.0,0.0};
+		for (int i = 0; i<position.length; i++)
+			pos[i] = position[i];
+		set(pos[0],pos[1],pos[2]);
+	}
+
 	/**
 	 * \brief apply's method to all
 	 */
@@ -165,9 +172,9 @@ public class ContinuousVector implements Cloneable
 	 * Bas: added get double[]
 	 * @return vector as array of doubles
 	 */
-	public double[] get()
+	public Double[] get()
 	{
-		return new double[]{this.x,this.y,this.z};
+		return new Double[]{this.x,this.y,this.z};
 	}
 	
 	/**
@@ -282,6 +289,20 @@ public class ContinuousVector implements Cloneable
 		this.x += x;
 		this.y += y;
 		this.z += z;
+	}
+	
+	public void add(Double[] position) {
+		Double[] pos = new Double[]{this.x,this.y,this.z};
+		for (int i = 0; i<position.length; i++)
+			pos[i] += position[i];
+		set(pos[0],pos[1],pos[2]);
+	}
+	
+	public void subtract(Double[] position) {
+		Double[] pos = new Double[]{this.x,this.y,this.z};
+		for (int i = 0; i<position.length; i++)
+			pos[i] -= position[i];
+		set(pos[0],pos[1],pos[2]);
 	}
 	
 	/**

@@ -258,8 +258,7 @@ public class RTree<T>
   /**
    * helper method that counts the number of fields with value 'true' in an array of booleans.
    * 
-   * @param booleans
-   * 		  an array of booleans.
+   * @param booleans: an array of booleans.
    * @return An integer that represents the number of fields with value 'true' in booleans.
    */
   private int counttrue(Boolean[] booleans) {
@@ -267,6 +266,20 @@ public class RTree<T>
 	  for (int j = 0; j < booleans.length; j++)
 		  if (booleans[j]) a++;
 	return a;
+  }
+  
+  /**
+   * updates the RTree in case an entry has moved or grown/shrunk.
+   * 
+   * @param oldCoords: a point in the old bounding box of the entry.
+   * @param newCoords: lower coords of the new bounding box.
+   * @param newDimensions: dimensions of the new bounding box.
+   * @param entry: the entry to update.
+   * 
+   */
+  public void update(float[] oldCoords, float[] coords, float[] dims, T entry) {
+	  delete(oldCoords, entry);
+	  insert(coords, dims, entry);
   }
 
   /**
@@ -526,17 +539,6 @@ public class RTree<T>
     }
   }
   
-  public void insert(double[] boundingBoxCoord, double[] boundingBoxDimensions,
-			T entry) {
-		float[] coords = new float[boundingBoxCoord.length];
-		float[] dimensions = new float[boundingBoxDimensions.length];
-		for (int i=0; i<boundingBoxCoord.length; i++) {
-			coords[i] = (float) boundingBoxCoord[i];
-			dimensions[i] = (float) boundingBoxDimensions[i];
-		}
-		insert(coords, dimensions, entry);
-	}
-
   /**
    * Convenience method for inserting a point
    * @param coords

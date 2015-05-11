@@ -351,7 +351,6 @@ public abstract class AllBC
 		 * when die() calls registerDeath().
 		 */
 		anAgent.death = "overBoard";
-		
 		anAgent.die(false);
 		// To label this agent as "shoving solved", set to zero its movement.
 		anAgent.getMovement().reset();
@@ -391,13 +390,9 @@ public abstract class AllBC
 		anAgent.getMovement().sendDiff(target,anAgent.getLocation());
 	}
 	
-	public Double overBoundary(Double radius, ContinuousVector target) {
-		Double v = _myShape.getDistance(target)-radius;
-		if (isOutside(target) || (v < 0))
-			return v;
-		else
-			return null;
 
-		
+	public boolean overBoundary(Double radius, ContinuousVector target) {
+		Double v = _myShape.getDistance(target)-radius;
+		return (isOutside(target) || (v < 0));		
 	}
 }

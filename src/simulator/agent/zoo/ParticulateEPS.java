@@ -153,7 +153,7 @@ public class ParticulateEPS extends LocatedActiveAgent
 	public boolean createByExcretion(Bacterium mother, double ratio) {
 		try {
 			ParticulateEPS baby = sendNewAgent();
-			baby._movement.reset();
+			baby.getMovement().reset();
 			baby.updateSize();
 
 			// Give a location to the new agent and register it on the agent
@@ -166,7 +166,7 @@ public class ParticulateEPS extends LocatedActiveAgent
 			// Compute movement vector
 			baby.setDivisionDirection(baby.getInteractDistance(mother)/2);
 			//System.out.println(baby._divisionDirection.toString());
-			baby._movement.add(baby._divisionDirection);
+			baby.getMovement().add(baby._divisionDirection);
 
 			// Register the baby in the pathway guilds and the spatial grid
 			boolean sucess = !baby.willDie();
@@ -201,7 +201,7 @@ public class ParticulateEPS extends LocatedActiveAgent
 
 			// Compute movement vector
 			baby.setDivisionDirection(baby.getInteractDistance(mother));
-			baby._movement.add(_divisionDirection);
+			baby.getMovement().add(_divisionDirection);
 
 			// Register the baby in the pathway guilds and the spatial grid
 			boolean sucess = !baby.willDie();
