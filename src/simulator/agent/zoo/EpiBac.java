@@ -122,8 +122,8 @@ public class EpiBac extends BactEPS
 		// Compute movement to apply to both cells
 		setDivisionDirection(getInteractDistance(baby) / 2);
 		// move both daughter cells
-		baby.getMovement().subtract(_divisionDirection);
-		getMovement().add(_divisionDirection);
+		baby._movement.subtract(_divisionDirection);
+		_movement.add(_divisionDirection);
 		// Now register the agent inside the guilds and the agent grid
 		baby.registerBirth();
 		// Both daughters cells have cloned plasmids ; apply the segregation

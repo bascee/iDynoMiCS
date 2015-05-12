@@ -558,7 +558,7 @@ public abstract class Agent implements Cloneable
 		// TODO Auto-generated method stub
 	}
 
-	public double[] getLowerCoord() {
+	public double[] getBoundingBoxCoord() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -568,7 +568,7 @@ public abstract class Agent implements Cloneable
 		return null;
 	}
 
-	public double[] getBoundingDims() {
+	public double[] getBoundingBoxDimensions() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -671,46 +671,6 @@ public abstract class Agent implements Cloneable
 	public ContinuousVector getVerifiedLocationFromMovement(ContinuousVector continuousVector) {
 		// TODO Auto-generated method stub
 		return null;
-		
-	}
-
-	public void interactMechanical(boolean MUTUAL) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public Double[] dpdt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setPosition(Double[] position) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setVelocity(Double[] velocity) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public ContinuousVector getVelocity() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setForce(Double[] force) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public ContinuousVector getForce() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setMovement(ContinuousVector continuousVector) {
-		// TODO Auto-generated method stub
 		
 	}
 }

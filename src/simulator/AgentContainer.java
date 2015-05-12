@@ -27,7 +27,7 @@ import utils.XMLParser;
 import utils.LogFile;
 import utils.ExtraMath;
 import utils.RTree;
-import utils.Helpers;
+import utils.helperMethods;
 
 /**
  * \brief Class to store all the agents, call them, and manage shoving/erosion
@@ -365,14 +365,14 @@ public class AgentContainer
 	public List<Agent> neighborhoodSearch(double[] coords, double dimensions) {
 		
 		if(is3D) {
-			return agentTree.cyclicsearch(Helpers.doublesToFloats(coords), 
-					Helpers.fillArray((float) (dimensions),3),
-					Helpers.doublesToFloats(new double[]{
+			return agentTree.cyclicsearch(helperMethods.doubleToFloatArray(coords), 
+					helperMethods.filledFloatArray((float) (dimensions),3),
+					helperMethods.doubleToFloatArray(new double[]{
 							domain.length_X,domain.length_Y,domain.length_Z}));
 		}
-		return agentTree.cyclicsearch(Helpers.doublesToFloats(coords), 
-				Helpers.fillArray((float) (dimensions),2),
-				Helpers.doublesToFloats(new double[]{
+		return agentTree.cyclicsearch(helperMethods.doubleToFloatArray(coords), 
+				helperMethods.filledFloatArray((float) (dimensions),2),
+				helperMethods.doubleToFloatArray(new double[]{
 						domain.length_X,domain.length_Y}));
 	}
 	
@@ -488,13 +488,10 @@ public class AgentContainer
 			//care as been take so that the death agents are removed from the 
 			// _agentList preventing their participation in the shoving process 			
 			// spring and then shove only particles
-//			LogFile.chronoMessageIn("Shoving");
-//			shoveAllLocated(MAXITER);
-//			LogFile.chronoMessageOut("Shoving done");
+			LogFile.chronoMessageIn("Shoving");
+			shoveAllLocated(MAXITER);
+			LogFile.chronoMessageOut("Shoving done");
 			
-			LogFile.chronoMessageIn("Mechenical relaxation");
-			relaxAllLocated(globalTimeStep);
-			LogFile.chronoMessageOut("Mechenical relaxation done");
 			
 			// EROSION & DETACHMENT _________________________________________ */
 			// Refresh the space occupation map (-1:outside, 0:carrier,1:biofilm, 2:liquid, 3:bulk)
@@ -553,6 +550,7 @@ public class AgentContainer
 		if (maxPopLimit > 0 && nAgent >= maxPopLimit)
 			aSim.continueRunning = false;
 	}
+
 
 	/**
 	 * \brief Compute pressure field and apply resulting advection movement to
@@ -629,31 +627,34 @@ public class AgentContainer
 	 */
 	public void shoveAllLocated(int maxShoveIter)
 	{
-		int nMovedSum = 0;
-		int nMoved;
+//		int nMoved = 0;
+		Double globalTimestep = SimTimer.getCurrentTimeStep();
+		Double localTimestep = globalTimestep/40;
+		Double dt = 0.0;
 		shovLimit = Math.max(1, (int) (getNumberOfAgents() * SHOVEFRACTION));
 		shovIter = 0;
 		refreshTree();
-			do 
-		{
-			nMoved = 0;
-			Double deltaMove;
+//			do 
+//		{
+		while(dt < globalTimestep) {
+//			Double deltaMove;
 			for (Agent agent : getAll())
 				agent.interact(MUTUAL);
 			for (Agent agent : getAll()) {
 				double[] tLoc = agent.getSearchCoord(0.0);
-				deltaMove = agent.move();
-				agentTree.update(Helpers.doublesToFloats(tLoc),
-					Helpers.doublesToFloats(agent.getLowerCoord()), 
-					Helpers.doublesToFloats(agent.getBoundingDims()),
-					agent);
-				nMoved += (deltaMove >= 0.1  ? 1 : 0);
+//				deltaMove = agent.move();
+				agent.move();
+				agentTree.delete(helperMethods.doubleToFloatArray(tLoc),agent);
+				agentTree.insert(agent.getBoundingBoxCoord(), 
+						agent.getBoundingBoxDimensions(), agent);
+//				nMoved += (deltaMove >= 0.1  ? 1 : 0);
+				dt += localTimestep;
 			}
-			nMovedSum += nMoved;
+		}
 
-		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
-		LogFile.writeLog(nMovedSum + "/" + getNumberOfAgents() + " after " + 
-											shovIter + " shove iterations");
+//		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
+//		LogFile.writeLog(nMoved + "/" + getNumberOfAgents() + " after " + 
+//											shovIter + " shove iterations");
 	}
 	
 	public void refreshTree() {
@@ -661,59 +662,10 @@ public class AgentContainer
 		agentTree.clear();
 		for(Agent a: agentList) {
 			if (a instanceof LocatedActiveAgent) {
-				agentTree.insert(Helpers.doublesToFloats(a.getLowerCoord()),
-						Helpers.doublesToFloats(a.getBoundingDims()), a);
+				agentTree.insert(a.getBoundingBoxCoord(),
+											a.getBoundingBoxDimensions(), a);
 			}
 		}
-	}
-	
-	//FIXME: for testing only
-	private void relaxAllLocated(double globalTimeStep) {
-		double localTimestep = globalTimeStep/1000;
-		double dt = 0.0;
-		while(dt < globalTimeStep) {
-			refreshTree();
-			for (Agent agent : getAll())
-				agent.interactMechanical(MUTUAL);
-			for (Agent agent : getAll()) {
-				double[] tLoc = agent.getSearchCoord(0.0);
-				eulerStep(localTimestep,agent);
-				agent.move();
-				agentTree.update(Helpers.doublesToFloats(tLoc),
-					Helpers.doublesToFloats(agent.getLowerCoord()), 
-					Helpers.doublesToFloats(agent.getBoundingDims()),
-					agent);
-			}
-			dt += localTimestep;
-		}
-	}
-	
-	private void eulerStep(double timestep) {
-		Double[] derivs;
-		for (Agent agent : getAll()) {
-			derivs = agent.dpdt();
-			Double[] velocity = new Double[derivs.length/2];
-			Double[] movement = new Double[derivs.length/2];
-			for (int i = 0; i < derivs.length/2; i++) {
-				velocity[i] = (derivs[i]*timestep);
-				movement[i] = (derivs[i+(derivs.length/2)]*timestep);
-			}
-			agent.setVelocity(velocity);
-			agent.setMovement(new ContinuousVector(movement));
-		}
-	}
-	
-	private void eulerStep(double timestep, Agent agent) {
-		Double[] derivs;
-		derivs = agent.dpdt();
-		Double[] velocity = new Double[derivs.length/2];
-		Double[] movement = new Double[derivs.length/2];
-		for (int i = 0; i < derivs.length/2; i++) {
-			velocity[i] = (derivs[i]*timestep);
-			movement[i] = (derivs[i+(derivs.length/2)]*timestep);
-		}
-		agent.setVelocity(velocity);
-		agent.setMovement(new ContinuousVector(velocity));
 	}
 
 	/**
@@ -726,7 +678,7 @@ public class AgentContainer
 		if( ! Simulator.isChemostat )
 		{
 			Collections.shuffle(agentList, ExtraMath.random);
-//			shoveAllLocated(5 * MAXITER);
+			shoveAllLocated(5 * MAXITER);
 		}
 	}
 

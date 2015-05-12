@@ -258,11 +258,6 @@ public class BoundaryCyclic extends ExternalBoundary
 		}
 	}
 	
-	@Override
-	public boolean overBoundary(Double radius, ContinuousVector target) {
-		return isOutside(target);
-	}
-	
 	/**
 	 * \brief Creates the opposite side of the cyclic boundary such that
 	 * agents can 'roll around' to the other side.

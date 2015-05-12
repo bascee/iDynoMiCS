@@ -108,10 +108,6 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * Sum of masses of all particles
 	 */
 	private Double _totalMass;
-	
-	//FIXME: for testing purposes
-	private ContinuousVector _force = new ContinuousVector();
-	private ContinuousVector _velocity = new ContinuousVector();
 
 	/**
 	 * Radius of this agent.
@@ -151,7 +147,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	/**
 	 * ContinuousVector noting the move that will be applied to the agents position.
 	 */
-	private ContinuousVector _movement = new ContinuousVector();
+	protected ContinuousVector _movement = new ContinuousVector();
 
 	/**
 	 * Direction in which this cell divides.
@@ -193,14 +189,6 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * Cumulative probability as to whether the plasmid will be transferred.
 	 */
 	private Double _distCumProb = 0.0;
-	
-	
-	//FIXME: testing purposes
-			private Double _attractionDist = 1.0;
-			
-			public Double getAttractionDist() {
-				return _attractionDist + getRadius(true) * 1.15;
-			}
 
 	/**
 	 * \brief Creates an ActiveAgent object and initialises the object in
@@ -476,7 +464,7 @@ public abstract class LocatedActiveAgent extends Agent {
 		
 		//-->located
 		out._location = (ContinuousVector) this._location.clone();
-		out.setMovement((ContinuousVector) this.getMovement().clone());
+		out._movement = (ContinuousVector) this._movement.clone();
 		out._divisionDirection = (ContinuousVector)
 											this._divisionDirection.clone();
 		out._myNeighbors = (LinkedList<Agent>) this._myNeighbors.clone();
@@ -1205,79 +1193,14 @@ public abstract class LocatedActiveAgent extends Agent {
 	@Override
 	public void interact(boolean MUTUAL) {
 		List<Agent> neighbors = _agentGrid.neighborhoodSearch(
-			//getSearchCoord(getInteractDistance()),(getInteractDistance())*2);
-			getSearchCoord(getAttractionDist()),(getAttractionDist())*2);
-				
+				getSearchCoord(getRadius(true)+getInteractDistance()),
+//				(getRadius(true)+getInteractDistance())*2);
+				//FIXME: testing purposes
+				(getRadius(true)+getInteractDistance())*2+getAtractingDistance());
 		for ( Agent neighbour : neighbors )
 			addPushMovement(neighbour, MUTUAL);
 	}
-	
-	@Override
-	public void interactMechanical(boolean MUTUAL) {
-		List<Agent> neighbors = _agentGrid.neighborhoodSearch(
-				//getSearchCoord(getInteractDistance()),(getInteractDistance())*2);
-				getSearchCoord(getAttractionDist()),(getAttractionDist())*2);
-		for ( Agent neighbour : neighbors ) 
-			neigbourInteraction(neighbour, MUTUAL);
-	}
-		
-	public void neigbourInteraction(Agent neighbour, boolean isMutual) {
-		/*
-		 * Cannot push oneself!
-		 */
-		if ( neighbour == this )
-			return;
-		/*
-		 * Find the vector from your neighbour's cell centre to your cell
-		 * centre.
-		 */
-		ContinuousVector diff = computeDifferenceVector(neighbour);
-		/*
-		 * Compute effective cell-cell distance.
-		 */
-		Double delta = diff.norm() - getInteractDistance(neighbour);
-		/*
-		 * Apply the shoving calculated. If it's mutual, apply half to each.
-		 */
-		if ( delta < 0.0 )
-		{
-			diff.normalizeVector(1+1000*(delta*Math.abs(delta)+delta));
-			if ( isMutual )
-			{
-				diff.times(0.5);
-				ContinuousVector a = new ContinuousVector(diff);
-				a.add(neighbour.getForce());
-				neighbour.setForce(a.get());
-			}
-			ContinuousVector b = new ContinuousVector(diff);
-			b.add(this.getForce());
-			b.turnAround();
-			this.setForce(b.get());
-		}
-	}	
 
-	
-	//FIXME: testing purposes
-	@Override
-	public Double[] dpdt() {
-		// position based on forces:
-		// velocity: dvdt = force / mass
-		// position: dpdt = velocity
-		ContinuousVector force = getForce();
-		ContinuousVector velocity = getVelocity();
-		Double mass = getTotalMass();
-		
-		Double[] derivs = new Double[6];
-		for (int i = 0; i<3; i++) {
-			derivs[i] = force.get()[i] / mass;
-			derivs[i+3] = velocity.get()[i] + derivs[i];
-		}
-		return derivs;
-	}
-	
-	
-	
-	
 	/**
 	 * \brief Mutual shoving : The movement by shoving of an agent is calculated based on the cell overlap and added to the agents movement vector.
 	 * 
@@ -1305,15 +1228,25 @@ public abstract class LocatedActiveAgent extends Agent {
 		 */
 		Double delta = diff.norm() - getInteractDistance(neighbour);
 		/*
-		 * Apply the shoving calculated. If it's mutual, apply half to each.
+		 * Apply the shoving calculated. If it's mutual, weigh movement based
+		 * on interacting agents weights
 		 */
-		if ( delta < 0.0 )
-		{
-			diff.normalizeVector(delta);
-			if ( isMutual )
-			{
-				diff.times(0.5);
-				neighbour.addMovement(diff);
+		if ( delta < 0.0 ) {
+			diff.normalizeVector(0.5*delta);
+			ContinuousVector a = new ContinuousVector(diff);
+			if (isMutual ) {
+				a.times(this.getTotalMass()/(neighbour.getTotalMass()+this.getTotalMass()));
+				neighbour.addMovement(a);
+				diff.subtract(a);
+			}
+			this.subtractMovement(diff);
+		} else if (delta < getAtractingDistance()) {
+			diff.normalizeVector(0.02*(getAtractingDistance()-delta));
+			ContinuousVector a = new ContinuousVector(diff);
+			if (isMutual ) {
+				a.times(this.getTotalMass()/(neighbour.getTotalMass()+this.getTotalMass()));
+				neighbour.addMovement(a);
+				diff.subtract(a);
 			}
 			this.subtractMovement(diff);
 		}
@@ -1494,43 +1427,42 @@ public abstract class LocatedActiveAgent extends Agent {
 		/*
 		 * Check the movement is valid.
 		 */
-		if ( ! getMovement().isValid() )
+		if ( ! _movement.isValid() )
 		{
 			LogFile.writeLog("Incorrect movement coordinates");
-			getMovement().reset();
+			_movement.reset();
 		}
 		/*
 		 * Check we're not trying to move in the Z direction in 2D.
 		 */
-//		if ( !(_agentGrid.is3D) && !((getMovement().z.equals(0.0) || (getMovement().z.equals(-0.0)))))
-			if ( !(_agentGrid.is3D) && !((getMovement().z == 0.0 )))
+		if ( !(_agentGrid.is3D) && !(_movement.z.equals(0.0)) )
 		{
-			getMovement().z = 0.0;
-			getMovement().reset();
+			_movement.z = 0.0;
+			_movement.reset();
 			LogFile.writeLog("Agent tried to move in Z direction!");
 		}
 		/*
 		 * No movement planned, finish here.
 		 */
-		if (getMovement().isZero())
+		if (_movement.isZero())
 			return 0.0;
 
 		/*
 		 * Now apply the movement.
 		 */
-		setLocation(getVerifiedLocationFromMovement(getMovement()));
+		setLocation(getVerifiedLocationFromMovement(_movement));
 		_agentGrid.registerMove(this);
 		/*
 		 * Calculate how far we've traveled relative to the total radius.
 		 */
-		Double delta = getMovement().norm();
-		getMovement().reset();
+		Double delta = _movement.norm();
+		_movement.reset();
 		return delta/_totalRadius;
 	}
 
 	/**
-	 * \brief Used to determine if an agent's move infringes any of the 
-	 * domain's boundaries.
+	 * \brief Used by the move method to determine if an agent's move crosses
+	 * any of the domain's boundaries.
 	 */
 	public ContinuousVector getVerifiedLocationFromMovement(ContinuousVector movement) {
 		// Search a boundary which will be crossed
@@ -1539,26 +1471,20 @@ public abstract class LocatedActiveAgent extends Agent {
 		return getVerifiedLocation(newLoc);
 	}
 	
-	/**
-	 * \brief Used to determine if an agent's new location infringes any of the 
-	 * domain's boundaries.
-	 */
 	public ContinuousVector getVerifiedLocation(ContinuousVector location) {
 		AllBC aBoundary = getDomain().testCrossedBoundary(getRadius(true),location);
-		int nBound = getDomain().getAllBoundaries().size();
+		int nDim = (_agentGrid.is3D ? 3 : 2);
 		int counter = 0;
 
-		// update the location of the agent until no boundaries
-		while (aBoundary != null) {
+		/*
+		 * Test all boundaries and apply corrections according to crossed
+		 * boundaries.
+		 */
+		while (aBoundary != null || (counter > nDim))
+		{
 			counter++;
 			aBoundary.applyBoundary(this, location);
 			aBoundary = getDomain().testCrossedBoundary(getRadius(true),location);
-			
-			// if boundaries cannot be resolved.
-			if(counter > nBound) {
-				LogFile.writeLogAlways("Warning: LocatedActiveAgent.getVerfiedLocation() has been unable to resolve all boundaries");
-				System.exit(-1);
-			}
 		}
 		return location;
 	}
@@ -1746,12 +1672,12 @@ public abstract class LocatedActiveAgent extends Agent {
 	 */
 	@Override
 	public void addMovement(ContinuousVector aMove) {
-		this.getMovement().add(aMove);
+		this._movement.add(aMove);
 	}
 	
 	@Override
 	public void subtractMovement(ContinuousVector aMove) {
-		this.getMovement().subtract(aMove);
+		this._movement.subtract(aMove);
 	}
 
 	/**
@@ -1866,6 +1792,11 @@ public abstract class LocatedActiveAgent extends Agent {
 	 */
 	public Double getInteractDistance(Agent neighbour) {
 		return getShoveRadius() + neighbour.getShoveRadius() + getShoveLimit();
+	}
+	
+	//FIXME: testing purposes
+	public Double getAtractingDistance() {
+		return 2.0;
 	}
 
 	/**
@@ -2065,32 +1996,6 @@ public abstract class LocatedActiveAgent extends Agent {
 		else
 			_location.set(cc);
 	}
-	
-	//FIXME: for testing purposes
-	@Override
-	public void setPosition(Double[] position) {
-		setLocation(new ContinuousVector(position));
-	}
-	
-	@Override
-	public void setVelocity(Double[] velocity) {
-		_velocity = new ContinuousVector(velocity);
-	}
-	
-	@Override
-	public ContinuousVector getVelocity() {
-		return this._velocity;
-	}
-	
-	@Override
-	public void setForce(Double[] force) {
-		_force = new ContinuousVector(force);
-	}
-	
-	@Override
-	public ContinuousVector getForce() {
-		return this._force;
-	}
 
 	/**
 	 * \brief Return the continuous vector that states this agents move.
@@ -2143,7 +2048,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	}
 
 	@Override
-	public double[] getLowerCoord() {
+	public double[] getBoundingBoxCoord() {
 		int dim = 2;
 		if (_agentGrid.is3D)
 			dim = 3;
@@ -2152,6 +2057,7 @@ public abstract class LocatedActiveAgent extends Agent {
 			coord[i] = ((_location.get()[i] )-_radius);
 		}
 		return coord;
+		 
 	}
 
 	@Override
@@ -2163,11 +2069,12 @@ public abstract class LocatedActiveAgent extends Agent {
 		for (int i = 0; i < dim; i++) {
 			coord[i] = ((_location.get()[i] )-range);
 		}
-		return coord; 
+		return coord;
+		 
 	}
 
 	@Override
-	public double[] getBoundingDims() {
+	public double[] getBoundingBoxDimensions() {
 		int dim = 2;
 		if (_agentGrid.is3D)
 			dim = 3;
@@ -2194,10 +2101,6 @@ public abstract class LocatedActiveAgent extends Agent {
 	@Override
 	protected void setNetVolumeRate(Double _netVolumeRate) {
 		this._netVolumeRate = _netVolumeRate;
-	}
-
-	public void setMovement(ContinuousVector _movement) {
-		this._movement = _movement;
 	}
 
 }

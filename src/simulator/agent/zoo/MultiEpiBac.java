@@ -175,8 +175,8 @@ public class MultiEpiBac extends BactEPS
 		if ( ! Simulator.isChemostat )
 		{
 			setDivisionDirection(getInteractDistance(baby)/2);
-			baby.getMovement().subtract(_divisionDirection);
-			getMovement().add(_divisionDirection);
+			baby._movement.subtract(_divisionDirection);
+			_movement.add(_divisionDirection);
 		}
 		/*
 		 * Now register the agent inside the guilds and the agent grid.

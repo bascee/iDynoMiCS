@@ -362,11 +362,26 @@ public class Domain implements IsComputationDomain
 		return null;
 	}
 	
-	public AllBC testCrossedBoundary(Double radius, ContinuousVector newLoc) {
+	public AllBC testCrossedBoundary(Double radius, ContinuousVector newLoc)
+	{
+		// Test on the domain grid if the new location is inside the domain
+//		if (_domainGrid.isValid(newLoc) && _domainGrid.getPaddedValueAt(newLoc) >= 0)
+//			return null;
+		
+		// Find the first of the boundaries which has been crossed
 		for (AllBC aBoundary : _boundaryList) {
-			if (aBoundary.overBoundary(radius, newLoc))
+			if ((aBoundary instanceof BoundaryCyclic ? aBoundary.overBoundary(0.0,newLoc) :
+				aBoundary.overBoundary(radius, newLoc)) != null)
+			{
+				/*
+				System.out.println("agent at "+newLoc.toString()+
+								" crossed boundary "+aBoundary.getSide());
+				*/
 				return aBoundary;
+			}
 		}
+		
+		// If you are here, it means that no boundary is being crossed.
 		return null;
 	}
 	
