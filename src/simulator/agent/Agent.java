@@ -673,4 +673,34 @@ public abstract class Agent implements Cloneable
 		return null;
 		
 	}
+
+	public void interact(Double dt, boolean MUTUAL) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void environment() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	protected ContinuousVector getVelocity() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected ContinuousVector getForce() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected void setForce(ContinuousVector _force) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void updateMovement(Double dt) {
+		// TODO Auto-generated method stub
+		
+	}
 }

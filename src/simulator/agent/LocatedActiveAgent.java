@@ -148,6 +148,10 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * ContinuousVector noting the move that will be applied to the agents position.
 	 */
 	protected ContinuousVector _movement = new ContinuousVector();
+	
+	//FIXME: testing purposes
+	private ContinuousVector _velocity = new ContinuousVector(0.0,0.0,0.0);
+	private ContinuousVector _force = new ContinuousVector(0.0,0.0,0.0);
 
 	/**
 	 * Direction in which this cell divides.
@@ -1200,6 +1204,36 @@ public abstract class LocatedActiveAgent extends Agent {
 		for ( Agent neighbour : neighbors )
 			addPushMovement(neighbour, MUTUAL);
 	}
+	
+	@Override
+	public void interact(Double dt, boolean MUTUAL) {
+		List<Agent> neighbors = _agentGrid.neighborhoodSearch(
+				getSearchCoord(getRadius(true)+getInteractDistance()),
+//				(getRadius(true)+getInteractDistance())*2);
+				//FIXME: testing purposes
+				(getRadius(true)+getInteractDistance())*2+getAtractingDistance());
+		for ( Agent neighbour : neighbors )
+			addInteractionForce(neighbour, MUTUAL);
+	}
+	
+	@Override
+	public void environment() {
+		// FIXME: testing purposes
+		// gravity boyancy
+//		ContinuousVector grav = new ContinuousVector(-1.0,0.0,0.0);
+//		grav.normalizeVector(0.01*3600*dt);
+//		this.addMovement(grav);
+//		
+//		// stochastic movement
+//		ContinuousVector sto = new ContinuousVector(ExtraMath.getNormRand()-0.5,
+//				ExtraMath.getNormRand()-0.5,
+//				(_agentGrid.is3D ? ExtraMath.getNormRand()-0.5 : 0.0));
+//		sto.normalizeVector(0.005*3600*dt);
+//		this.addMovement(sto);
+//		ContinuousVector drag = new ContinuousVector(_velocity);
+//		drag.times(-0.5);
+//		_force.add(drag);
+	}
 
 	/**
 	 * \brief Mutual shoving : The movement by shoving of an agent is calculated based on the cell overlap and added to the agents movement vector.
@@ -1212,7 +1246,38 @@ public abstract class LocatedActiveAgent extends Agent {
 	 * @param gain	Double noting change in position
 	 * @return Boolean stating whether shoving is detected (true) or not (false)
 	 */
-	public void addPushMovement(Agent neighbour, boolean isMutual) {
+	public void addPushMovement(Agent neighbour, boolean isMutual)
+	{
+		/*
+		 * Cannot push oneself!
+		 */
+		if ( neighbour == this )
+			return;
+		/*
+		 * Find the vector from your neighbour's cell centre to your cell
+		 * centre.
+		 */
+		ContinuousVector diff = computeDifferenceVector(neighbour);
+		/*
+		 * Compute effective cell-cell distance.
+		 */
+		Double delta = diff.norm() - getInteractDistance(neighbour);
+		/*
+		 * Apply the shoving calculated. If it's mutual, apply half to each.
+		 */
+		if ( delta < 0.0 )
+		{
+			diff.normalizeVector(delta);
+			if ( isMutual )
+			{
+				diff.times(0.5);
+				neighbour.addMovement(diff);
+			}
+			this.subtractMovement(diff);
+		}
+	}
+	
+	public void addInteractionForce(Agent neighbour, boolean isMutual) {
 		/*
 		 * Cannot push oneself!
 		 */
@@ -1232,24 +1297,23 @@ public abstract class LocatedActiveAgent extends Agent {
 		 * on interacting agents weights
 		 */
 		if ( delta < 0.0 ) {
-			diff.normalizeVector(0.5*delta);
-			ContinuousVector a = new ContinuousVector(diff);
+			diff.normalizeVector(delta);
 			if (isMutual ) {
-				a.times(this.getTotalMass()/(neighbour.getTotalMass()+this.getTotalMass()));
-				neighbour.addMovement(a);
-				diff.subtract(a);
+				diff.times(0.5);
+				neighbour.setForce(diff);
 			}
-			this.subtractMovement(diff);
-		} else if (delta < getAtractingDistance()) {
-			diff.normalizeVector(0.02*(getAtractingDistance()-delta));
-			ContinuousVector a = new ContinuousVector(diff);
-			if (isMutual ) {
-				a.times(this.getTotalMass()/(neighbour.getTotalMass()+this.getTotalMass()));
-				neighbour.addMovement(a);
-				diff.subtract(a);
-			}
-			this.subtractMovement(diff);
-		}
+			diff.turnAround();
+			this.setForce(diff);
+		} 
+	}
+	
+	public void updateMovement(Double dt) {
+		ContinuousVector accel = new ContinuousVector(_force);
+		_force.reset();
+		Double force = accel.norm();
+		accel.normalizeVector(force*dt*(100000000/(getTotalMass())));
+//		_velocity.add(accel);
+		addMovement(accel);
 	}
 
 	/**
@@ -1796,7 +1860,7 @@ public abstract class LocatedActiveAgent extends Agent {
 	
 	//FIXME: testing purposes
 	public Double getAtractingDistance() {
-		return 2.0;
+		return 1.0;
 	}
 
 	/**
@@ -2101,6 +2165,25 @@ public abstract class LocatedActiveAgent extends Agent {
 	@Override
 	protected void setNetVolumeRate(Double _netVolumeRate) {
 		this._netVolumeRate = _netVolumeRate;
+	}
+	
+	@Override
+	protected ContinuousVector getVelocity() {
+		return _velocity;
+	}
+
+	protected void setVelocity(ContinuousVector _velocity) {
+		this._velocity = _velocity;
+	}
+
+	@Override
+	protected ContinuousVector getForce() {
+		return _force;
+	}
+
+	@Override
+	protected void setForce(ContinuousVector _force) {
+		this._force = _force;
 	}
 
 }

@@ -629,7 +629,7 @@ public class AgentContainer
 	{
 //		int nMoved = 0;
 		Double globalTimestep = SimTimer.getCurrentTimeStep();
-		Double localTimestep = globalTimestep/40;
+		Double localTimestep = globalTimestep/1000;
 		Double dt = 0.0;
 		shovLimit = Math.max(1, (int) (getNumberOfAgents() * SHOVEFRACTION));
 		shovIter = 0;
@@ -638,11 +638,14 @@ public class AgentContainer
 //		{
 		while(dt < globalTimestep) {
 //			Double deltaMove;
-			for (Agent agent : getAll())
-				agent.interact(MUTUAL);
+			for (Agent agent : getAll()) {
+				agent.interact(localTimestep,MUTUAL);
+				agent.environment();
+			}
 			for (Agent agent : getAll()) {
 				double[] tLoc = agent.getSearchCoord(0.0);
 //				deltaMove = agent.move();
+				agent.updateMovement(localTimestep);
 				agent.move();
 				agentTree.delete(helperMethods.doubleToFloatArray(tLoc),agent);
 				agentTree.insert(agent.getBoundingBoxCoord(), 
