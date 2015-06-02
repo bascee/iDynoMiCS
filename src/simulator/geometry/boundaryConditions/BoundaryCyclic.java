@@ -12,12 +12,11 @@
 package simulator.geometry.boundaryConditions;
 
 import java.util.List;
-
 import org.jdom.Element;
 
 import simulator.Simulator;
 import simulator.SoluteGrid;
-import simulator.agent.Agent;
+import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 import simulator.geometry.shape.*;
@@ -175,19 +174,19 @@ public class BoundaryCyclic extends ExternalBoundary
 	 * @param target	The target position that the agent is moving to.
 	 */
 	@Override
-	public void applyBoundary(Agent anAgent, ContinuousVector target)
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
 		// Determine the intersection with the crossed boundary.
 		// TODO Using first intersection is a quick fix.
-			vectorIn = _myShape.getIntersections(anAgent.getLocation(),
+		vectorIn = _myShape.getIntersections(anAgent.getLocation(),
 											anAgent.getMovement()).getFirst();
-			// Determine the remaining movement when we touch the boundary.
-			target.sendDiff(target, vectorIn);
-			// Apply the residual movement on the symmetric point.
-			vectorIn = getSymmetric(vectorIn);
-			target.add(vectorIn);
-			// Compute and update the movement vector leading to this new position.
-			anAgent.getMovement().sendDiff(target, anAgent.getLocation());
+		// Determine the remaining movement when we touch the boundary.
+		target.sendDiff(target, vectorIn);
+		// Apply the residual movement on the symmetric point.
+		vectorIn = getSymmetric(vectorIn);
+		target.add(vectorIn);
+		// Compute and update the movement vector leading to this new position.
+		anAgent.getMovement().sendDiff(target, anAgent.getLocation());
 	}
 
 	/**
@@ -223,7 +222,7 @@ public class BoundaryCyclic extends ExternalBoundary
 			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
 			{
 				dcIn.add(translator);
-				aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
+				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
 			}
 		}
 		else
@@ -238,9 +237,9 @@ public class BoundaryCyclic extends ExternalBoundary
 			 */
 			while ( _myShape.followBoundary(dcIn, dcOut, aSoluteGrid) )
 			{
-				aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
+				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
 				dcOut.add(translator);
-				aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
+				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
 			}
 		}
 	}

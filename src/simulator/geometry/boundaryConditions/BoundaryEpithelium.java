@@ -14,7 +14,7 @@ package simulator.geometry.boundaryConditions;
 import java.util.LinkedList;
 
 import simulator.Simulator;
-import simulator.agent.Agent;
+import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.Domain;
@@ -30,7 +30,6 @@ public class BoundaryEpithelium extends InternalBoundary
 {
 	public LinkedList<Site> sites;
 	
-	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser root)
 	{
 		readGeometry(root, aDomain);
@@ -40,14 +39,13 @@ public class BoundaryEpithelium extends InternalBoundary
 	
 	
 	
-	@Override
 	public void setBoundary(LocatedGroup aGroup)
 	{
 		
 	}
 	
 	@Override
-	public void applyBoundary(Agent anAgent, ContinuousVector target)
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
 		hardBoundary(anAgent, target);
 	}

@@ -11,6 +11,8 @@ package simulator.geometry;
 
 import java.io.Serializable;
 
+import org.jdom.Element;
+
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;

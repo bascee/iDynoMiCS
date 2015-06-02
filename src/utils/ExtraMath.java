@@ -13,7 +13,11 @@
 package utils;
 
 import java.text.DecimalFormat;
+import java.util.LinkedList;
 import java.util.Random;
+import java.util.function.DoubleFunction;
+
+import simulator.Simulator;
 
 /**
  * \brief Abstract class with some extra useful math functions.
@@ -683,35 +687,6 @@ public final class ExtraMath
 	{
 		return random.nextInt(uBound);
 	}
-	
-	/**
-	 * \brief Returns an array of random integers less than the upper bound supplied.
-	 * 
-	 * @param uBound	Upper bound (exclusive).
-	 * @param number	length of generated array of integers
-	 * @param allowDuplicates	do or dont replace duplicates
-	 * @return An array of uniformly distributed random integers in [0, uBound).
-	 */
-	public static Integer[] getUniRandIntegers(Integer uBound, Integer number, boolean allowDuplicates)
-	{
-		if ( !allowDuplicates && (number > uBound) )
-			return null;
-		
-		Integer[] integers = new Integer[number];
-		for ( int j = 0; j<number; j++ ) {
-			integers[j] =	getUniRandInt(uBound);
-			if ( !allowDuplicates ) {
-				for(int k=0; k<j; k++) {
-					if( integers[k] == integers[j] ) {
-						integers[j] = getUniRandInt(uBound);
-						k=0;
-					}
-				}
-			}
-		}
-		return integers;
-	}
-
 	
 	/**
 	 * \brief Return an integer random number between two set bounds.

@@ -45,7 +45,7 @@ public class FirstOrder extends Reaction {
 	/**
 	 */
 	@Override
-	public void initFromAgent(LocatedActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot)
+	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot)
 	{
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
@@ -56,7 +56,7 @@ public class FirstOrder extends Reaction {
 
 	/* __________________ METHODS _________________________ */
 
-	public void computeUptakeRate(Double[] s, LocatedActiveAgent anAgent)
+	public void computeUptakeRate(Double[] s, ActiveAgent anAgent)
 	{
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
 		// Now compute uptake rate and its derivative for each solute
@@ -93,7 +93,7 @@ public class FirstOrder extends Reaction {
      */
 	@Deprecated
 	@Override
-	public void computeSpecificGrowthRate(LocatedActiveAgent anAgent) {
+	public void computeSpecificGrowthRate(ActiveAgent anAgent) {
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
 	}
 	
@@ -117,7 +117,7 @@ public class FirstOrder extends Reaction {
      */
 	@Deprecated
 	@Override
-	public void computeSpecificGrowthRate(Double[] s, LocatedActiveAgent anAgent)
+	public void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent)
 	{
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
 	}
@@ -129,14 +129,14 @@ public class FirstOrder extends Reaction {
      * @return
      */
 	@Override
-	public Double computeMassGrowthRate(LocatedActiveAgent anAgent)
+	public Double computeMassGrowthRate(ActiveAgent anAgent)
 	{
 		computeSpecificGrowthRate(anAgent);
 		return _specRate*anAgent.getParticleMass(_catalystIndex);
 	}
 	
 	@Override
-	public Double computeSpecGrowthRate(LocatedActiveAgent anAgent)
+	public Double computeSpecGrowthRate(ActiveAgent anAgent)
 	{
 		computeSpecificGrowthRate(anAgent);
 		return _specRate;

@@ -40,7 +40,6 @@ public class DS_SolGrad extends LevelSet
 	 * being determined.
 	 * @return Double stating local detachment speed for this group.
 	 */
-	@Override
 	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) 
 	{
 		Double out = super.getLocalDetachmentSpeed(aGroup, aSim);

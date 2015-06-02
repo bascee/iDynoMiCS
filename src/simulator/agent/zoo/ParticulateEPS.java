@@ -11,8 +11,7 @@ package simulator.agent.zoo;
 
 import java.math.BigInteger;
 
-import simulator.agent.LocatedActiveAgent;
-import simulator.agent.Agent;
+import simulator.agent.LocatedAgent;
 import simulator.Simulator;
 import simulator.geometry.ContinuousVector;
 import simulator.reaction.Reaction;
@@ -31,7 +30,7 @@ import utils.XMLParser;
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
-public class ParticulateEPS extends LocatedActiveAgent
+public class ParticulateEPS extends LocatedAgent
 {
 	/**
 	 * Serial version used for the serialisation of the class
@@ -130,7 +129,7 @@ public class ParticulateEPS extends LocatedActiveAgent
 	{
 		try
 		{
-			ParticulateEPS baby = sendNewAgent();
+			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
 			baby.setLocation(position);
 			baby.updateSize();
 			baby.registerBirth();
@@ -223,9 +222,9 @@ public class ParticulateEPS extends LocatedActiveAgent
 	@Override
 	public boolean willDie()
 	{
-		if ( getTotalMass() < 0.0 )
+		if ( _totalMass < 0.0 )
 			return true;
-		return ( getRadius(true) <= this.getMyDeathRadius() );
+		return ( getRadius(true) <= this.getDeathRadius() );
 	}
 
 	/**
@@ -290,7 +289,7 @@ public class ParticulateEPS extends LocatedActiveAgent
 		 * Remove any large siblings, i.e. those about to divide.
 		 */
 		int nNb = _myNeighbors.size();
-		Agent aLoc;
+		LocatedAgent aLoc;
 		for ( int iNb = 0; iNb < nNb; iNb++ )
 		{
 			aLoc = _myNeighbors.removeFirst();
@@ -314,7 +313,7 @@ public class ParticulateEPS extends LocatedActiveAgent
 	@Override
 	public void die(Boolean isStarving)
 	{
-		if ( isStarving && (getTotalMass() > 0.0) )
+		if ( isStarving && (_totalMass > 0.0) )
 			transferBiomass();
 		super.die(isStarving);
 	}
@@ -386,14 +385,12 @@ public class ParticulateEPS extends LocatedActiveAgent
 	}
 
 	
-	@Override
 	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	
-	@Override
 	public void addReaction(Reaction aReaction, Boolean useDefaultParam) {
 		// TODO Auto-generated method stub
 		

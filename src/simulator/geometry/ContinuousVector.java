@@ -11,8 +11,6 @@
  */
 package simulator.geometry;
 
-import java.util.function.DoubleFunction;
-
 import utils.ExtraMath;
 import utils.XMLParser;
 
@@ -90,24 +88,20 @@ public class ContinuousVector implements Cloneable
 		set(x, y, z);
 	}
 	
+	public ContinuousVector(Double[] vect)
+	{
+		Double x = vect[0];
+		Double y = vect[1];
+		Double z = (vect.length == 3 ? vect[2] : 0.0);
+		set(x, y, z);
+	}
+	
 	/**
 	 * \brief Set this vector to the points contained in a supplied continuous
 	 * vector.
 	 * 
 	 * @param cc Continuous vector of points to set this vector to.
 	 */
-	
-	/**
-	 * \brief apply's method to all
-	 */
-	public void applyToAll(DoubleFunction<Double> f)
-	{
-		double[] vector = new double[]{x,y,z};
-		for (double d: vector)
-			d = f.apply(d);
-	}
-	
-	
 	public void set(ContinuousVector cc)
 	{
 		set(cc.x, cc.y, cc.z);
@@ -159,25 +153,6 @@ public class ContinuousVector implements Cloneable
 	{
 		set(dC);
 		times(res);
-	}
-	
-	/**
-	 * Bas: added get double[]
-	 * @return vector as array of doubles
-	 */
-	public double[] get()
-	{
-		return new double[]{this.x,this.y,this.z};
-	}
-	
-	/**
-	 * Bas: special getter, work around sinse idyno stores everything as 3D
-	 * anyway
-	 * @return vector as array of doubles
-	 */
-	public double[] get2D()
-	{
-		return new double[]{this.x,this.y};
 	}
 	
 	/**
@@ -352,9 +327,9 @@ public class ContinuousVector implements Cloneable
 	 */
 	public void alea(Boolean is3D)
 	{
-		this.x = ExtraMath.getUniRand(-1.0,1.0);
-		this.y = ExtraMath.getUniRand(-1.0,1.0);
-		this.z = (is3D ? ExtraMath.getUniRand(-1.0,1.0) : 0.0);
+		this.x = ExtraMath.getUniRand(-1.0, 1.0);
+		this.y = ExtraMath.getUniRand(-1.0, 1.0);
+		this.z = (is3D ? ExtraMath.getUniRand(-1.0, 1.0) : 0.0);
 	}
 	
 	/**

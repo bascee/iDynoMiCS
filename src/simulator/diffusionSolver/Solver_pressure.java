@@ -8,6 +8,7 @@
 package simulator.diffusionSolver;
 
 import simulator.diffusionSolver.multigrid.SinglegridPressure;
+import simulator.geometry.IsComputationDomain;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 
@@ -16,7 +17,7 @@ import utils.XMLParser;
 /**
  * \brief Initialises and calculates pressure effect on the simulation domain.
  * 
- * @author Andreas Dï¿½tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz
  * Centre for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  */

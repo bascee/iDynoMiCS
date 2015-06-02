@@ -15,10 +15,12 @@ import java.util.LinkedList;
 
 import simulator.geometry.*;
 import simulator.geometry.pointProcess.Edge;
+import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
 import simulator.SpatialGrid;
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
@@ -148,7 +150,6 @@ public class Planar extends IsShape
 		init(resolution);
 	}
 	
-	@Override
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
 		// Build the variables describing the plane.
@@ -169,15 +170,15 @@ public class Planar extends IsShape
 		_cPointOnPlane.y = (_dPointOnPlane.j+(1-_dVectorOut.j)/2)*resolution;
 		_cPointOnPlane.z = (_dPointOnPlane.k+(1-_dVectorOut.k)/2)*resolution;
 		// The vector out just needs to have the correct direction.
-		setCVectorOut(new ContinuousVector());
-		getCVectorOut().x = new Double(_dVectorOut.i);
-		getCVectorOut().y = new Double(_dVectorOut.j);
-		getCVectorOut().z = new Double(_dVectorOut.k);
+		_cVectorOut = new ContinuousVector();
+		_cVectorOut.x = new Double(_dVectorOut.i);
+		_cVectorOut.y = new Double(_dVectorOut.j);
+		_cVectorOut.z = new Double(_dVectorOut.k);
 		/*
 		 * Dots products of the vector out with the point on the plane. Saves
 		 * having to calculate these values repeatedly.
 		 */
-		_cOutDotPPlane = getCVectorOut().prodScalar(_cPointOnPlane);
+		_cOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
 		//_cOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
 		_dOutDotPPlane = _dVectorOut.prodScalar(_dPointOnPlane);
 		/* 
@@ -210,25 +211,22 @@ public class Planar extends IsShape
 		_voronoiIgnore = 2;
 	}
 	
-	@Override
 	public Boolean isOutside(ContinuousVector point)
 	{
-		return ( getCVectorOut().cosAngle(getRelativePosition(point)) > 0 );
+		return ( _cVectorOut.cosAngle(getRelativePosition(point)) > 0 );
 	}
 	
-	@Override
 	public Boolean isOutside(DiscreteVector coord)
 	{
 		return ( _dVectorOut.cosAngle(getRelativePosition(coord)) > 0 );
 	}
 	
-	@Override
 	public LinkedList<ContinuousVector> getIntersections(
 						ContinuousVector position, ContinuousVector vector)
 	{
 		// If the line is parallel to his plane, return null.
-		Double c = getCVectorOut().prodScalar(vector);
-		if ( c.equals(0.0) || c.equals(-0.0) )
+		Double c = _cVectorOut.prodScalar(vector);
+		if ( c.equals(0.0) )
 			return null;
 		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
 		ContinuousVector intersection = new ContinuousVector(vector);
@@ -236,7 +234,7 @@ public class Planar extends IsShape
 		 * Find the (relative) length along vector we must travel to hit the
 		 * plane. 
 		 */
-		Double k = (_cOutDotPPlane - getCVectorOut().prodScalar(position))/c;
+		Double k = (_cOutDotPPlane - _cVectorOut.prodScalar(position))/c;
 		intersection.times(k);
 		intersection.add(position);
 		out.add(intersection);
@@ -248,7 +246,6 @@ public class Planar extends IsShape
 	 * @param point
 	 * @return
 	 */
-	@Override
 	public ContinuousVector getRelativePosition(ContinuousVector point)
 	{
 		ContinuousVector pointOnPlaneToPoint = new ContinuousVector();
@@ -256,7 +253,6 @@ public class Planar extends IsShape
 		return pointOnPlaneToPoint;
 	}
 	
-	@Override
 	public ContinuousVector getAbsolutePosition(ContinuousVector point)
 	{
 		ContinuousVector out = new ContinuousVector(point);
@@ -264,7 +260,6 @@ public class Planar extends IsShape
 		return out;
 	}
 	
-	@Override
 	public DiscreteVector getRelativePosition(DiscreteVector coord)
 	{
 		DiscreteVector pointOnPlaneToPoint = new DiscreteVector();
@@ -272,7 +267,6 @@ public class Planar extends IsShape
 		return pointOnPlaneToPoint;
 	}
 	
-	@Override
 	public DiscreteVector getAbsolutePosition(DiscreteVector coord)
 	{
 		DiscreteVector out = new DiscreteVector();
@@ -280,7 +274,6 @@ public class Planar extends IsShape
 		return out;
 	}
 	
-	@Override
 	public Double[] convertToLocal(ContinuousVector point)
 	{
 		Double[] out = new Double[3];
@@ -290,11 +283,10 @@ public class Planar extends IsShape
 		//System.out.println("\tcos(cOrthogU, RelPos) "+out[0]);
 		out[1] = _cOrthogV.prodScalar(pointOnPlaneToPoint);
 		//System.out.println("\tcos(cOrthogV, RelPos) "+out[1]);
-		out[2] = getCVectorOut().prodScalar(pointOnPlaneToPoint);
+		out[2] = _cVectorOut.prodScalar(pointOnPlaneToPoint);
 		return out;
 	}
 	
-	@Override
 	public ContinuousVector convertToVector(Double[] local)
 	{
 		ContinuousVector out = new ContinuousVector();
@@ -308,7 +300,7 @@ public class Planar extends IsShape
 		temp.times(local[1]);
 		out.add(temp);
 		
-		temp.set(getCVectorOut());
+		temp.set(_cVectorOut);
 		temp.times(local[2]);
 		out.add(temp);
 		
@@ -318,7 +310,7 @@ public class Planar extends IsShape
 	
 	public ContinuousVector getNormalContinuous()
 	{
-		return getCVectorOut();
+		return _cVectorOut;
 	}
 	
 	/**
@@ -329,10 +321,9 @@ public class Planar extends IsShape
 	 * shape.
 	 * 
 	 */
-	@Override
 	public ContinuousVector getNormalInside()
 	{
-		ContinuousVector out = new ContinuousVector(getCVectorOut());
+		ContinuousVector out = new ContinuousVector(_cVectorOut);
 		out.turnAround();
 		return out;
 	}
@@ -343,10 +334,9 @@ public class Planar extends IsShape
 	 * @param ccIn	Coordinates to be corrected.
 	 * @param ccOut	Corrected coordinates.
 	 */
-	@Override
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
-		ccOut.set(getIntersections(ccIn, getCVectorOut()).getFirst());
+		ccOut.set(getIntersections(ccIn, _cVectorOut).getFirst());
 	}
 	
 	@Override
@@ -372,12 +362,11 @@ public class Planar extends IsShape
 	 * 
 	 * @return Double stating distance to that shape.
 	 */
-	@Override
 	public Double getDistance(IsShape aBoundary)
 	{
 		Double out = Double.MAX_VALUE;
 		for ( ContinuousVector ccOut : 
-					aBoundary.getIntersections(_cPointOnPlane, getCVectorOut()) )
+					aBoundary.getIntersections(_cPointOnPlane, _cVectorOut) )
 		{
 			out = Math.min(out, _cPointOnPlane.distance(ccOut));
 		}
@@ -392,10 +381,9 @@ public class Planar extends IsShape
 	 * 
 	 * @return Double stating distance to that shape
 	 */
-	@Override
 	public Double getDistance(ContinuousVector cc)
 	{
-		ContinuousVector ccOut = getIntersections(cc, getCVectorOut()).getFirst();
+		ContinuousVector ccOut = getIntersections(cc, _cVectorOut).getFirst();
 		return ccOut.distance(cc);
 	}
 	
@@ -521,7 +509,7 @@ public class Planar extends IsShape
 		ContinuousVector difference = new ContinuousVector();
 		difference.sendDiff(site2, site1);
 		
-		ContinuousVector direction = getCVectorOut().crossProduct(difference);
+		ContinuousVector direction = _cVectorOut.crossProduct(difference);
 		direction.normalizeVector();
 		
 		ContinuousVector midPoint = new ContinuousVector(difference);
@@ -541,7 +529,6 @@ public class Planar extends IsShape
 	}
 	
 	
-	@Override
 	public Vertex intersect(Edge edge1, Edge edge2)
 	{
 		if ( edge1 == null || edge2 == null )
@@ -573,10 +560,10 @@ public class Planar extends IsShape
 			return null;
 		// The edge will be parallel to the cross product of the two norms.
 		ContinuousVector direction = 
-						getCVectorOut().crossProduct(other.getNormalContinuous());
+						_cVectorOut.crossProduct(other.getNormalContinuous());
 		//System.out.println("dir: "+direction.toString());
 		// Find a point on the Edge.
-		ContinuousVector point = direction.crossProduct(getCVectorOut());
+		ContinuousVector point = direction.crossProduct(_cVectorOut);
 		//System.out.println("point0: "+point.toString());
 		point = other.getIntersections(_cPointOnPlane, point).getFirst();
 		//System.out.println("point1: "+point.toString());
@@ -676,7 +663,6 @@ public class Planar extends IsShape
 	 * @param edge
 	 * @return
 	 */
-	@Override
 	public void clipEdgeToLimits(Edge edge)
 	{
 		Vertex vertex;
@@ -749,7 +735,6 @@ public class Planar extends IsShape
 			}
 	}
 	
-	@Override
 	public ContinuousVector getEdgePointFromPrimary(Edge edge, Double primaryValue)
 	{
 		Double[] p = ExtraMath.newDoubleArray(3);
@@ -768,7 +753,6 @@ public class Planar extends IsShape
 		return convertToVector(p);
 	}
 	
-	@Override
 	public StringBuffer writeShapeInformation(StringBuffer outputString)
 	{
 		outputString.append("<Surface shape=\"Planar\"");
@@ -793,32 +777,20 @@ public class Planar extends IsShape
 		return outputString;
 	}
 	
-	@Override
 	public StringBuffer getSitesHeader()
 	{
 		return new StringBuffer("u,v");
 	}
 	
-	@Override
 	public StringBuffer getEdgesHeader()
 	{
 		return new StringBuffer("u1,v1,u2,v2");
 	}
 	
-	@Override
 	public String toString()
 	{
 		return "Plane\n\tPoint on plane: "+_cPointOnPlane.toString()+
-				"\n\tVector out: "+getCVectorOut().toString()+
+				"\n\tVector out: "+_cVectorOut.toString()+
 				"\n\tParallel vectors: "+_cOrthogU.toString()+_cOrthogV.toString();
-	}
-
-	@Override
-	public ContinuousVector getCVectorOut() {
-		return _cVectorOut;
-	}
-
-	private void setCVectorOut(ContinuousVector _cVectorOut) {
-		this._cVectorOut = _cVectorOut;
 	}
 }

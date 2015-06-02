@@ -17,6 +17,8 @@ import java.util.*;
 import Jama.Matrix;
 import simulator.*;
 import simulator.agent.*;
+import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
 import utils.ExtraMath;
 import utils.LogFile;
@@ -58,7 +60,7 @@ public abstract class Reaction implements Serializable
 	/**
 	 * Agents hosting this process
 	 */
-	protected LinkedList<LocatedActiveAgent> _guild = new LinkedList<LocatedActiveAgent>();
+	protected LinkedList<ActiveAgent> _guild = new LinkedList<ActiveAgent>();
 
 	/**
 	 * Local copy of the solute grids used in this simulation. Used for efficiency purposes 
@@ -215,7 +217,7 @@ public abstract class Reaction implements Serializable
 	 * @param xmlRoot	The XML object containing the definition of one reaction in the protocol file
 	 * @see Simulator.createReaction()
 	 */
-	public void initFromAgent(LocatedActiveAgent anAgent, Simulator aSim, XMLParser xmlRoot)
+	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser xmlRoot)
 	{
 		Double yield;
 		// Populate yield for solutes __________________________________
@@ -373,7 +375,7 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * @param anAgent	ActiveAgent to register
 	 */
-	public void addAgent(LocatedActiveAgent anAgent) {
+	public void addAgent(ActiveAgent anAgent) {
 		_guild.add(anAgent);
 	}
 
@@ -384,7 +386,7 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * @param anAgent	ActiveAgent to remove
 	 */
-	public void removeAgent(LocatedActiveAgent anAgent) {
+	public void removeAgent(ActiveAgent anAgent) {
 		_guild.remove(anAgent);
 	}
 
@@ -396,7 +398,7 @@ public abstract class Reaction implements Serializable
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The marginal growth rate
 	 */
-	public abstract Double computeMassGrowthRate(LocatedActiveAgent anAgent);
+	public abstract Double computeMassGrowthRate(ActiveAgent anAgent);
 	
 	/**
 	 * \brief Compute the specific growth rate
@@ -406,7 +408,7 @@ public abstract class Reaction implements Serializable
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The specific growth rate
 	 */
-	public abstract Double computeSpecGrowthRate(LocatedActiveAgent anAgent);
+	public abstract Double computeSpecGrowthRate(ActiveAgent anAgent);
 
 	/**
 	 * \brief Return the specific reaction rate for a given agent
@@ -417,7 +419,7 @@ public abstract class Reaction implements Serializable
 	 * @see ActiveAgent.grow()
 	 * @see Episome.computeRate(EpiBac)
 	 */
-	public abstract void computeSpecificGrowthRate(LocatedActiveAgent anAgent);
+	public abstract void computeSpecificGrowthRate(ActiveAgent anAgent);
 
 	/**
 	 * \brief Compute specific growth rate in function to concentrations sent
@@ -427,7 +429,7 @@ public abstract class Reaction implements Serializable
 	 * @param s	Array of solute concentration
 	 * @param anAgent	Parameters used are those defined for THIS agent
 	 */
-	public abstract void computeSpecificGrowthRate(Double[] s, LocatedActiveAgent anAgent);
+	public abstract void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent);
 
 	/**
 	 * \brief Compute specific growth rate in function of concentrations sent Parameters used are those defined for the reaction.
@@ -506,7 +508,7 @@ public abstract class Reaction implements Serializable
 	 */
 	public void fitAgentMassOnGrid(SpatialGrid aSpG)
 	{
-		for (Agent anActiveAgent : _guild)
+		for (ActiveAgent anActiveAgent : _guild)
 		{
 			if ( anActiveAgent.isDead )
 				continue;
@@ -521,7 +523,7 @@ public abstract class Reaction implements Serializable
 	 * @param concGrid	Solute concentration grid.
 	 * @return all the concentration seen by an agent on the default solute grid.
 	 */
-	public Double[] readConcentrationSeen(Agent anAgent, SoluteGrid[] concGrid)
+	public Double[] readConcentrationSeen(ActiveAgent anAgent, SoluteGrid[] concGrid)
 	{
 
 		Double[] out = ExtraMath.newDoubleArray(concGrid.length);
@@ -536,12 +538,13 @@ public abstract class Reaction implements Serializable
 		}
 		else
 		{
-			if (anAgent instanceof Agent) 
+			if (anAgent instanceof LocatedAgent) 
 			{
 				// The agent is a located agent, use the local concentration
 				for (int iGrid = 0; iGrid<_soluteList.length; iGrid++)
 				{
-					out[iGrid] = _soluteList[iGrid].getValueAround(anAgent);
+					out[iGrid] = _soluteList[iGrid].getValueAround(
+													(LocatedAgent) anAgent);
 				}
 			} 
 			else 
@@ -595,7 +598,7 @@ public abstract class Reaction implements Serializable
 	public void fitGuildOnGrid()
 	{
 		_reacGrid.resetToZero();
-		for (Agent anAgent : _guild)
+		for (ActiveAgent anAgent : _guild)
 		{
 			if ( anAgent.isDead )
 				continue;
@@ -677,7 +680,7 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * @return	LinkedList containing all agents in the guild
 	 */
-	public LinkedList<LocatedActiveAgent> getGuild()
+	public LinkedList<ActiveAgent> getGuild()
 	{
 		return _guild;
 	}

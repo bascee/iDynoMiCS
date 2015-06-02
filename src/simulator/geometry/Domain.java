@@ -12,10 +12,10 @@ package simulator.geometry;
 import java.util.*;
 
 import simulator.*;
-import simulator.agent.Agent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.boundaryConditions.*;
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
@@ -344,7 +344,7 @@ public class Domain implements IsComputationDomain
 	public AllBC testCrossedBoundary(ContinuousVector newLoc)
 	{
 		// Test on the domain grid if the new location is inside the domain
-		if (_domainGrid.isValid(newLoc) && _domainGrid.getPaddedValueAt(newLoc) >= 0)
+		if (_domainGrid.isValid(newLoc) && _domainGrid.getValueAt(newLoc) >= 0)
 			return null;
 		
 		// Find the first of the boundaries which has been crossed
@@ -357,29 +357,6 @@ public class Domain implements IsComputationDomain
 				*/
 				return aBoundary;
 			}
-		
-		// If you are here, it means that no boundary is being crossed.
-		return null;
-	}
-	
-	public AllBC testCrossedBoundary(Double radius, ContinuousVector newLoc)
-	{
-		// Test on the domain grid if the new location is inside the domain
-//		if (_domainGrid.isValid(newLoc) && _domainGrid.getPaddedValueAt(newLoc) >= 0)
-//			return null;
-		
-		// Find the first of the boundaries which has been crossed
-		for (AllBC aBoundary : _boundaryList) {
-			if ((aBoundary instanceof BoundaryCyclic ? aBoundary.overBoundary(0.0,newLoc) :
-				aBoundary.overBoundary(radius, newLoc)) != null)
-			{
-				/*
-				System.out.println("agent at "+newLoc.toString()+
-								" crossed boundary "+aBoundary.getSide());
-				*/
-				return aBoundary;
-			}
-		}
 		
 		// If you are here, it means that no boundary is being crossed.
 		return null;
@@ -404,7 +381,7 @@ public class Domain implements IsComputationDomain
 	public AllBC testCrossedBoundarySelfAttach(ContinuousVector newLoc) 
 	{
 		// Test on the domain grid if the new location is inside the domain.
-		if (_domainGrid.isValid(newLoc) && _domainGrid.getPaddedValueAt(newLoc) >= 0)
+		if (_domainGrid.isValid(newLoc) && _domainGrid.getValueAt(newLoc) >= 0)
 			return null;
 		
 		// Find the first of the boundaries which has been crossed.
@@ -430,7 +407,6 @@ public class Domain implements IsComputationDomain
 		_boundaryList.add(aBC);
 	}
 	
-	@Override
 	public LinkedList<AllBC> getAllBoundaries() 
 	{
 		return _boundaryList;
@@ -744,7 +720,6 @@ public class Domain implements IsComputationDomain
 		return (val<0 ? limit+val : (val>=limit ? val-limit : val));
 	}
 	
-	
 	/**
 	 * 
 	 * @param coord
@@ -757,8 +732,8 @@ public class Domain implements IsComputationDomain
 		/*
 		 * Return true if this is biomass or substratum.
 		 */
-		return ( _biomassGrid.getPaddedValueAt(coord) > 0.0 ) ||
-				( _domainGrid.getPaddedValueAt(coord) == 0.0 );
+		return ( _biomassGrid.getValueAt(coord) > 0.0 ) ||
+				( _domainGrid.getValueAt(coord) == 0.0 );
 	}
 	
 	/**

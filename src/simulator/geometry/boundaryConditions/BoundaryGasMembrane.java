@@ -33,7 +33,7 @@ import utils.UnitConverter;
 import utils.XMLParser;
 import simulator.Simulator;
 import simulator.SoluteGrid;
-import simulator.agent.Agent;
+import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 
@@ -162,7 +162,7 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 		{
 			// The membrane has the same behaviour than a zero-flux boundary
 			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
-				aSoluteGrid.setValueAt(aSoluteGrid.getPaddedValueAt(dcIn), dcOut);
+				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
 		}
 	}
 	
@@ -187,7 +187,7 @@ public class BoundaryGasMembrane extends ConnectedBoundary
      * @see LocatedAgent.move();
      */
 	@Override
-	public void applyBoundary(Agent anAgent, ContinuousVector target)
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
 		// Define coordinates of the corrected position
 		_myShape.orthoProj(target, target);
@@ -204,6 +204,6 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 		// Compute the new position.
 		target.add(vectorIn);
 		// Compute and update the movement vector leading to this new position.
-		anAgent.getMovement().sendDiff(target,anAgent.getLocation());
+		anAgent.getMovement().sendDiff(anAgent.getLocation(), target);
 	}
 }

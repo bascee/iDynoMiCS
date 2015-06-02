@@ -11,6 +11,8 @@ package simulator.agent;
 
 import java.util.Arrays;
 
+import org.jdom.Element;
+
 import utils.ExtraMath;
 import simulator.Simulator;
 import utils.XMLParser;
@@ -20,7 +22,7 @@ import utils.XMLParser;
  * 
  * Extends SpeciesParam, adding parameters used to simulate an agents involvement in a reaction
  * 
- * @author Andreas Dï¿½tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  *

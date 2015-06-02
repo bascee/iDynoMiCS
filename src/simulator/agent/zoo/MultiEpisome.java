@@ -47,7 +47,7 @@ public class MultiEpisome extends InfoAgent
 	protected ArrayList<Integer> reactionKnown;
 	
 	//sonia 11.10.2010 array containing list of potential nbh to be screened during the hgt time step
-	protected LinkedList<Agent> nbhList = new LinkedList<Agent>();
+	protected LinkedList<LocatedAgent> nbhList = new LinkedList<LocatedAgent>();
 
 
 	
@@ -70,7 +70,7 @@ public class MultiEpisome extends InfoAgent
 		o.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
 		o.reactionKnown = (ArrayList<Integer>) this.reactionKnown.clone();
 		//sonia 11.10.2010
-		o.nbhList = (LinkedList<Agent>) this.nbhList.clone();
+		o.nbhList = (LinkedList<LocatedAgent>) this.nbhList.clone();
 
 		return o;
 	}
@@ -281,7 +281,5 @@ public class MultiEpisome extends InfoAgent
 	{
 		//tempString.append("copyNumber,transconjugant;");
 		return new StringBuffer(_species.speciesName);
-	}
-
-
+	}	
 }

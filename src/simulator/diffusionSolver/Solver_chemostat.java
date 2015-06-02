@@ -13,12 +13,15 @@ import Jama.Matrix;
 
 import java.util.ArrayList;
 
+import idyno.Idynomics;
 import idyno.SimTimer;
 import simulator.diffusionSolver.multigrid.MultigridSolute;
 import simulator.Simulator;
 import simulator.SoluteGrid;
+import simulator.geometry.boundaryConditions.AllBC;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
+import simulator.geometry.Domain;
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
@@ -196,7 +199,7 @@ public class Solver_chemostat extends DiffusionSolver
 				allSolute[i] = mySim.soluteList[i];
 				allSolute[i].setAllValueAt(aBulk._bulkValue[i]);
 				// TODO Could we use myDomain as the last argument here?
-				allReac[i] = new SoluteGrid (myDomain._resolution,
+				allReac[i] = new SoluteGrid (1,1,1, myDomain._resolution,
 						mySim.soluteList[i].gridName, mySim.soluteList[i].getDomain());
 				allReac[i].resetToZero();
 			}
