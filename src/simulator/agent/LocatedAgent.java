@@ -183,7 +183,6 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			LocatedAgent baby = (LocatedAgent) sendNewAgent();
 			baby.giveName();
 			baby.updateSize();
-			baby.Points = null;
 			
 			this._myDivRadius = getDivRadius();
 			baby._myDivRadius = getDivRadius();
@@ -401,6 +400,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		 * Create the new instance.
 		 */
 		LocatedAgent baby = (LocatedAgent) sendNewAgent();
+		
+		baby.Points = null;
 		/*
 		 * These are all generated randomly.
 		 */

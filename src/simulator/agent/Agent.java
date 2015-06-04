@@ -28,7 +28,7 @@ import utils.XMLParser;
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  */
-public abstract class Agent implements Cloneable
+public class Agent implements Cloneable
 {
 	
 	static int UNIQUE_ID = 0;
@@ -83,6 +83,14 @@ public abstract class Agent implements Cloneable
 		_lastStep = SimTimer.getCurrentIter()-1;
 	}
 	
+//	public Agent copy() {
+//		Agent out 		= new Agent();
+//		out._family 	= this._family;
+//		out._genealogy	= this._genealogy;
+//		out._generation	= this._generation;
+//		return out;
+//	}
+	
 	public int identifier() 
 	{
         return uid;
@@ -132,9 +140,6 @@ public abstract class Agent implements Cloneable
 	public void makeKid() throws CloneNotSupportedException 
 	{
 
-		Agent anAgent = (Agent) this.clone();
-		// Now register the agent in the appropriate container
-		registerBirth();
 	}
 
 	/**
@@ -157,7 +162,9 @@ public abstract class Agent implements Cloneable
 	 * Each agent must be referenced by one such container. Implemented by
 	 * classes that extend Agent.
 	 */
-	public abstract void registerBirth();
+	public void registerBirth() {
+		
+	}
 	
 	/**
 	 * \brief Perform the next timestep of the simulation for this agent.
@@ -177,7 +184,9 @@ public abstract class Agent implements Cloneable
 	 * 
 	 * Implemented by classes that extend Agent.
 	 */
-	protected abstract void internalStep();
+	protected void internalStep() {
+		
+	}
 	
 	/**
 	 * \brief Specifies the header of the columns of output information for
