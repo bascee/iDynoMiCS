@@ -1021,7 +1021,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	
 	@Override
 	public void mechMovement() {
-		ContinuousVector diff = new ContinuousVector(Points.get(0).position);
+		ContinuousVector diff = new ContinuousVector(Points.get(0).getPosition());
 		diff.subtract(_location);
 		this._movement.add(diff);
 	}

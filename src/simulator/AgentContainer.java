@@ -466,7 +466,7 @@ public class AgentContainer
 			agentTree.insert(a.coord(), a.dimensions(), a);
 		}
 		// Reset Mechanical stepper
-		double dtMech 	= 0.0001;
+		double dtMech 	= 0.00001;
 		double tMech	= 0.0;
 		int nstep		= 0;
 		double tStep	= SimTimer.getCurrentTimeStep();
@@ -494,7 +494,7 @@ public class AgentContainer
 			
 			// Set time step
 			tMech += dtMech;
-			dtMech = (0.1/((Math.sqrt(vSquare)+0.4)));
+			dtMech = (0.0001/((Math.sqrt(vSquare)+0.1)));
 			// fineness of movement / (speed + stability factor)
 			if(dtMech > tStep-tMech)
 				dtMech = tStep-tMech;

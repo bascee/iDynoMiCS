@@ -1,5 +1,4 @@
 package simulator.agent;
-
 import utils.Vect;
 
 /**
@@ -46,9 +45,9 @@ public final class Volume {
 	 */
 	public static void neighbourInteraction(Point a, Point c, Double radii) 
 	{
-		Double[] force = interact(pointPoint(a.position, c.position), radii);
-		Vect.add(a.force, force);
-		Vect.add(c.force,Vect.inverse(force));
+		Double[] force = interact(pointPoint(a.getPosition(), c.getPosition()), radii);
+		Vect.add(a.getForce(), force);
+		Vect.add(c.getForce(),Vect.inverse(force));
 	}
 	
 	/**
@@ -66,11 +65,11 @@ public final class Volume {
 	public static void neighbourInteraction(Point a, Point b, Point c, 
 			Double radii) 
 	{
-		Double[] force = interact(linesegPoint(a.position, b.position, 
-				c.position), radii);
-		Vect.add(a.force, Vect.product(force,1.0-s));
-		Vect.add(b.force, Vect.product(force,s));
-		Vect.add(c.force, Vect.inverse(force));
+		Double[] force = interact(linesegPoint(a.getPosition(), b.getPosition(), 
+				c.getPosition()), radii);
+		Vect.add(a.getForce(), Vect.product(force,1.0-s));
+		Vect.add(b.getForce(), Vect.product(force,s));
+		Vect.add(c.getForce(), Vect.inverse(force));
 	}
 	
 	/**
@@ -90,12 +89,12 @@ public final class Volume {
 	public static void neighbourInteraction(Point a, Point b, Point c, Point d, 
 			Double radii) 
 	{
-		Double[] force = interact(linesegLineseg(a.position, b.position, 
-				c.position, d.position), radii);
-		Vect.add(a.force, Vect.product(force,1.0-s));
-		Vect.add(b.force, Vect.product(force,s));
-		Vect.add(c.force, Vect.product(Vect.inverse(force),t));
-		Vect.add(d.force, Vect.product(Vect.inverse(force),1.0-t));
+		Double[] force = interact(linesegLineseg(a.getPosition(), b.getPosition(), 
+				c.getPosition(), d.getPosition()), radii);
+		Vect.add(a.getForce(), Vect.product(force,1.0-s));
+		Vect.add(b.getForce(), Vect.product(force,s));
+		Vect.add(c.getForce(), Vect.product(Vect.inverse(force),t));
+		Vect.add(d.getForce(), Vect.product(Vect.inverse(force),1.0-t));
 	}
 
 	/**
@@ -113,8 +112,8 @@ public final class Volume {
 	{
 		double c;
 		double p 			= 0.01; 		// pull distance
-		double fPull 		= 0.0002;		// pull force scalar
-		double fPush 		= 0.6;			// push force scalar
+		double fPull 		= 0.001;		// pull force scalar
+		double fPush 		= 2.0;			// push force scalar
 		boolean exponential = true; 		// exponential pull curve
 		distance 			-= radii+0.001;	// added margin
 		
@@ -124,22 +123,22 @@ public final class Volume {
 			c = fPush * distance * distance;
 			return Vect.product(Vect.normalize(dP),c);
 		} 
-//		
-//		//attraction
-//		else if (distance < p) 
-//		{
-//			if (exponential)
-//			{
-//				c = fPull * -3.0 * Math.exp(-6.0*distance/p) /
-//						( 1.0 + Math.exp(6.0 - (36.0*distance) / p) ); 
-//			}
-//			else
-//			{
-//				c = fPull * - (p-distance) /
-//						( 1.0 + Math.exp(6.0 - (36.0*distance) / p) );
-//			}
-//			return Vect.product(dP,c);
-//		}
+		
+		//attraction
+		else if (distance < p) 
+		{
+			if (exponential)
+			{
+				c = fPull * -3.0 * Math.exp(-6.0*distance/p) /
+						( 1.0 + Math.exp(6.0 - (36.0*distance) / p) ); 
+			}
+			else
+			{
+				c = fPull * - (p-distance) /
+						( 1.0 + Math.exp(6.0 - (36.0*distance) / p) );
+			}
+			return Vect.product(dP,c);
+		}
 		return Vect.zeros(dP.length);
 	}
 	

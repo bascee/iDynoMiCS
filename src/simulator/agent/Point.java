@@ -5,9 +5,9 @@ import utils.Vect;
 public class Point {
     static int UNIQUE_ID = 0;
     int uid = ++UNIQUE_ID;
-	Double[] position;
-	Double[] velocity;
-	Double[] force;
+	private Double[] position;
+	private Double[] velocity;
+	private Double[] force;
 	
 	public Point(int nDim) 
 	{
@@ -95,6 +95,22 @@ public class Point {
 	void setPosition(Double[] position) 
 	{
 		this.position = position;
+	}
+
+	public Double[] getForce() {
+		return force;
+	}
+
+	public void setForce(Double[] force) {
+		this.force = force;
+	}
+
+	public Double[] getVelocity() {
+		return velocity;
+	}
+
+	public void setVelocity(Double[] velocity) {
+		this.velocity = velocity;
 	}
 
 }
