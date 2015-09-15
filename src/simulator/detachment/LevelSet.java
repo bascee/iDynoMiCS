@@ -266,8 +266,6 @@ public abstract class LevelSet
 	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup,
 															Simulator aSim)
 	{
-		//FIXME: Bas I think it is preferable not to assume planar biofilms
-		// this may result in mistakes
 		if ( aGroup.cc.x > maxTh )
 		{
 			if ( _endSimWhenMaxThCrossed )

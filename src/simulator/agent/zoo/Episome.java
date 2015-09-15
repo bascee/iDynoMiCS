@@ -87,7 +87,6 @@ public class Episome extends InfoAgent
 
 	/* ______________________ CREATION _____________________________ */
 
-	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp)
 	{
 		// Initilaisation of the Located agent
@@ -113,7 +112,6 @@ public class Episome extends InfoAgent
 		}
 	}
 	
-	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData)
 	{
 		// this writes no unique values, so doesn't need unique reading-in
@@ -307,19 +305,9 @@ public class Episome extends InfoAgent
 	 * 
 	 * @return	String containing results associated with this agent.
 	 */
-	@Override
 	public StringBuffer writeOutput()
 	{
 		StringBuffer tempString = super.writeOutput();
 		return tempString;
-	}
-
-	/**
-	 * \brief Called at each time step of the simulation to compute agent
-	 * characteristics.
-	 */
-	@Override
-	public void internalStep() {
-		
 	}
 }

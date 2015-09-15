@@ -12,10 +12,8 @@
 package simulator.geometry;
 
 import java.util.LinkedList;
-
 import simulator.SoluteGrid;
 import simulator.SpatialGrid;
-import simulator.agent.Agent;
 import simulator.geometry.boundaryConditions.AllBC;
 
 /**

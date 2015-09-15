@@ -43,7 +43,6 @@ public class MonodKinetic extends IsKineticFactor
 	 * 
 	 * @param defMarkUp	XML tags that define this kinetic in the protocol file.
 	 */
-	@Override
 	public void init(Element defMarkUp)
 	{
 		_Ks = (new XMLParser(defMarkUp)).getParamDbl("Ks");

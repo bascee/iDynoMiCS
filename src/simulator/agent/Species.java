@@ -133,7 +133,7 @@ public class Species implements Serializable
 	/**
 	 * Specialised agent from which objects of this species are created
 	 */
-	protected Agent _progenitor;
+	protected SpecialisedAgent _progenitor;
 	
 	/**
 	 * Count of the population of this particular species in the simulation
@@ -177,7 +177,7 @@ public class Species implements Serializable
 		injectionOffAttachmentFrequency = aSpRoot.getParamDbl("injectionOffAttachmentFrequency");
 		
 		// Create the progenitor and tune its speciesParam object
-		_progenitor = (Agent) aSpRoot.instanceCreator("simulator.agent.zoo");
+		_progenitor = (SpecialisedAgent) aSpRoot.instanceCreator("simulator.agent.zoo");
 		// Get parameters for this progenitor object from the protocol file if present
 
 		_progenitor.getSpeciesParam().init(aSimulator, aSpRoot, speciesDefaults);
@@ -197,7 +197,7 @@ public class Species implements Serializable
 	 * 
 	 * @param aProgenitor	Progenitor from which the species is being created
 	 */
-	public Species(Agent aProgenitor) 
+	public Species(SpecialisedAgent aProgenitor) 
 	{
 		_progenitor = aProgenitor;
 		aProgenitor.setSpecies(this);
@@ -240,14 +240,14 @@ public class Species implements Serializable
 		ContinuousVector cc = new ContinuousVector();
 
 		for (int i = 0; i < howMany; i++) 
-			if ( _progenitor instanceof LocatedActiveAgent ) 
+			if ( _progenitor instanceof LocatedAgent ) 
 			{
 				// Set coordinates within the birth area - randomly
 				if( ! Simulator.isChemostat )					
 					shuffleCoordinates(cc, _initArea);
 
 				// Create the agent at these coordinates
-				_progenitor.createNewAgent(cc);
+				((LocatedAgent) _progenitor).createNewAgent(cc);
 			}
 			else
 				_progenitor.createNewAgent();
@@ -289,7 +289,7 @@ public class Species implements Serializable
 		{
 			totalNumberOfInjectedAgents++;
 			
-			if (_progenitor instanceof Agent) 
+			if (_progenitor instanceof LocatedAgent) 
 			{
 				swimmingAgentPosition.reset();
 				
@@ -336,7 +336,7 @@ public class Species implements Serializable
 					case 1:	// Successfully Attached
 						numberAttachedInjectedAgents--;						
 						// Create the agent at these coordinates
-						_progenitor.createNewAgent(this.swimmingAgentPosition);
+						((LocatedAgent) _progenitor).createNewAgent(this.swimmingAgentPosition);
 						break;
 					case 2:
 						agentsReturnedToBulk++;
@@ -746,7 +746,7 @@ public class Species implements Serializable
 
 			// Now go through each agent and determine if this is within that
 			// distance from an agent.
-			if(currentSimulator.agentGrid.hasNearNeighbors(swimmingAgentPosition, distanceSeekingAgent))
+			if(isAgentInContactWithAgentInBiofilm(index, distanceSeekingAgent))
 			{
 				// can return 1 as there is contact with an agent on the
 				// biofilm surface Set the coordinates as this final position.
@@ -805,26 +805,21 @@ public class Species implements Serializable
 	 * @param distanceSeekingAgent	The distance within which two cells are deemed to be in contact
 	 * @return	Boolean noting whether the agent is in contact with an agent in the biofilm
 	 */
-//	//Bas: this methods actually only checks if agent a has neigbors
-//	// within a set distance, moved to agentContainer (hasNearNeighbors)
-//	// FIXME: it seems strange to me swimmingAgentPosition is a field of 
-//	// species, consider restructering this process.
-//	public Boolean isAgentInContactWithAgentInBiofilm(int gridIndex, double distanceSeekingAgent)
-//	{
-//		
-//		LocatedGroup agentsInGrid = currentSimulator.agentGrid.
-//												returnGroupInVoxel(gridIndex);
-//		
-//		Double dist = 0.0;
-//		// Now iterate through each one. If we're close enough, move done.
-//		// Shoving can then sort out distance between the two cells.
-//		for (LocatedAgent aLoc : agentsInGrid.group)
-//			dist = aLoc.getLocation().distance(swimmingAgentPosition); 
-//			if ( dist <= distanceSeekingAgent )
-//				return true;
-//		// If not, we'll do another move.
-//		return false;
-//	}
+	public Boolean isAgentInContactWithAgentInBiofilm(int gridIndex, double distanceSeekingAgent)
+	{
+		LocatedGroup agentsInGrid = currentSimulator.agentGrid.
+												returnGroupInVoxel(gridIndex);
+		
+		Double dist = 0.0;
+		// Now iterate through each one. If we're close enough, move done.
+		// Shoving can then sort out distance between the two cells.
+		for (LocatedAgent aLoc : agentsInGrid.group)
+			dist = aLoc.getLocation().distance(swimmingAgentPosition); 
+			if ( dist <= distanceSeekingAgent )
+				return true;
+		// If not, we'll do another move.
+		return false;
+	}
 
 	/**
 	 * \brief Increases the population of this species when one agent is added
@@ -854,7 +849,7 @@ public class Species implements Serializable
 	 * @return a clone of the progenitor
 	 * @throws CloneNotSupportedException
 	 */
-	public Agent sendNewAgent() throws CloneNotSupportedException
+	public SpecialisedAgent sendNewAgent() throws CloneNotSupportedException
 	{
 		return _progenitor.sendNewAgent();
 	}
@@ -878,7 +873,7 @@ public class Species implements Serializable
 	 * 
 	 * @return	The progenitor of this species object
 	 */
-	public Agent getProgenitor() 
+	public SpecialisedAgent getProgenitor() 
 	{
 		return _progenitor;
 	}
@@ -916,7 +911,7 @@ public class Species implements Serializable
 	 */
 	public LocatedParam getLocatedParam()
 	{
-		return _progenitor.getLocatedParam();
+		return ((LocatedAgent) _progenitor).getSpeciesParam();
 	}
 	
 	/**

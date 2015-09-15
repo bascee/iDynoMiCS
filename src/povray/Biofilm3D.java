@@ -215,7 +215,6 @@ public class Biofilm3D implements Serializable
 		_cells[_next].setCoreRadius(rad);
 		_cells[_next].setColorCore(color);
 		_next++;
-		
 	}
 
 	/**
@@ -291,8 +290,8 @@ public class Biofilm3D implements Serializable
 	 * @throws IOException	Exception that is thrown if there are problems with this output stream
 	 */
 	protected void particlesToFile(FileWriter f) throws IOException {
-		for (Agent anAgent : _pov.mySim.agentGrid.getAll()) {
-			ParticleWithCapsule s = new ParticleWithCapsule(anAgent);
+		for (Agent anAgent : _pov.mySim.agentGrid.agentList) {
+			ParticleWithCapsule s = new ParticleWithCapsule((LocatedAgent)anAgent);
 			f.write(s.toString());
 		}
 	}

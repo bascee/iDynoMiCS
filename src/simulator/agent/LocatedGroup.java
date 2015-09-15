@@ -19,6 +19,7 @@ import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
+import utils.LogFile;
 
 /**
  * \brief Object to hold a group of agents in one location on the agent grid.
@@ -39,7 +40,7 @@ public class LocatedGroup
 	/**
 	 * Linked list to hold members of this group
 	 */
-	public LinkedList<Agent> group = new LinkedList<Agent>();
+	public LinkedList<LocatedAgent> group = new LinkedList<LocatedAgent>();
 
 	/**
 	 * Concentration of species in this group, thus area represented
@@ -213,7 +214,7 @@ public class LocatedGroup
 		totalConcentration = 0.0;
 		totalMass = 0.0;
 		Arrays.fill(speciesConcentration, 0.0);
-		for (Agent aLoc : group)
+		for (LocatedAgent aLoc : group)
 		{
 			totalMass += aLoc.getTotalMass();
 			value = aLoc.getTotalMass()/volume;
@@ -234,7 +235,7 @@ public class LocatedGroup
 	public Double refreshVolume()
 	{
 		totalVolume = 0.0;
-		for (Agent aLoc : group)
+		for (LocatedAgent aLoc : group)
 			totalVolume += aLoc.getVolume(true);
 		return totalVolume;
 	}
@@ -276,7 +277,7 @@ public class LocatedGroup
 	 */
 	public void addMoveToAgents(Double alpha)
 	{
-		for (Agent aLoc : group)
+		for (LocatedAgent aLoc : group)
 		{
 			move.times(alpha);
 			aLoc.addMovement(move);
@@ -290,11 +291,11 @@ public class LocatedGroup
 	 */
 	public void killAll(String reason)
 	{
-		for ( Agent aLoc : group )
+		for ( LocatedAgent aLoc : group )
 		{
 			aLoc.death = reason;
-			agentGrid.registerDeath(aLoc);
-			agentGrid.removeAgent(aLoc);
+			agentGrid._agentToKill.add(aLoc);
+			agentGrid.agentList.remove(aLoc);
 		}
 		group.clear();
 		if ( ! Simulator.isChemostat )
@@ -306,7 +307,7 @@ public class LocatedGroup
 	 * 
 	 * @param anAgent	LocatedAgent to remove from this group.
 	 */
-	public void remove(Agent anAgent)
+	public void remove(LocatedAgent anAgent)
 	{
 		group.remove(anAgent);
 		if ( group.isEmpty() && !Simulator.isChemostat )
@@ -318,7 +319,7 @@ public class LocatedGroup
 	 * 
 	 * @param anAgent	LocatedAgent to add to this group.
 	 */
-	public void add(Agent anAgent) 
+	public void add(LocatedAgent anAgent) 
 	{
 		group.add(anAgent);
 		status = 1;

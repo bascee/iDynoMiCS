@@ -22,12 +22,11 @@ import simulator.diffusionSolver.DiffusionSolver;
 import simulator.diffusionSolver.Solver_pressure;
 import simulator.geometry.*;
 import simulator.SpatialGrid;
+import utils.RTree;
 import utils.ResultFile;
 import utils.XMLParser;
 import utils.LogFile;
 import utils.ExtraMath;
-import utils.RTree;
-import utils.helperMethods;
 
 /**
  * \brief Class to store all the agents, call them, and manage shoving/erosion
@@ -42,6 +41,16 @@ import utils.helperMethods;
 public class AgentContainer 
 {
 	/**
+	 * number of dimensions.
+	 */
+	static int nDim;
+	
+	/**
+	 * Agent tree.
+	 */
+	static RTree<SpecialisedAgent> agentTree;
+	
+	/**
 	 * Computational domain to which this grid is assigned
 	 */ 
 	public Domain domain;
@@ -55,19 +64,15 @@ public class AgentContainer
 	/**
 	 * Container for all agents (even the non located ones)
 	 */
-	private LinkedList<Agent> agentList;
-	
-	/**
-	 * Tree for all located agents.
-	 */
-	private RTree<Agent> agentTree = new RTree<Agent>(5,2,2);
+	public LinkedList<SpecialisedAgent> agentList;
 	
 	/**
 	 * Temporary containers used to store agents who will be added or removed.
 	 * Visibility public so that it can be accessed from LocatedGroup in
 	 * killAll().
 	 */
-	private LinkedList<Agent> _agentToKill = new LinkedList<Agent>();
+	public LinkedList<SpecialisedAgent> _agentToKill = 
+										new LinkedList<SpecialisedAgent>();
 
 	/**
 	 * Array of SpatialGrids - one for each species in the simulation
@@ -161,17 +166,17 @@ public class AgentContainer
 	/**
 	 *  Tally of mass to be removed in removeOnBorder, or cells in chemostat dilution (see agentsFlushedAway)
 	 */
-	private double tallyVariable = 0.0; 
+	double tallyVariable = 0.0; 
 	
 	/**
 	 * Number of shoving iterations performed
 	 */
-	private int shovIter;
+	int shovIter;
 	
 	/**
 	 * Limit on number of cells that will be moved in shoving
 	 */
-	private int shovLimit; 
+	int shovLimit; 
 	
 	/**
 	 * Maximum number of shove iterations that can be performed in a step
@@ -199,8 +204,7 @@ public class AgentContainer
 	 * @param agentTimeStep	The agent time step as specified in the XML protocol file
 	 * @throws Exception	Exception thrown should this data not be present in the protocol file
 	 */
-	public AgentContainer(Simulator aSimulator, XMLParser root, 
-										double agentTimeStep) throws Exception 
+	public AgentContainer(Simulator aSimulator, XMLParser root, double agentTimeStep) throws Exception 
 	{
 		// Read FINAL fields
 		SHOVEFRACTION = root.getParamDbl("shovingFraction");
@@ -246,10 +250,10 @@ public class AgentContainer
 		}
 
 		// Now set the domain where this container is defined
-		domain = aSimulator.world.getDomain(root.getParam("computationDomain"));
+		domain = (Domain) aSimulator.world.getDomain(root.getParam("computationDomain"));
 		mySim = aSimulator;
 		
-		agentList = new LinkedList<Agent>();
+		agentList = new LinkedList<SpecialisedAgent>();
 		// Optimised the resolution of the grid used to sort located agents
 		checkGridSize(aSimulator, root);
 
@@ -279,104 +283,24 @@ public class AgentContainer
 
 	}
 	
-	/* ___________________ Helper methods ________________________________ */
-	
-	/** Bas
-	 * 
+	/**
+	 * creates a new agent tree
 	 */
-	public int getNumberOfAgents() {
-		return agentList.size();
+	private static void createAgentTree() 
+	{
+		agentTree = new RTree<SpecialisedAgent>(8,2,nDim);
 	}
 	
-	public boolean isEmpty() {
-		return agentList.isEmpty();
-	}
-	
-	public void removeAgent(Agent aDeathAgent) {
-		agentList.remove(aDeathAgent);
-	}
-	
-	public void addAgent(Agent agentToAdd) {
-		agentList.add(agentToAdd);
-	}
-	
-	/** Bas: cleaning out other methods (from Species isAgentInContactWithAgentInBiofilm)
-	 * 
-	 * @return a single agent randomly picked from List
-	 * 
+	/**
+	 * refreshes agent tree and obtains updated bounding boxes.
 	 */
-	public boolean hasNearNeighbors(ContinuousVector Point, Double distance) {
-		LocatedGroup agentsInGrid = returnGroupInVoxel(getIndexedPosition(Point));
-		Double dist = 0.0;
-		// Now iterate through each one. If we're close enough, move done.
-		// Shoving can then sort out distance between the two cells.
-		for (Agent aLoc : agentsInGrid.group)
-		dist = aLoc.getLocation().distance(Point); 
-		if ( dist <= distance )
-		return true;
-		// If not, we'll do another move.
-		return false;
+	public static void refreshTree() 
+	{
+		List<SpecialisedAgent> agentList = agentTree.all();
+		agentTree.clear();
+		for(SpecialisedAgent a: agentList) 
+			agentTree.insert(a.coord(),	a.dimensions(), a);
 	}
-	/** Bas
-	 * 
-	 * @return a single agent randomly picked from List
-	 * 
-	 */
-	public Agent getRandomAgent() {
-		return agentList.get(ExtraMath.getUniRandInt(agentList.size()));
-	}
-	
-	/** Bas
-	 * 
-	 * @return a list of agents randomly picked from List, without duplicates
-	 * 
-	 */
-	public List<Agent> getRandomAgentList(int i) {
-		LinkedList<Agent> randomAgentList = new LinkedList<Agent>();
-		Integer[] j = ExtraMath.getUniRandIntegers(agentList.size(),i,false);
-		for(int k = 0; k<i; k++)
-			randomAgentList.add(agentList.get(j[k]));
-		return randomAgentList;
-	}
-	
-	/** Bas
-	 * FIXME: method made as preparation for RTree implementation.
-	 * this is a temporary fix, we will work to a final solution later.
-	 * @return a List of all agents.
-	 * 
-	 */
-	public List<Agent> getAll() {
-		List<Agent> allAgents = agentList;
-		return allAgents;
-	}
-	
-	/** Bas - STOP don't shuffle agents unless you are absolutely sure you must
-	 * FIXME: method made as preparation for RTree implementation.
-	 * this is a temporary fix, we will work to a final solution later.
-	 * @return a List of all agents in random order.
-	 * 
-	 */
-	public List<Agent> getAllShuffled() {
-		List<Agent> shuffledList = agentList;
-		Collections.shuffle(shuffledList, ExtraMath.random);
-		return shuffledList;
-	}
-	
-	public List<Agent> neighborhoodSearch(double[] coords, double dimensions) {
-		
-		if(is3D) {
-			return agentTree.cyclicsearch(helperMethods.doubleToFloatArray(coords), 
-					helperMethods.filledFloatArray((float) (dimensions),3),
-					helperMethods.doubleToFloatArray(new double[]{
-							domain.length_X,domain.length_Y,domain.length_Z}));
-		}
-		return agentTree.cyclicsearch(helperMethods.doubleToFloatArray(coords), 
-				helperMethods.filledFloatArray((float) (dimensions),2),
-				helperMethods.doubleToFloatArray(new double[]{
-						domain.length_X,domain.length_Y}));
-	}
-	
-	
 
 	/* ___________________ STEPPERS ________________________________ */
 
@@ -389,21 +313,21 @@ public class AgentContainer
 	 */
 	public void step(Simulator aSim)
 	{
+
 		/* STEP AGENTS ________________________________________________ */
 		LogFile.chronoMessageIn();
-		List<Agent> shuffledAgentList;
-		shuffledAgentList = getAllShuffled();
-		_agentToKill.clear();
+		Collections.shuffle(agentList, ExtraMath.random);
 		
 		// Record values at the beginning
 		int nBirth = 0;
-		int nAgent = getNumberOfAgents();
+		int nAgent = agentList.size();
 		double dt = 0.0;
 		double elapsedTime = 0.0;
 		double globalTimeStep = SimTimer.getCurrentTimeStep();
 		// for the local time step, choose the value according to which is best
 		double localdt = Math.min(AGENTTIMESTEP,globalTimeStep);
 
+		int nDead = 0;
 		// Apply a shorter time step when visiting all the agents
 
 		while (elapsedTime < globalTimeStep)
@@ -422,11 +346,11 @@ public class AgentContainer
 			SimTimer.setCurrentTimeStep(dt);
 
 			// Bypass agent movement in a chemostat.
-			if ( ! Simulator.isChemostat )
+			if ( ! Simulator.isChemostat && Simulator.isShoving )
 				followPressure();
 			
-			for ( int i = 0; i < getNumberOfAgents(); i++ )
-				shuffledAgentList.get(i).step();
+			for ( int i = 0; i < agentList.size(); i++ )
+				agentList.get(i).step();
 			/*
 			 * TODO Rob 16Apr2015: Java is complaining about
 			 * "java.util.ConcurrentModificationException"
@@ -434,46 +358,23 @@ public class AgentContainer
 			for ( SpecialisedAgent agent : agentList )
 				agent.step();
 			*/
+			
+			Collections.shuffle(agentList, ExtraMath.random);
 
 			if ( Simulator.isChemostat )
 				agentFlushedAway(dt);
 
-			//Bas: reverted back to using the build in method, agent to kill
-			// list is now kept until next step for proper reporting
-			//removeAllDead();
-			
-			//sonia 26.04.2010
-			//commented out removeAllDead
-			// this call is now made at the end of the step in Simulator
-			//nDead += removeAllDead();
+			nBirth += agentList.size() - nAgent;
 
-			// NOW DEAL WITH DEATH IN THIS AGENT TIMESTEP
-			// REMOVE THESE FROM THE GRID IF DEAD
-			// MUST BE DONE SO THAT THESE DO NOT AFFECT SHOVING
-			
-			for(Agent aDeathAgent: _agentToKill)
-			{
-				if (aDeathAgent.isDead) 
-				{
-					//nDead++;
-					// KA - removed the count here, as the count of dead cells was wrong - we were recounting these with every
-					// agent timestep. We should only be counting them at the simulation timestep
-					// However they need to remain in the _agentToKill list until this is emptied at the correct output period
-					removeAgent(aDeathAgent);
-					removeLocated(aDeathAgent);
-				}
-			}
-			
-			// Apply moderate overlap relaxation, unless this is a chemostat.
-			// Bas: shoving will be dealt with in the mechenical interactions part
-			// and should we shove a bit here and than shove some more later?
-			//			if( ! Simulator.isChemostat )
-			//				shoveAllLocated(15);
-			
+			//FIXME: Bas - this function call was commented out to be followed
+			// up by code that did exactly the same.
+			nDead += removeAllDead();
+			nAgent = agentList.size();
+
+			//FIXME: Bas - Removed intermediate shove - shoving should be done 
+			// in one place otherwise we really lose track of what is happening.
 		}
-		
-		nBirth += getNumberOfAgents() - nAgent;
-		
+
 		SimTimer.setCurrentTimeStep(globalTimeStep);
 		
 		
@@ -488,10 +389,17 @@ public class AgentContainer
 			//care as been take so that the death agents are removed from the 
 			// _agentList preventing their participation in the shoving process 			
 			// spring and then shove only particles
-			LogFile.chronoMessageIn("Shoving");
-			shoveAllLocated(MAXITER);
-			LogFile.chronoMessageOut("Shoving done");
-			
+			if (Simulator.isShoving) {
+				LogFile.chronoMessageIn("Shoving");
+				shoveAllLocated(MAXITER);
+				LogFile.chronoMessageOut("Shoving done");
+			}
+			else
+			{
+				LogFile.chronoMessageIn("Mechanical relaxation");
+				mechanicalRelaxation();
+				LogFile.chronoMessageOut("relaxation done");
+			}
 			
 			// EROSION & DETACHMENT _________________________________________ */
 			// Refresh the space occupation map (-1:outside, 0:carrier,1:biofilm, 2:liquid, 3:bulk)
@@ -536,21 +444,87 @@ public class AgentContainer
 			
 				
 		}
-
+		
 		// OUTPUT THE COUNT STATISTICS
 		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent + "/"
-				+ _agentToKill.size() + "/" + nBirth);
-		
-		//FIXME: remove dead as a quick fix for agents that get pushed overboard
-		// before agents were kept in artificially because of grid for neighbor search i think... bugfixing
-		//removeAllDead();
+				+ nDead + "/" + nBirth);
 
-		//FIXME Bas: is this really needed?
-		nAgent = getNumberOfAgents();
+		
+		nAgent = agentList.size();
 		if (maxPopLimit > 0 && nAgent >= maxPopLimit)
 			aSim.continueRunning = false;
 	}
 
+	/**
+	 * 
+	 */
+	private void mechanicalRelaxation() {
+		nDim = (is3D ? 3 : 2);
+		Double[] gridLengths = (is3D ? new Double[]{domain.length_X, 
+				 domain.length_Y, domain.length_Z} : 
+				new Double[]{ domain.length_X,  domain.length_Y});
+		
+		float[] fGridLengths = new float[gridLengths.length];
+		for (int i = 0; i<gridLengths.length; i++)
+		{
+			fGridLengths[i] = gridLengths[i].floatValue();
+		}
+		createAgentTree();
+		for ( SpecialisedAgent a: agentList ) {
+			a.move();
+			a.refreshPoint(nDim);
+			agentTree.insert(a.coord(), a.dimensions(), a);
+		}
+		// Reset Mechanical stepper
+		double dtMech 	= 0.00001; // initial time step
+		double tMech	= 0.0;
+		int nstep		= 0;
+		double tStep	= SimTimer.getCurrentTimeStep();
+		// Mechanical relaxation
+		while(tMech < tStep) 
+		{			
+			for ( SpecialisedAgent a: agentList ) {
+				a.mechMovement();
+				a.move();
+				a.updatePoint(nDim);
+			}
+			refreshTree();
+			double vSquare = 0.0;
+			
+			// Calculate forces
+			for(SpecialisedAgent agent: agentTree.all()) 
+			{
+				agent.innerSprings();
+				for(SpecialisedAgent neighbour: agentTree.cyclicsearch(agent.coord(0.1), 
+						agent.dimensions(0.1), fGridLengths)) 
+				{
+					if (agent.identifier() > neighbour.identifier())
+						agent.collision((LocatedAgent) neighbour, gridLengths);
+				}
+			}
+			
+			// Update velocity and position
+			for(SpecialisedAgent agent: agentTree.all())
+				vSquare = agent.euStep(vSquare, dtMech);
+			
+			// Set time step
+			tMech += dtMech;
+			dtMech = Simulator.maxMovement / (Math.sqrt(vSquare)+0.02);
+			// fineness of movement / (speed + stability factor)
+			// stability factor of 0.02 seems to work fine, yet may change in
+			// the future.
+			if(dtMech > tStep-tMech)
+				dtMech = tStep-tMech;
+			nstep++;
+		}
+		
+		for ( SpecialisedAgent a: agentList ) {
+			a.mechMovement();
+			a.move();
+		}
+		LogFile.writeLog(agentList.size() + " after " + nstep
+				+ " shove iterations");
+	}
 
 	/**
 	 * \brief Compute pressure field and apply resulting advection movement to
@@ -613,7 +587,7 @@ public class AgentContainer
 		
 		// now apply the scaled agent movements to each agent
 		for (int i = 0; i < itlocal; ++i)
-			for ( Agent anAgent : agentList )
+			for ( SpecialisedAgent anAgent : agentList )
 				anAgent.move();
 	}	
 
@@ -627,48 +601,15 @@ public class AgentContainer
 	 */
 	public void shoveAllLocated(int maxShoveIter)
 	{
-//		int nMoved = 0;
-		Double globalTimestep = SimTimer.getCurrentTimeStep();
-		Double localTimestep = globalTimestep/1000;
-		Double dt = 0.0;
-		shovLimit = Math.max(1, (int) (getNumberOfAgents() * SHOVEFRACTION));
+		int nMoved;
+		shovLimit = Math.max(1, (int) (agentList.size() * SHOVEFRACTION));
 		shovIter = 0;
-		refreshTree();
-//			do 
-//		{
-		while(dt < globalTimestep) {
-//			Double deltaMove;
-			for (Agent agent : getAll()) {
-				agent.interact(localTimestep,MUTUAL);
-				agent.environment();
-			}
-			for (Agent agent : getAll()) {
-				double[] tLoc = agent.getSearchCoord(0.0);
-//				deltaMove = agent.move();
-				agent.updateMovement(localTimestep);
-				agent.move();
-				agentTree.delete(helperMethods.doubleToFloatArray(tLoc),agent);
-				agentTree.insert(agent.getBoundingBoxCoord(), 
-						agent.getBoundingBoxDimensions(), agent);
-//				nMoved += (deltaMove >= 0.1  ? 1 : 0);
-				dt += localTimestep;
-			}
-		}
-
-//		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
-//		LogFile.writeLog(nMoved + "/" + getNumberOfAgents() + " after " + 
-//											shovIter + " shove iterations");
-	}
-	
-	public void refreshTree() {
-		//rebuilt tree
-		agentTree.clear();
-		for(Agent a: agentList) {
-			if (a instanceof LocatedActiveAgent) {
-				agentTree.insert(a.getBoundingBoxCoord(),
-											a.getBoundingBoxDimensions(), a);
-			}
-		}
+		do 
+		{
+			nMoved = performMove();
+		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
+		LogFile.writeLog(nMoved + "/" + agentList.size() + " after " + shovIter
+				+ " shove iterations");
 	}
 
 	/**
@@ -691,7 +632,20 @@ public class AgentContainer
 	 *
 	 * @param isSynchro
 	 */
-
+	protected int performMove()
+	{
+		int nMoved = 0;
+		Double deltaMove;
+		/*
+		 * Compute movement, deltaMove is relative movement.
+		 */
+		for ( SpecialisedAgent agent : agentList )
+		{
+			deltaMove = agent.interact(MUTUAL);
+			nMoved += (deltaMove >= 0.1  ? 1 : 0);
+		}
+		return nMoved;
+	}
 
 
 	/**
@@ -706,7 +660,6 @@ public class AgentContainer
 	 */
 	protected void refreshGroupStatus()
 	{
-		//refresh group 'status' and biomass concentration
 		for ( LocatedGroup aLG : _grid )
 			aLG.refreshElement();
 	}
@@ -722,7 +675,7 @@ public class AgentContainer
 	 * @param nbList: the list of located agents
 	 */
 	public void getPotentialShovers(int index, Double range,
-											LinkedList<Agent> nbList)
+											LinkedList<LocatedAgent> nbList)
 	{
 		LocatedGroup aGroup;
 		int radius = Math.max(1, (int) Math.floor(range / this._res));
@@ -761,15 +714,15 @@ public class AgentContainer
 	 * 
 	 * @param anAgent	New agent to add to the agent grid.
 	 */
-	public void registerBirth(Agent anAgent) 
+	public void registerBirth(SpecialisedAgent anAgent) 
 	{
 		// Add the agent to agentList
-		addAgent(anAgent);
+		agentList.add(anAgent);
 
 		// Add the agent on the grid
-		if (anAgent instanceof Agent)
+		if (anAgent instanceof LocatedAgent)
 		{
-			Agent aLoc = anAgent;
+			LocatedAgent aLoc = (LocatedAgent) anAgent;
 			try
 			{
 				if ( Simulator.isChemostat )
@@ -792,7 +745,7 @@ public class AgentContainer
 	 * @param anAgent	SpecialisedAgent object that will be removed from the
 	 * simulation.
 	 */
-	public void registerDeath(Agent anAgent) 
+	public void registerDeath(SpecialisedAgent anAgent) 
 	{
 		if ( ! _agentToKill.contains(anAgent) )
 			_agentToKill.add(anAgent);
@@ -810,8 +763,8 @@ public class AgentContainer
 	public int removeAllDead()
 	{
 		int nDead = 0;
-		ListIterator<Agent> iter = _agentToKill.listIterator();
-		Agent anAgent;
+		ListIterator<SpecialisedAgent> iter = _agentToKill.listIterator();
+		SpecialisedAgent anAgent;
 
 		while (iter.hasNext())
 		{
@@ -820,7 +773,7 @@ public class AgentContainer
 			{
 				nDead++;
 				iter.remove();
-				removeAgent(anAgent);
+				agentList.remove(anAgent);
 				removeLocated(anAgent);
 			}
 		}
@@ -859,9 +812,8 @@ public class AgentContainer
 	public void agentFlushedAway(Double agentTimeStep)
 	{
 		/*
-		 * FIXME: clean up this method Note: this method now no longer needs shuffling.
-		 * 
-		 * kill agents according to the dilution
+		 * After having shuffled the list (during the step()) with all the
+		 * agents we are now ready to kill agents according to the dilution
 		 * value read from the Bulk class.
 		 */
 		Dfactor = domain.getChemostat()._D;
@@ -869,7 +821,7 @@ public class AgentContainer
 		int agentsToDilute = 0;
 		if (EROSIONMETHOD)
 		{
-			Double temp = Dfactor*agentTimeStep*getNumberOfAgents() + tallyVariable;
+			Double temp = Dfactor*agentTimeStep*agentList.size() + tallyVariable;
 			agentsToDilute = temp.intValue();
 			tallyVariable = temp % 1;
 		}
@@ -882,27 +834,20 @@ public class AgentContainer
 			 * 
 			 * TODO Rob 16Mar2015: Make more robust.
 			 */
-			agentsToDilute = Math.max(getNumberOfAgents() - 1000, 0);
+			agentsToDilute = Math.max(agentList.size() - 1000, 0);
 		}
-
-
-// Bas: cleaned: for (SpecialisedAgent anAgent : getAll().subList(0, agentsToDilute))
-		for (Agent anAgent : getRandomAgentList(agentsToDilute))
+		
+		for (SpecialisedAgent anAgent : agentList.subList(0, agentsToDilute))
 		{
 			anAgent.isDead = true;
 			anAgent.death = "dilution";
 			anAgent.die(false);
-			registerDeath(anAgent);
 		}
 		
-		// FIXME Bas: now doing this the proper way: registerDeath(anAgent);
-		// NOTE this method was bypassing all agents from kill registry and 
-		// simply removing them.
 		// TODO Rob 13Mar2015: Simplify? agentList.removeAll(_agentToKill);
-//		for ( SpecialisedAgent anAgent : getAll() )
-//			if ( anAgent.isDead )
-//				removeAgent(anAgent);
-		
+		for ( SpecialisedAgent anAgent : agentList )
+			if ( anAgent.isDead )
+				agentList.remove(anAgent);
 	}
 	
 	/**
@@ -910,11 +855,11 @@ public class AgentContainer
 	 * 
 	 * @param anAgent	Agent to be removed from the grid.
 	 */
-	public void removeLocated(Agent anAgent)
+	public void removeLocated(SpecialisedAgent anAgent)
 	{
-		if (anAgent instanceof Agent)
+		if (anAgent instanceof LocatedAgent)
 		{
-			Agent aLoc = anAgent;
+			LocatedAgent aLoc = (LocatedAgent) anAgent;
 			int index = getIndexedPosition(aLoc.getLocation());
 			if ( ! Double.isNaN(index) )
 				_grid[index].remove(aLoc);
@@ -928,7 +873,7 @@ public class AgentContainer
 	 * 
 	 * @param anAgent	Agent that has moved and needs the location updated.
 	 */
-	public void registerMove(Agent anAgent)
+	public void registerMove(LocatedAgent anAgent)
 	{
 		/*
 		 * Compute the theoretical index on the agentGrid
@@ -954,12 +899,8 @@ public class AgentContainer
 		{
 			LogFile.writeLogDebug("Agent location "+
 				anAgent.getLocation().toString()+" is not valid -> Killed");
-			anAgent.death = "overBoard";
+			//anAgent.death = "overBoard";
 			anAgent.die(false);
-			registerDeath(anAgent);
-			removeAgent(anAgent);
-			removeLocated(anAgent);
-			LogFile.writeLog("warning: agent overBoard");
 		}
 	}
 	
@@ -973,11 +914,9 @@ public class AgentContainer
 	 */
 	public void fitAgentMassOnGrid(SpatialGrid biomassGrid) 
 	{
-//		for ( LocatedGroup aSquare : _grid )
-//			for ( LocatedAgent aLoc : aSquare.group )
-		for ( Agent agent : getAll() )
-			if ( agent instanceof LocatedActiveAgent ) 
-				agent.fitMassOnGrid(biomassGrid);
+		for ( LocatedGroup aSquare : _grid )
+			for ( LocatedAgent aLoc : aSquare.group )
+				aLoc.fitMassOnGrid(biomassGrid);
 	}
 
 	/**
@@ -991,11 +930,9 @@ public class AgentContainer
 	public void fitAgentVolumeRateOnGrid(SpatialGrid biomassGrid)
 	{
 		biomassGrid.resetToZero();
-//		for (LocatedGroup aSquare : _grid)
-//			for (LocatedAgent aLoc : aSquare.group)
-		for ( Agent agent : getAll() )
-			if ( agent instanceof LocatedActiveAgent ) 
-				agent.fitVolRateOnGrid(biomassGrid);
+		for (LocatedGroup aSquare : _grid)
+			for (LocatedAgent aLoc : aSquare.group)
+				aLoc.fitVolRateOnGrid(biomassGrid);
 	}
 
 
@@ -1016,7 +953,7 @@ public class AgentContainer
 	public void writeGrids(Simulator aSim, ResultFile bufferState,
 									ResultFile bufferSum) throws Exception
 	{
-		Agent aLoc;
+		LocatedAgent aLoc;
 
 		//sonia:chemostat
 		//I've modified the refreshElement() method for the chemostat case
@@ -1032,10 +969,10 @@ public class AgentContainer
 			aSpeciesGrid.resetToZero();
 		
 		// Sum biomass concentrations
-		for (Agent anA : getAll())
-			if (anA instanceof LocatedActiveAgent)
+		for (SpecialisedAgent anA : agentList)
+			if (anA instanceof LocatedAgent)
 			{
-				aLoc = anA;
+				aLoc = (LocatedAgent) anA;
 				aLoc.fitMassOnGrid(_speciesGrid[aLoc.speciesIndex]);
 			}
 
@@ -1070,7 +1007,6 @@ public class AgentContainer
 		 * Get the number of species in this simulation.
 		 */
 		int nSpecies = aSim.speciesList.size();
-
 		/*
 		 * Set up a buffer to hold information for each agent of these
 		 * species.
@@ -1130,12 +1066,12 @@ public class AgentContainer
 		/* <----- HGT Stats End ----> */
 		
 		// Fill the agent_state file, build the state for the summary
-  		Agent aLoc;
+  		LocatedAgent aLoc;
   		MultiEpiBac anEpiBac;
  		int spIndex;
- 		for (Agent anAgent : getAll())
+ 		for (SpecialisedAgent anAgent : agentList)
  		{
- 			spIndex = anAgent.getSpeciesIndex();
+ 			spIndex = anAgent.getSpecies().speciesIndex;
  			spPop[spIndex]++;
  			// Skip to the next agent if this one is dead
  			// TODO RC - do we really want to include dead agents in the
@@ -1145,9 +1081,9 @@ public class AgentContainer
  			
  			// TODO RC - why aren't we including the mass and growth rates
  			// of all ActiveAgents, only LocatedAgents?
- 			if (anAgent instanceof LocatedActiveAgent)
+ 			if (anAgent instanceof LocatedAgent)
  			{
- 				aLoc = anAgent;	
+ 				aLoc = (LocatedAgent) anAgent;	
  				spMass[spIndex] += aLoc.getTotalMass();
  				spGrowth[spIndex] += aLoc.getNetGrowth();
   				speciesBuffer[spIndex].append(aLoc.writeOutput()+";\n");
@@ -1320,19 +1256,19 @@ public class AgentContainer
 		/*
 		 * Collate the information for the agent_StateDeath file.
 		 */
-		Agent aLoc;
+		LocatedAgent aLoc;
   		MultiEpiBac anEpiBac;
   		int spIndex;
-  		for (Agent anAgent : _agentToKill)
+  		for (SpecialisedAgent anAgent : _agentToKill)
   		{
-  		  	spIndex = anAgent.getSpeciesIndex();
+  		  	spIndex = anAgent.getSpecies().speciesIndex;
   		  	spPop[spIndex]++;
   		  	
   		  	// TODO RC - why aren't we including the mass and growth rates
   			// of all ActiveAgents, only LocatedAgents?
-  			if (anAgent instanceof LocatedActiveAgent)
+  			if (anAgent instanceof LocatedAgent)
   			{
-  				aLoc = anAgent;
+  				aLoc = (LocatedAgent) anAgent;
   				spMass[spIndex] += aLoc.getTotalMass();
   				spGrowth[spIndex] += aLoc.getNetGrowth();
   				speciesBuffer[spIndex].append(aLoc.writeOutput());
@@ -1584,10 +1520,9 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief reduces the size of agents on the border with ratio*
-	 * Find the border points which go through a process of erosion 
-	 * (erosion and sloughing have changed the configuration)
-	 * FIXME: this method needs to leave
+	 * \brief Find the border points which go through a process of erosion (erosion and sloughing have changed the configuration)
+	 * 
+	 * Find the border points which go through a process of erosion (erosion and sloughing have changed the configuration)
 	 * 
 	 */
 	public void shrinkOnBorder() 
@@ -1609,10 +1544,10 @@ public class AgentContainer
 			tallyVariable = aBorderElement.totalMass * ratio;
 
 
-			for (Agent aLoc : _grid[index].group) {
+			for (LocatedAgent aLoc : _grid[index].group) {
 				mass += aLoc.getTotalMass() * ratio;
-				for (int iComp = 0; iComp < aLoc.getParticleMass().length; iComp++)
-					aLoc.multiplyParticleMass(1.0 - ratio,iComp);
+				for (int iComp = 0; iComp < aLoc.particleMass.length; iComp++)
+					aLoc.particleMass[iComp] *= 1.0 - ratio;
 
 				aLoc.updateSize();
 				if (aLoc.willDie()) {
@@ -1665,7 +1600,7 @@ public class AgentContainer
 		 */
 		_levelset.refreshBorder(true, mySim);
 		// List of agents to consider for removal.
-		LinkedList<Agent> detGroup = new LinkedList<Agent>();
+		LinkedList<LocatedAgent> detGroup = new LinkedList<LocatedAgent>();
 		// For groups on _close list:
 		for (LocatedGroup borderElem : _levelset.getBorder())
 		{
@@ -1683,7 +1618,7 @@ public class AgentContainer
 			borderElem.erosionRatio = Math.min(borderElem.erosionRatio, 1.0);
 			tallyVariable += borderElem.totalMass * borderElem.erosionRatio;
 			// Add them to detGroup.
-			for ( Agent aLoc : borderElem.group )
+			for ( LocatedAgent aLoc : borderElem.group )
 				detGroup.add(aLoc);
 		} // end of: for (LocatedGroup aBorderElement : _levelset.getBorder())
 		
@@ -1691,8 +1626,8 @@ public class AgentContainer
 		 * If the tally is smaller than the smallest agent, no point
 		 * calculating detachment priorities.
 		 */
-		Comparator<Object> comp = new totalMassComparator();
-		Agent aLoc = Collections.min(detGroup, comp);
+		Comparator<Object> comp = new LocatedAgent.totalMassComparator();
+		LocatedAgent aLoc = Collections.min(detGroup, comp);
 		if ( tallyVariable < aLoc.getTotalMass() )
 			return;
 		
@@ -1701,7 +1636,7 @@ public class AgentContainer
 		// Counter of agents removed.
 		int nDetach = 0;
 		// Calculate detPriority for all agents in the _close list.
-		comp = new detPriorityComparator();
+		comp = new LocatedAgent.detPriorityComparator();
 		for (LocatedGroup borderElem : _levelset.getBorder() )
 			calcDetPriority(agentGrid, borderElem, borderElem.erosionRatio);
 		// aLoc is the most exposed cell.
@@ -1718,8 +1653,7 @@ public class AgentContainer
 			nDetach++;
 			detGroup.remove(aLoc);
 		}
-		System.out.println("******************************REMOVE ON BORDER*****"
-										+ "*********************************");
+		System.out.println("******************************REMOVE ON BORDER**************************************");
 		LogFile.writeLog("Eroding " + nDetach + " ("
 				+ ExtraMath.toString(mass, true) + "/"
 				+ ExtraMath.toString(tallyVariable, true) + " fg) from "
@@ -1739,8 +1673,8 @@ public class AgentContainer
 	{
 		int i = 0;
 		// Reset all detPriority values to zero
-		for (Agent aLoc : aBorderElement.group)
-			aLoc.setDetPriority(0.0);
+		for (LocatedAgent aLoc:aBorderElement.group)
+			aLoc.detPriority = 0.0;
 		/*
 		 * For each free neighbour run through the agents in our border
 		 * element, adding the square of the agent's proximity to that
@@ -1752,8 +1686,8 @@ public class AgentContainer
 			// x-side
 			if (aBorderElement.nbhGroup[i][1][1].status==2) {
 				// LogFile.writeLog(aBorderElement.nbhGroup[i][1][1].dc+"is free");
-				for (Agent aLoc:aBorderElement.group) {
-					aLoc.addDetPriority(detFunction(i,aLoc.getLocation().x));
+				for (LocatedAgent aLoc:aBorderElement.group) {
+					aLoc.detPriority += detFunction(i,aLoc.getLocation().x);
 					// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().x+", detPriority: "+aLoc.detPriority);
 				}
 			}
@@ -1761,23 +1695,23 @@ public class AgentContainer
 			if (agentGrid.is3D) {
 				if (aBorderElement.nbhGroup[1][i][1].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][i][1].dc+"is free");
-					for (Agent aLoc:aBorderElement.group) {
-						aLoc.addDetPriority(detFunction(i,aLoc.getLocation().y));
+					for (LocatedAgent aLoc:aBorderElement.group) {
+						aLoc.detPriority += detFunction(i,aLoc.getLocation().y);
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().y+", detPriority: "+aLoc.detPriority);
 					}
 				}
 				if (aBorderElement.nbhGroup[1][1][i].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][1][i].dc+"is free");
-					for (Agent aLoc:aBorderElement.group) {
-						aLoc.addDetPriority(detFunction(i,aLoc.getLocation().z));
+					for (LocatedAgent aLoc:aBorderElement.group) {
+						aLoc.detPriority += detFunction(i,aLoc.getLocation().z);
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().z+", detPriority: "+aLoc.detPriority);
 					}
 				}
 			} else {
 				if (aBorderElement.nbhGroup[1][i][1].status==2) {
 					// LogFile.writeLog(aBorderElement.nbhGroup[1][i][1].dc+"is free");
-					for (Agent aLoc:aBorderElement.group) {
-						aLoc.addDetPriority(2*detFunction(i,aLoc.getLocation().y));
+					for (LocatedAgent aLoc:aBorderElement.group) {
+						aLoc.detPriority += 2*detFunction(i,aLoc.getLocation().y);
 						// LogFile.writeLog("Agent: "+aLoc.sendName()+", at "+aLoc.getLocation().y+", detPriority: "+aLoc.detPriority);
 					} // end of: for (LocatedAgent aLoc:aBorderElement.group) {
 				} // end of: if (aBorderElement.nbhGroup[1][i][1].status==2) {
@@ -1785,7 +1719,7 @@ public class AgentContainer
 		} // end of: for (i=0;i<3;i+=2){
 
 		// weight the detPriority of each agent by its Located Group ratio
-		for (Agent aLoc:aBorderElement.group) aLoc.multiplyDetPriority(ratio);
+		for (LocatedAgent aLoc:aBorderElement.group) aLoc.detPriority *= ratio;
 	}
 
 	/* __________________________ GET & SET _________________________________ */
@@ -2029,38 +1963,5 @@ public class AgentContainer
 	public LocatedGroup returnGroupInVoxel(int gridVoxel)
 	{
 		return _grid[gridVoxel];
-	}
-	
-	/**
-	 * \brief Comparator used by AgentContainer.erodeBorder()
-	 * 
-	 * @author Rob Clegg
-	 */
-	public static class totalMassComparator implements java.util.Comparator<Object>
-	{
-		@Override
-		public int compare(Object b1, Object b2)
-		{
-			Double f1 = ((Agent) b1).getTotalMass();
-			Double f2 = ((Agent) b2).getTotalMass();
-			return (int) Math.signum(f1 - f2);
-		}
-	}
-
-	/**
-	 * \brief Comparator used by AgentContainer.erodeBorder()
-	 * 
-	 * Comparator used by AgentContainer.erodeBorder()
-	 * @author Rob Clegg
-	 */
-	public static class detPriorityComparator implements java.util.Comparator<Object>
-	{
-		@Override
-		public int compare(Object b1, Object b2)
-		{
-			Double f1 = ((Agent) b1).getDetPriority();
-			Double f2 = ((Agent) b2).getDetPriority();
-			return (int) Math.signum(f1 - f2);
-		}
 	}
 }

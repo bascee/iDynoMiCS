@@ -53,7 +53,7 @@ import utils.XMLParser;
  * University of Birmingham (UK).
  *
  */
-public class Bacterium extends LocatedActiveAgent implements Cloneable 
+public class Bacterium extends LocatedAgent implements Cloneable 
 {	
 	/**
 	 * Boolean noting whether any EPS particles have been declared as part of
@@ -131,11 +131,11 @@ public class Bacterium extends LocatedActiveAgent implements Cloneable
 		}
 
 		/* If no mass defined, use the division radius to find the mass */
-		if ( this.getTotalMass().equals(0.0))
+		if ( this._totalMass.equals(0.0))
 		{
 			guessMass();
 			LogFile.writeLog("Guessing "+this.getSpecies().speciesName+
-										" initial mass at: "+this.getTotalMass());
+										" initial mass at: "+this._totalMass);
 		}
 
 		// SET CELL RADIUS, GENERATION, AND GENEOLOGY
@@ -208,7 +208,7 @@ public class Bacterium extends LocatedActiveAgent implements Cloneable
 			updateMass();
 			/* If no mass defined, use the division radius to find the mass */
 			// Note this should have been done already in initFromProtocolFile
-			if ( this.getTotalMass() == 0.0 )
+			if ( this._totalMass == 0.0 )
 			{
 				guessMass();
 				LogFile.writeLog("Warning: Bacterium.createNewAgent calling guessMass()");

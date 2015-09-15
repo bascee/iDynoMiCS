@@ -12,10 +12,14 @@
 package simulator;
 
 import java.io.Serializable;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleFunction;
+import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
-import simulator.agent.Agent;
+import simulator.agent.LocatedAgent;
 import utils.ExtraMath;
 import utils.MatrixOperations;
 import utils.ResultFile;
@@ -109,22 +113,6 @@ public class SpatialGrid implements Serializable
 			_nJ = nJ;
 			_nK = nK;
 		}
-		_reso = resolution;
-		// Create a padded grid.
-		initGrids();
-	}
-	
-	/**
-	 * \brief Constructor for SpatialGrid that assumes only one voxel.
-	 * 
-	 * For use in chemostat simulations.
-	 * 
-	 * @param resolution
-	 */
-	public SpatialGrid(Double resolution)
-	{
-
-		_nI = _nJ = _nK = 1;
 		_reso = resolution;
 		// Create a padded grid.
 		initGrids();
@@ -501,9 +489,9 @@ public class SpatialGrid implements Serializable
 	{
 		// TODO 
 		if (extReso<=_reso)
-			return getPaddedValueAt(cC);
+			return getValueAt(cC);
 		else
-			return getPaddedValueAt(cC);
+			return getValueAt(cC);
 	}
 	
 	/**
@@ -513,7 +501,7 @@ public class SpatialGrid implements Serializable
 	 * @param aLocAgent	The agent to use as the centre of the search
 	 * @return	Average grid value seen around this point
 	 */
-	public Double getValueAround(Agent aLocAgent)
+	public Double getValueAround(LocatedAgent aLocAgent)
 	{
 		return getValueAround(aLocAgent.getLocation(),
 								aLocAgent.getRadius(true));
@@ -565,7 +553,7 @@ public class SpatialGrid implements Serializable
 	 * whose value should be returned.
 	 * @return The double value at that location.
 	 */
-	public Double getPaddedValueAt(DiscreteVector dc)
+	public Double getValueAt(DiscreteVector dc)
 	{
 		if ( Simulator.isChemostat )
 			return grid[0][0][0];
@@ -575,19 +563,7 @@ public class SpatialGrid implements Serializable
 	}
 	
 	/**
-	 * \brief Return the value stored on the padded grid at the location given by the stated
-	 * continuous vector.
-	 * 
-	 * @param cC	ContinuousVector containing the grid location to return.
-	 * @return	Double value stored at that grid location.
-	 */
-	public Double getPaddedValueAt(ContinuousVector cC)
-	{
-		return getPaddedValueAt(getDiscreteCoordinates(cC));
-	}
-	
-	/**
-	 * \brief Return the value stored on grid at the location given by the stated
+	 * \brief Return the value stored at the location given by the stated
 	 * continuous vector.
 	 * 
 	 * @param cC	ContinuousVector containing the grid location to return.
@@ -595,19 +571,13 @@ public class SpatialGrid implements Serializable
 	 */
 	public Double getValueAt(ContinuousVector cC)
 	{
-		DiscreteVector dc = getDiscreteCoordinates(cC);
-		return getValueAt(dc.i,dc.j,dc.k);
-	}
-	
-	public Double getValueAt(DiscreteVector dc)
-	{
-		return getValueAt(dc.i,dc.j,dc.k);
+		return getValueAt(getDiscreteCoordinates(cC));
 	}
 	
 	/**
-	 * \brief Return the value on the padded grid at a given position (the coordinates are NOT corrected)
+	 * \brief Return the value on the padded grid at a given position.
 	 * 
-	 * Return the value on the padded grid at a given position (the coordinates are NOT corrected)
+	 * The coordinates are NOT corrected.
 	 * 
 	 * @param i	I Coordinate of the grid location to set
 	 * @param j	J Coordinate of the grid location to set
@@ -629,8 +599,8 @@ public class SpatialGrid implements Serializable
 	 * The coordinates are corrected.
 	 * 
 	 * @param value	Value to set the specified location to
-	 * @param cC	Continuous vector stating the location of the grid to be set
-	 * to the given value.
+	 * @param cC	Continuous vector stating the location of the grid to be
+	 * set to the given value.
 	 */
 	public void setValueAt(Double value, ContinuousVector cC)
 	{
@@ -734,9 +704,8 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Set all meshes of a grid with the same value (including the padding - if not a chemostat run)
-	 * 
-	 * Set all meshes of a grid with the same value (including the padding if not a chemostat simulation)
+	 * \brief Set all meshes of a grid with the same value, including the
+	 * padding if not a chemostat simulation.
 	 * 
 	 * @param value	Value at which to set all the elements of the grid
 	 */
@@ -760,11 +729,11 @@ public class SpatialGrid implements Serializable
 	}
 	
 	/**
-	 * \brief Return the number of voxels in the X direction
+	 * \brief Return the number of voxels in the X direction.
 	 * 
-	 * Return the number of voxels in the X direction (ignoring the padding)
+	 * Ignores the padding.
 	 * 
-	 * @return Number of real voxels along X 
+	 * @return Number of real voxels along X. 
 	 */
 	public int getGridSizeI() 
 	{
@@ -772,11 +741,11 @@ public class SpatialGrid implements Serializable
 	}
 	
 	/**
-	 * \brief Return the number of voxels in the Y direction
+	 * \brief Return the number of voxels in the Y direction.
 	 * 
-	 * Return the number of voxels in the Y direction (ignoring the padding)
+	 * Ignores the padding.
 	 * 
-	 * @return Number of real voxels along Y 
+	 * @return Number of real voxels along Y.
 	 */
 	public int getGridSizeJ() 
 	{
@@ -784,11 +753,11 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Return the number of voxels in the Z direction
+	 * \brief Return the number of voxels in the Z direction.
 	 * 
-	 * Return the number of voxels in the Z direction (ignoring the padding)
+	 * Ignores the padding.
 	 * 
-	 * @return Number of real voxels along Z 
+	 * @return Number of real voxels along Z. 
 	 */
 	public int getGridSizeK() 
 	{
@@ -796,12 +765,17 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Return the number of voxels along a given direction (axeCode)
+	 * \brief Return the number of voxels along a given direction.
 	 * 
-	 * Return the number of voxels along a given direction (axeCode):  1-X, 2-Y,3-Z
+	 * (axeCode):
+	 * 1 - X,
+	 * 2 - Y,
+	 * 3 - Z.
 	 * 
-	 * @param axeCode Integer noting the direction to query
-	 * @return : the number of voxels along a direction including padding bands
+	 * Includes padding.
+	 * 
+	 * @param axeCode Integer noting the direction to query.
+	 * @return The number of voxels along a direction including padding bands.
 	 */
 	public int getGridTotalSize(int axeCode) 
 	{
@@ -824,10 +798,17 @@ public class SpatialGrid implements Serializable
 	/**
 	 * \brief Returns the length (in distance unit) along a given direction
 	 * 
-	 * Returns the length (in distance unit) along a given direction. The direction is stated as an integer: 1 for X, 2 for Y, 3 for Z
+	 * (axeCode):
+	 * 1 - X,
+	 * 2 - Y,
+	 * 3 - Z.
 	 * 
-	 * @param axeCode	The direction of which the length is required: 1-X, 2-Y, 3-Z
-	 * @return Double value stating the length (in distance unit) along a direction ignoring padding bands
+	 * Does not include padding.
+	 * 
+	 * @param axeCode	The direction of which the length is required:
+	 * 1-X, 2-Y, 3-Z
+	 * @return Double value stating the length (in distance unit) along a
+	 * direction ignoring padding bands.
 	 */ 
 	public Double getGridLength(int axeCode) 
 	{
@@ -845,11 +826,10 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Return the volume of one voxel of the spatial grid
+	 * \brief Return the volume of one voxel of the spatial grid.
 	 * 
-	 * Return the volume of one voxel of the spatial grid
-	 * 
-	 * @return	Double value stating the volume of one voxel of the spatial grid
+	 * @return	Double value stating the volume of one voxel of the spatial
+	 * grid.
 	 */
 	public Double getVoxelVolume()
 	{
@@ -857,11 +837,9 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Return the whole grid including the padding
+	 * \brief Return the whole grid, including the padding.
 	 * 
-	 * Return the whole grid including the padding
-	 * 
-	 * @return the spatial grid
+	 * @return The spatial grid.
 	 */
 	public Double[][][] getGrid()
 	{
@@ -869,11 +847,9 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Return a clone of this spatial grid
+	 * \brief Return a clone of this spatial grid.
 	 * 
-	 * Return a clone of this spatial grid
-	 * 
-	 * @return	A clone of this spatial grid
+	 * @return	A clone of this spatial grid.
 	 */
 	public Double[][][] getCloneGrid()
 	{
@@ -881,11 +857,10 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Returns the resolution of this spatial grid
+	 * \brief Returns the resolution of this spatial grid.
 	 * 
-	 * Returns the resolution of this spatial grid
-	 * 
-	 * @return	Double value stating the resolution (in micrometers) of this grid
+	 * @return	Double value stating the resolution (in micrometers) of this
+	 * grid.
 	 */
 	public Double getResolution() 
 	{
@@ -893,11 +868,9 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Determine if this spatial grid is 3D or 2D
+	 * \brief Determine if this spatial grid is 3D or 2D.
 	 * 
-	 * Determine if this spatial grid is 3D or 2D
-	 * 
-	 * @return	Boolean noting whether this grid is 3D (true) or 2D (false)
+	 * @return	Boolean noting whether this grid is 3D (true) or 2D (false).
 	 */
 	public Boolean is3D()
 	{
@@ -905,9 +878,10 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Set the values of this spatial grid to those contained in the supplied grid
+	 * \brief Set the values of this spatial grid to those contained in the
+	 * supplied grid.
 	 * 
-	 * @param u	Matrix of values which to set the spatial grid to
+	 * @param u	Matrix of values which to set the spatial grid to.
 	 */
 	public void setGrid(Double[][][] u)
 	{
@@ -915,17 +889,23 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Write the contents of this grid to the XML results files
+	 * \brief Write the contents of this grid to the XML results files.
 	 * 
-	 * Write the contents of this grid to the XML results files. This shows the level of solute in each of the grid spaces
+	 * This shows the level of solute in each of the grid spaces.
 	 * 
-	 * @param bufferState	The output buffer writing the env_state file for this iteration
-	 * @param bufferSummary	The output buffer writing the env_sum file for this iteration
-	 * @throws Exception	Exception thrown if these buffers cannot be opened for writing to
+	 * @param bufferState	The output buffer writing the env_state file for
+	 * this iteration.
+	 * @param bufferSummary	The output buffer writing the env_sum file for
+	 * this iteration.
+	 * @throws Exception	Exception thrown if these buffers cannot be opened
+	 * for writing to.
 	 */
-	public void writeReport(ResultFile bufferState, ResultFile bufferSummary) throws Exception {
-
-		// Edit the markup for the solute grid
+	public void writeReport(ResultFile bufferState, ResultFile bufferSummary)
+															throws Exception
+	{
+		/*
+		 * Edit the markup for the solute grid
+		 */
 		StringBuffer value = new StringBuffer();
 		value.append("<solute name=\"").append(gridName);
 		value.append("\" unit=\"").append(gridUnit);
@@ -934,52 +914,41 @@ public class SpatialGrid implements Serializable
 		value.append("\" nJ=\"").append(_nJ);
 		value.append("\" nK=\"").append(_nK);
 		value.append("\">\n");
-
-		// Write the markup in the file
+		/*
+		 * Write the markup in the file
+		 */
 		bufferState.write(value.toString());
-
-		// Rob 3/3/11: Changed to fix bug in envState output files
-		// and improve code readability (plus efficiency... possibly).
-		// Note that for a chemostat, i=j=k=1 and that in 2D k=1. The
-		// main fix here however, is that grid is a double and not an
-		// array, as previously coded (this reduces the amount of 
-		// storage space taken by envState files by about a 2 thirds!)
-		
-		
+		/*
+		 * Rob 3/3/11: Changed to fix bug in envState output files and improve
+		 * code readability (plus efficiency... possibly). Note that for a
+		 * chemostat, i=j=k=1 and that in 2D k=1. The main fix here however,
+		 * is that grid is a Double[] and not an array, as previously coded
+		 * (this reduces the amount of storage space taken by envState files
+		 * by about a 2 thirds!)
+		 */
 		if ( Simulator.isChemostat )
-		{
-			bufferState.write(Double.toString(grid[0][0][0]));
-			bufferState.write(";\n");
-		}
+			bufferState.write(grid[0][0][0].toString()+";\n");
 		else
 		{
-			// KA 06062013 - turned off the printing of the padding. Will need to ensure this is clear from v1.2
-			// Fill the mark-up
+			/*
+			 * KA 06062013 - turned off the printing of the padding. Will need
+			 * to ensure this is clear from v1.2
+			 * 
+			 * Fill the mark-up.
+			 */
 			if ( _nK == 1 )
-			{
-				// We have a 2D grid
 				for ( int i = 1; i < _nI + 1; i++ )
 					for ( int j = 1; j < _nJ + 1; j++ )
-					{
-						bufferState.write(grid[i][j][1].toString());
-						bufferState.write(";\n");
-					}
-			}
+						bufferState.write(grid[i][j][1].toString()+";\n");
 			else
-			{
-				// We have a 3D grid 
 				for ( int i = 1; i < _nI + 1; i++ )
 					for ( int j = 1; j < _nJ + 1; j++ )
 						for ( int k = 1; k < _nK + 1; k++ )
-						{
-							bufferState.write(grid[i][j][k].toString());
-							bufferState.write(";\n");
-						}
-			}
+							bufferState.write(grid[i][j][k].toString()+";\n");
 		}
-		// Close the mark-up
+		/*
+		 * Close the mark-up
+		 */
 		bufferState.write("\n</solute>\n");
-		
 	}
-
 }

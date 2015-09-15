@@ -15,12 +15,11 @@ package simulator;
 import java.io.File;
 import java.io.ObjectInputStream;
 import java.util.*;
-
 import org.jdom.Element;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
 import de.schlichtherle.io.FileInputStream;
+
 import idyno.Idynomics;
 import idyno.SimTimer;
 import povray.PovRayWriter;
@@ -174,7 +173,16 @@ public class Simulator
 	 * this has been the method employed in previous versions of iDynomics.
 	 */
 	public String attachmentMechanism = "onetime";
+	
+	/**
+	 * boolean that specifies what shoving algorithm should be used.
+	 */
+	public static boolean isShoving = true;
 
+	/**
+	 * Double that defines the largest agent movement per mechanical time step.
+	 */
+	public static Double maxMovement = 0.01; 
 	/**
 	 * Specification of all the geometry, bulks, and computational domains in
 	 * the system being modelled.
@@ -406,7 +414,6 @@ public class Simulator
 			{
 				writeReport();
 				
-				//FIXME: Bas, update how dead agents are handled
 				//sonia 26.04.2010
 				//only remove the agents from the system after recording all the information about active
 				//and death/removed biomass
@@ -416,7 +423,6 @@ public class Simulator
 			 * If this is an invComp simulation (default is false), stop if
 			 * there are fewer than two species remaining.
 			 */
-
 			int specAlive = 0;
 			for ( Species aSpec : speciesList )
 				if ( aSpec.getPopulation() > 0 )
@@ -424,7 +430,6 @@ public class Simulator
 			continueRunning = (specAlive >= (invComp ? 2 : 1));
 			// stop simulation if all cells are washed out, or if only species
 			// for invComp = true (invasion competition simulation)
-			
 			LogFile.chronoMessageOut("Agents simulated");
 			
 			SimTimer.updateTimeStep(world);
@@ -501,6 +506,15 @@ public class Simulator
 		if ( (localRoot.getParam("attachment") != null) && (! isChemostat) )
 			attachmentMechanism = localRoot.getParam("attachment");
 		LogFile.writeLog("Attachment mechanism is "+attachmentMechanism);
+		
+		/**
+		 * specify shoving algorithm (standard or mechanical).
+		 */
+		if ( localRoot.isParamGiven("shoving") ) 
+			isShoving = localRoot.getParamBool("shoving");
+			
+		if ( localRoot.isParamGiven("maxMovement") ) 
+			maxMovement = localRoot.getParamLength("maxMovement");
 		/*
 		 * Now we need to determine if a random.state file exists. This is
 		 * used to initialise the random number generator, if it exists.
@@ -1020,7 +1034,7 @@ public class Simulator
 	public void recreateSpecies() throws Exception 
 	{
 		int spIndex;
-		Agent progenitor;
+		SpecialisedAgent progenitor;
 		
 		// Initialise a parser of the XML agent file
 		XMLParser simulationRoot = agentFile.getChildParser("simulation");

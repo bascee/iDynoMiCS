@@ -15,12 +15,14 @@ import java.awt.Color;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import org.jdom.Element;
 
 import idyno.SimTimer;
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
 import simulator.agent.*;
+import simulator.geometry.ContinuousVector;
 import simulator.Simulator;
 
 // bvm 30.1.2009
@@ -60,7 +62,7 @@ public class EpiBac extends BactEPS
 			newEpisome.setHost(out);
 			out._plasmidHosted.add(newEpisome);
 		}
-		return out;
+		return (Object) out;
 	}
 
 	/**
@@ -216,7 +218,7 @@ public class EpiBac extends BactEPS
 	 */
 	public boolean searchConjugation(Episome aPlasmid)
 	{
-		Agent aLoc;
+		LocatedAgent aLoc;
 		Boolean hasTransfered = false;
 		// Build a neighborhood including only Bacteria
 		buildNbh(aPlasmid.getPilusRange());
@@ -243,9 +245,9 @@ public class EpiBac extends BactEPS
 	public void buildNbh(Double nbhRadius)
 	{
 		// Manhattan perimeter
-		getPotentialShovers(nbhRadius,_location,_radius);
+		getPotentialShovers(nbhRadius);
 		// Now remove too far agents (apply circular perimeter)
-		Agent aLocAgent;
+		LocatedAgent aLocAgent;
 		for (int iter = 0; iter < _myNeighbors.size(); iter++)
 		{
 			aLocAgent = _myNeighbors.removeFirst();

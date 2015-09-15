@@ -169,7 +169,7 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @see Simulator.createReaction()
 	 */
 	@Override
-	public void initFromAgent(LocatedActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot)
+	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot)
 	{
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
@@ -270,7 +270,7 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @see Episome.computeRate(EpiBac)
 	 */
 	@Override
-	public void computeSpecificGrowthRate(LocatedActiveAgent anAgent)
+	public void computeSpecificGrowthRate(ActiveAgent anAgent)
 	{
 		// Build the array of concentration seen by the agent
 		computeSpecificGrowthRate(readConcentrationSeen(anAgent, _soluteList),anAgent);
@@ -313,7 +313,7 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @param anAgent	Parameters used are those defined for THIS agent.
 	 */
 	@Override
-	public void computeSpecificGrowthRate(Double[] s, LocatedActiveAgent anAgent)
+	public void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent)
 	{
 		Double[] kineticParam = anAgent.reactionKinetic[reactionIndex];
 		// First multiplier is muMax
@@ -512,7 +512,7 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @return	The marginal growth rate
 	 */
 	@Override
-	public Double computeMassGrowthRate(LocatedActiveAgent anAgent)
+	public Double computeMassGrowthRate(ActiveAgent anAgent)
 	{
 		computeSpecificGrowthRate(anAgent);
 		return _specRate*anAgent.getParticleMass(_catalystIndex);
@@ -527,7 +527,7 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @return	The specific growth rate
 	 */
 	@Override
-	public Double computeSpecGrowthRate(LocatedActiveAgent anAgent)
+	public Double computeSpecGrowthRate(ActiveAgent anAgent)
 	{
 		computeSpecificGrowthRate(anAgent);
 		return _specRate;

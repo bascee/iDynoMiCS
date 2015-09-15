@@ -14,6 +14,8 @@ package simulator.diffusionSolver;
 
 import java.util.*;
 
+import org.jdom.Element;
+
 import simulator.*;
 import simulator.geometry.Domain;
 import simulator.reaction.Reaction;

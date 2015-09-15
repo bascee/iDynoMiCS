@@ -475,7 +475,6 @@ public class BactAdaptable extends BactEPS
   	 * 
 	 * @return	String containing results associated with this agent.
   	 */
-	@Override
 	public StringBuffer writeOutput()
 	{
   		/*

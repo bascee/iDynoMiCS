@@ -275,9 +275,7 @@ public class XMLParser implements Serializable
 		List<Object> childList = _localRoot.getChildren(childMarkup);
 		LinkedList<Element> out = new LinkedList<Element>();
 		for (Object child : childList)
-		{
 			out.add((Element) child);
-		}
 		return out;
 	}
 	
@@ -353,9 +351,7 @@ public class XMLParser implements Serializable
 		List<Element> childList = _localRoot.getChildren(childMarkup);
 		for (Element aChild : childList)
 			if ( aChild.getAttributeValue(attrName).equals(attrValue) ) 
-				return aChild;
-		LogFile.writeLog("Could not find XML child element with name "+
-							childMarkup+" and "+attrName+" = "+attrValue);
+				return (Element) aChild;
 		return null;
 	}
 	
